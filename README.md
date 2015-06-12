@@ -23,6 +23,6 @@ Alternatively, you can build an image from [Dockerfile](https://github.com/pucke
 ```bash
     docker run -d \
         --name airflow \
-        -p 8080:8080
+        -p 8080:8080 \
         puckel/docker-airflow
 ```
