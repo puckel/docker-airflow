@@ -14,15 +14,20 @@ ENV TERM linux
 ENV INITRD No
 
 ENV AIRFLOW_HOME /usr/local/airflow
+ENV C_FORCE_ROOT true
+ENV PYTHONLIBPATH /usr/lib/python2.7/dist-packages
 
 RUN apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends \
+    netcat \
     python-pip \
     python-dev \
+    libmysqlclient-dev \
     build-essential \
-    && mkdir /usr/local/airflow \
-    && pip install airflow \
-    && airflow initdb \
+    && mkdir -p $AIRFLOW_HOME/logs \
+    && mkdir $AIRFLOW_HOME/dags \
+    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow \
+    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow[mysql] \
     && apt-get clean \
     && rm -rf \
     /var/lib/apt/lists/* \
@@ -32,6 +37,12 @@ RUN apt-get update -yqq \
     /usr/share/doc \
     /usr/share/doc-base
 
-EXPOSE 8080
+ADD config/airflow.cfg $AIRFLOW_HOME/airflow.cfg
+ADD script/entrypoint.sh /root/entrypoint.sh
+RUN chmod +x /root/entrypoint.sh
 
-CMD ["airflow","webserver","-p","8080"]
+EXPOSE 8080
+EXPOSE 5555
+EXPOSE 8793
+
+ENTRYPOINT ["/root/entrypoint.sh"]
