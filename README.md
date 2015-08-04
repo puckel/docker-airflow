@@ -21,7 +21,7 @@ Alternatively, you can build an image from [Dockerfile](https://github.com/pucke
 
 ### Usage
 
-Start the stack (mariadb, rabbitmq, airflow-webserver, airflow-flower & airflow-worker) :
+Start the stack (mysql, rabbitmq, airflow-webserver, airflow-flower & airflow-worker) :
 
 ```bash
   docker-compose up

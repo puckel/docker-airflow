@@ -3,9 +3,9 @@
 CMD="airflow"
 
 if [ "$@" = "webserver" ]; then
-  #wait for mariadb
+  #wait for mysql
   DB_LOOPS="20"
-  MYSQL_HOST="mariadb"
+  MYSQL_HOST="mysqldb"
   MYSQL_PORT="3306"
   i=0
   while ! nc $MYSQL_HOST $MYSQL_PORT >/dev/null 2>&1 < /dev/null; do

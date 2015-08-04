@@ -1,13 +1,12 @@
-mariadb:
-    image: mariadb:10
+mysqldb:
+    image: tutum/mysql
     restart: always
     ports:
         - "3306:3306"
     environment:
         - MYSQL_USER=airflow
-        - MYSQL_PASSWORD=airflow
-        - MYSQL_DATABASE=airflow
-        - MYSQL_ROOT_PASSWORD=wootwoot
+        - MYSQL_PASS=airflow
+        - ON_CREATE_DB=airflow
 
 rabbitmq:
     image: puckel/docker-rabbitmq
@@ -26,7 +25,7 @@ webserver:
     ports:
         - "8080:8080"
     links:
-        - mariadb:mariadb
+        - mysqldb:mysqldb
         - rabbitmq:rabbitmq
     command: webserver
 
@@ -43,6 +42,6 @@ worker:
     image: puckel/docker-airflow
     restart: always
     links:
-        - mariadb:mariadb
+        - mysqldb:mysqldb
         - rabbitmq:rabbitmq
     command: worker

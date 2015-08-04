@@ -13,6 +13,7 @@ ENV TERM linux
 # Work around initramfs-tools running on kernel 'upgrade': <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=594189>
 ENV INITRD No
 
+ENV AIRFLOW_VERSION 1.3.0
 ENV AIRFLOW_HOME /usr/local/airflow
 ENV C_FORCE_ROOT true
 ENV PYTHONLIBPATH /usr/lib/python2.7/dist-packages
@@ -23,11 +24,13 @@ RUN apt-get update -yqq \
     python-pip \
     python-dev \
     libmysqlclient-dev \
+    libkrb5-dev \
+    libsasl2-dev \
     build-essential \
     && mkdir -p $AIRFLOW_HOME/logs \
     && mkdir $AIRFLOW_HOME/dags \
-    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow \
-    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow[mysql] \
+    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow==$AIRFLOW_VERSION \
+    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow[mysql]==$AIRFLOW_VERSION \
     && apt-get clean \
     && rm -rf \
     /var/lib/apt/lists/* \
