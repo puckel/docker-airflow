@@ -4,7 +4,7 @@
 This repository contains **Dockerfile** of [airflow](https://github.com/airbnb/airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
 
-### Base Docker Image
+### Based on Debian Wheezy official Image
 
 * [debian:wheezy](https://registry.hub.docker.com/_/debian/)
 
@@ -17,7 +17,7 @@ This repository contains **Dockerfile** of [airflow](https://github.com/airbnb/a
 
 3. Download [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) from public [Docker Hub Registry](https://registry.hub.docker.com/): `docker pull puckel/docker-airflow`
 
-Alternatively, you can build an image from [Dockerfile](https://github.com/puckel/docker-airflow)
+Alternatively, you can build an image from the [Dockerfile](https://github.com/puckel/docker-airflow)
 
 ### Usage
 
@@ -29,9 +29,11 @@ Start the stack (mysql, rabbitmq, airflow-webserver, airflow-flower & airflow-wo
 
 UI Interface :
 
-Airflow: http://container-ip:8080/
-Flower (Celery): http://container-ip:5555/
-RabbitMQ: http://container-ip:15672/
+* Airflow: http://localhost:8080/
+* Flower (Celery): http://localhost:5555/
+* RabbitMQ: http://localhost:15672/
+
+(with boot2docker, use: open http://$(boot2docker ip):8080)
 
 To scale the number of workers :
 
