@@ -1,48 +1,43 @@
-## Airflow Dockerfile
-
+# Airflow Dockerfile
 
 This repository contains **Dockerfile** of [airflow](https://github.com/airbnb/airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
+## Informations
 
-### Based on Debian Wheezy official Image
+* Based on Debian Wheezy official Image [debian:wheezy](https://registry.hub.docker.com/_/debian/)
+* Install [Docker](https://www.docker.com/)
+* Install [Docker-compose](https://docs.docker.com/compose/install/)
 
-* [debian:wheezy](https://registry.hub.docker.com/_/debian/)
+## Installation
 
+        docker pull puckel/docker-airflow
 
-### Installation
+## Build
 
-1. Install [Docker](https://www.docker.com/).
+        docker build --rm -t puckel/docker-airflow .
 
-2. Install [Docker-compose](https://docs.docker.com/compose/install/).
-
-3. Download [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) from public [Docker Hub Registry](https://registry.hub.docker.com/): `docker pull puckel/docker-airflow`
-
-Alternatively, you can build an image from the [Dockerfile](https://github.com/puckel/docker-airflow)
-
-### Usage
+# Usage
 
 Start the stack (mysql, rabbitmq, airflow-webserver, airflow-flower & airflow-worker) :
 
-```bash
-  docker-compose up
-```
+        docker-compose up -d
 
-UI Interface :
+## UI Links
 
-* Airflow: http://localhost:8080/
-* Flower (Celery): http://localhost:5555/
-* RabbitMQ: http://localhost:15672/
+- Airflow: [localhost:8080](http://localhost:8080/)
+- Flower: [localhost:5555](http://localhost:5555/)
+- RabbitMQ: [localhost:15672](http://localhost:15672/)
 
 (with boot2docker, use: open http://$(boot2docker ip):8080)
 
-To scale the number of workers :
+## To scale the number of workers
 
-```bash
-  docker-compose scale worker=5
-```
+          docker-compose scale worker=5
 
-Then you can run the "tutorial" :
+## Run the test "tutorial"
 
-```bash
-  docker exec dockerairflow_webserver_1 airflow backfill tutorial -s 2015-05-01 -e 2015-06-01
-```
+          docker exec dockerairflow_webserver_1 airflow backfill tutorial -s 2015-05-01 -e 2015-06-01
+
+# Wanna help?
+
+Fork, improve and PR. ;-)
