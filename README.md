@@ -32,11 +32,11 @@ Start the stack (mysql, rabbitmq, airflow-webserver, airflow-flower & airflow-wo
 
 ## To scale the number of workers
 
-          docker-compose scale worker=5
+        docker-compose scale worker=5
 
 ## Run the test "tutorial"
 
-          docker exec dockerairflow_webserver_1 airflow backfill tutorial -s 2015-05-01 -e 2015-06-01
+        docker exec dockerairflow_webserver_1 airflow backfill tutorial -s 2015-05-01 -e 2015-06-01
 
 # Wanna help?
 
