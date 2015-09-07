@@ -14,6 +14,8 @@ This repository contains **Dockerfile** of [airflow](https://github.com/airbnb/a
 
 ## Build
 
+For example, if you need to install [Extra Packages](http://pythonhosted.org/airflow/installation.html#extra-package), edit the Dockerfile and than build-it.
+
         docker build --rm -t puckel/docker-airflow .
 
 # Usage
