@@ -10,4 +10,4 @@ test:
   pre:
     - sleep 5
   override:
-    - docker run puckel/docker-airflow
+    - docker run puckel/docker-airflow version
