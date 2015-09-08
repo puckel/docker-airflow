@@ -1,0 +1,13 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker build -t puckel/docker-airflow .
+
+test:
+  pre:
+    - sleep 5
+  override:
+    - docker run puckel/docker-airflow
