@@ -7,7 +7,7 @@ FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fer
 
 sed -i "s/{FERNET_KEY}/${FERNET_KEY}/" $AIRFLOW_HOME/airflow.cfg
 
-if [ "$@" = "webserver" ]; then
+if [ "$@" = "webserver" ] || [ "$@" = "scheduler" ] ; then
   #wait for mysql
   DB_LOOPS="20"
   MYSQL_HOST="mysqldb"

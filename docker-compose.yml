@@ -45,3 +45,11 @@ worker:
         - mysqldb:mysqldb
         - rabbitmq:rabbitmq
     command: worker
+
+scheduler:
+    image: puckel/docker-airflow
+    restart: always
+    links:
+        - mysqldb:mysqldb
+        - rabbitmq:rabbitmq
+    command: scheduler
