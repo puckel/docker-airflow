@@ -21,6 +21,7 @@ ENV PYTHONLIBPATH /usr/lib/python2.7/dist-packages
 RUN apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends \
     netcat \
+    curl \
     python-pip \
     python-dev \
     libmysqlclient-dev \
