@@ -12,17 +12,24 @@ FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fer
 sed -i "s/{FERNET_KEY}/${FERNET_KEY}/" $AIRFLOW_HOME/airflow.cfg
 
 # wait for rabbitmq
-while ! curl -sI -u $RABBITMQ_CREDS http://$RABBITMQ_HOST:15672/api/whoami |grep '200 OK'; do
-  echo "$(date) - waiting for RabbitMQ..."
-  sleep 2
-done
-
+if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] || [ "$@" = "flower" ] ; then
+  j=0
+  while ! curl -sI -u $RABBITMQ_CREDS http://$RABBITMQ_HOST:15672/api/whoami |grep '200 OK'; do
+    j=`expr $j + 1`
+    if [ $j -ge $DB_LOOPS ]; then
+      echo "$(date) - $RABBITMQ_HOST still not reachable, giving up"
+      exit 1
+    fi
+    echo "$(date) - waiting for RabbitMQ..."
+    sleep 2
+  done
+fi
 if [ "$@" = "flower" ]; then
   sleep 10
 fi
 
+# wait for DB
 if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] ; then
-  #wait for mysql
   i=0
   while ! nc $MYSQL_HOST $MYSQL_PORT >/dev/null 2>&1 < /dev/null; do
     i=`expr $i + 1`
