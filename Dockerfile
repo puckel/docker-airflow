@@ -1,4 +1,4 @@
-# VERSION 1.0
+# VERSION 1.1
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow
@@ -15,8 +15,10 @@ ENV INITRD No
 
 ENV AIRFLOW_VERSION 1.5.1
 ENV AIRFLOW_HOME /usr/local/airflow
-ENV C_FORCE_ROOT true
 ENV PYTHONLIBPATH /usr/lib/python2.7/dist-packages
+
+# Add airflow user
+RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
 
 RUN apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends \
@@ -44,12 +46,15 @@ RUN apt-get update -yqq \
     /usr/share/doc \
     /usr/share/doc-base
 
-ADD config/airflow.cfg $AIRFLOW_HOME/airflow.cfg
-ADD script/entrypoint.sh /root/entrypoint.sh
-RUN chmod +x /root/entrypoint.sh
+ADD script/entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
+ADD config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
-EXPOSE 8080
-EXPOSE 5555
-EXPOSE 8793
+RUN \
+    chown -R airflow: ${AIRFLOW_HOME} \
+    && chmod +x ${AIRFLOW_HOME}/entrypoint.sh
 
-ENTRYPOINT ["/root/entrypoint.sh"]
+EXPOSE 8080 5555 8793
+
+USER airflow
+WORKDIR ${AIRFLOW_HOME}
+ENTRYPOINT ["./entrypoint.sh"]
