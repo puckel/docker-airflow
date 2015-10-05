@@ -1,4 +1,5 @@
 mysqldb:
+    container_name: mysqldb
     image: tutum/mysql
     restart: always
     ports:
@@ -9,6 +10,7 @@ mysqldb:
         - ON_CREATE_DB=airflow
 
 rabbitmq:
+    container_name: rabbitmq
     image: puckel/docker-rabbitmq
     restart: always
     ports:
@@ -20,6 +22,7 @@ rabbitmq:
         - RABBITMQ_VHOST=airflow
 
 webserver:
+    container_name: webserver
     image: puckel/docker-airflow
     restart: always
     ports:
@@ -27,9 +30,11 @@ webserver:
     links:
         - mysqldb:mysqldb
         - rabbitmq:rabbitmq
+        - worker:worker
     command: webserver
 
 flower:
+    container_name: flower 
     image: puckel/docker-airflow
     restart: always
     ports:
@@ -39,14 +44,18 @@ flower:
     command: flower
 
 worker:
+    container_name: worker 
     image: puckel/docker-airflow
     restart: always
+    ports:
+        - "8793:8793"
     links:
         - mysqldb:mysqldb
         - rabbitmq:rabbitmq
     command: worker
 
 scheduler:
+    container_name: scheduler 
     image: puckel/docker-airflow
     restart: always
     links:
