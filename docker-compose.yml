@@ -25,6 +25,8 @@ webserver:
     container_name: webserver
     image: puckel/docker-airflow
     restart: always
+    environment:
+        - AIRFLOW_HOME=/usr/local/airflow
     ports:
         - "8080:8080"
     links:
@@ -37,6 +39,8 @@ flower:
     container_name: flower 
     image: puckel/docker-airflow
     restart: always
+    environment:
+        - AIRFLOW_HOME=/usr/local/airflow
     ports:
         - "5555:5555"
     links:
@@ -47,6 +51,8 @@ worker:
     container_name: worker 
     image: puckel/docker-airflow
     restart: always
+    environment:
+        - AIRFLOW_HOME=/usr/local/airflow
     ports:
         - "8793:8793"
     links:
@@ -58,6 +64,8 @@ scheduler:
     container_name: scheduler 
     image: puckel/docker-airflow
     restart: always
+    environment:
+        - AIRFLOW_HOME=/usr/local/airflow
     links:
         - mysqldb:mysqldb
         - rabbitmq:rabbitmq
