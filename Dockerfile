@@ -32,11 +32,9 @@ RUN apt-get update -yqq \
     libssl-dev \
     libffi-dev \
     build-essential \
-    && mkdir -p $AIRFLOW_HOME/logs \
-    && mkdir $AIRFLOW_HOME/dags \
     && pip install --install-option="--install-purelib=$PYTHONLIBPATH" cryptography \
-    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow==$AIRFLOW_VERSION \
-    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow[mysql]==$AIRFLOW_VERSION \
+    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow==${AIRFLOW_VERSION} \
+    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow[mysql]==${AIRFLOW_VERSION} \
     && apt-get clean \
     && rm -rf \
     /var/lib/apt/lists/* \
