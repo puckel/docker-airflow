@@ -25,6 +25,8 @@ webserver:
     container_name: webserver
     image: puckel/docker-airflow
     restart: always
+    # volumes:
+    #     - /localpath/to/dags:/usr/local/airflow/dags
     environment:
         - AIRFLOW_HOME=/usr/local/airflow
     ports:
