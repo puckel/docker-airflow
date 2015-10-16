@@ -38,7 +38,7 @@ webserver:
     command: webserver
 
 flower:
-    container_name: flower 
+    container_name: flower
     image: puckel/docker-airflow
     restart: always
     environment:
@@ -50,7 +50,7 @@ flower:
     command: flower
 
 worker:
-    container_name: worker 
+    container_name: worker
     image: puckel/docker-airflow
     restart: always
     environment:
@@ -63,7 +63,7 @@ worker:
     command: worker
 
 scheduler:
-    container_name: scheduler 
+    container_name: scheduler
     image: puckel/docker-airflow
     restart: always
     environment:
