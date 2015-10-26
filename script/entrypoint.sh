@@ -20,10 +20,11 @@ if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] || [ 
       echo "$(date) - $RABBITMQ_HOST still not reachable, giving up"
       exit 1
     fi
-    echo "$(date) - waiting for RabbitMQ..."
+    echo "$(date) - waiting for RabbitMQ... $j/$DB_LOOPS"
     sleep 2
   done
 fi
+
 if [ "$@" = "flower" ]; then
   sleep 10
 fi
@@ -37,7 +38,7 @@ if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] ; the
       echo "$(date) - ${MYSQL_HOST}:${MYSQL_PORT} still not reachable, giving up"
       exit 1
     fi
-    echo "$(date) - waiting for ${MYSQL_HOST}:${MYSQL_PORT}..."
+    echo "$(date) - waiting for ${MYSQL_HOST}:${MYSQL_PORT}... $i/$DB_LOOPS"
     sleep 1
   done
   sleep 2
