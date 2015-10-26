@@ -11,15 +11,15 @@ mysql:
 
 rabbitmq:
     container_name: rabbitmq
-    image: puckel/docker-rabbitmq
+    image: rabbitmq:3-management
     restart: always
     ports:
         - "15672:15672"
         - "5672:5672"
     environment:
-        - RABBITMQ_USER=airflow
-        - RABBITMQ_PASSWORD=airflow
-        - RABBITMQ_VHOST=airflow
+        - RABBITMQ_DEFAULT_USER=airflow
+        - RABBITMQ_DEFAULT_PASS=airflow
+        - RABBITMQ_DEFAULT_VHOST=airflow
 
 webserver:
     container_name: webserver
