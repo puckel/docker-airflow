@@ -2,7 +2,7 @@
 
 CMD="airflow"
 DB_LOOPS="10"
-MYSQL_HOST="mysqldb"
+MYSQL_HOST="mysql"
 MYSQL_PORT="3306"
 RABBITMQ_HOST="rabbitmq"
 RABBITMQ_CREDS="airflow:airflow"

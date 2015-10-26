@@ -1,5 +1,5 @@
-mysqldb:
-    container_name: mysqldb
+mysql:
+    container_name: mysql
     image: tutum/mysql
     restart: always
     ports:
