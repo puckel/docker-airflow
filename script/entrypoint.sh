@@ -41,8 +41,11 @@ if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] ; the
     echo "$(date) - waiting for ${MYSQL_HOST}:${MYSQL_PORT}... $i/$DB_LOOPS"
     sleep 1
   done
-  sleep 2
-  $CMD initdb
+  if [ "$@" = "webserver" ]; then
+    echo "Initialize database..."
+    $CMD initdb
+  fi
+  sleep 5
 fi
 
 exec $CMD "$@"
