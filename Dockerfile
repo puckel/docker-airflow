@@ -16,12 +16,6 @@ ENV AIRFLOW_VERSION 1.6.0
 ENV AIRFLOW_HOME /usr/local/airflow
 ENV PYTHONLIBPATH /usr/lib/python2.7/dist-packages
 
-# Set the locale
-RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-
 # Add airflow user
 RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
 
