@@ -7,7 +7,7 @@ This repository contains **Dockerfile** of [airflow](https://github.com/airbnb/a
 
 * Based on Debian Wheezy official Image [debian:wheezy](https://registry.hub.docker.com/_/debian/)
 * Install [Docker](https://www.docker.com/)
-* Install [Docker-compose](https://docs.docker.com/compose/install/)
+* Install [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Installation
 
@@ -21,9 +21,11 @@ For example, if you need to install [Extra Packages](http://pythonhosted.org/air
 
 # Usage
 
-Start the stack (mysql, rabbitmq, airflow-webserver, airflow-flower & airflow-worker) :
+Start the stack (mysql, rabbitmq, airflow-webserver, airflow-scheduler airflow-flower & airflow-worker) :
 
         docker-compose up -d
+
+Check [Airflow Documentation](http://pythonhosted.org/airflow/)
 
 ## UI Links
 
@@ -33,9 +35,6 @@ Start the stack (mysql, rabbitmq, airflow-webserver, airflow-flower & airflow-wo
 
 (with boot2docker, use: open http://$(boot2docker ip):8080)
 
-## To scale the number of workers
-
-        docker-compose scale worker=5
 
 ## Run the test "tutorial"
 
