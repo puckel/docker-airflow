@@ -25,6 +25,13 @@ Start the stack (mysql, rabbitmq, airflow-webserver, airflow-scheduler airflow-f
 
         docker-compose up -d
 
+If you want to use Ad hoc query, make sure you've configured connections :
+Go to Admin -> Connections and Edit "mysql_default" set this values (equivalent to values in airflow.cfg/docker-compose.yml) :
+- Host : mysql
+- Schema : airflow
+- Login : airflow
+- Password : airflow
+
 Check [Airflow Documentation](http://pythonhosted.org/airflow/)
 
 ## UI Links
