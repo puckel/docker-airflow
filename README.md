@@ -1,5 +1,7 @@
 # Airflow Dockerfile
-[![Circle CI](https://circleci.com/gh/puckel/docker-airflow.svg?style=svg)](https://circleci.com/gh/puckel/docker-airflow)
+Circle CI : [![](https://circleci.com/gh/puckel/docker-airflow.svg?style=svg)](https://circleci.com/gh/puckel/docker-airflow)
+
+ImageLayers : [![](https://badge.imagelayers.io/puckel/docker-airflow:latest.svg)](https://imagelayers.io/?images=puckel/docker-airflow:latest)
 
 This repository contains **Dockerfile** of [airflow](https://github.com/airbnb/airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
@@ -8,6 +10,7 @@ This repository contains **Dockerfile** of [airflow](https://github.com/airbnb/a
 * Based on Debian Wheezy official Image [debian:wheezy](https://registry.hub.docker.com/_/debian/)
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
+* Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/airflow)
 
 ## Installation
 
