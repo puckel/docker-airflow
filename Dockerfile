@@ -47,6 +47,8 @@ RUN apt-get update -yqq \
 ADD script/entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
 ADD config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
+COPY dags ${AIRFLOW_HOME}/dags
+
 RUN \
     chown -R airflow: ${AIRFLOW_HOME} \
     && chmod +x ${AIRFLOW_HOME}/entrypoint.sh
