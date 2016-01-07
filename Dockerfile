@@ -1,4 +1,4 @@
-# VERSION 1.1
+# VERSION 1.6.2
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow
@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 # Work around initramfs-tools running on kernel 'upgrade': <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=594189>
 ENV INITRD No
-ENV AIRFLOW_VERSION 1.6.1
+ENV AIRFLOW_VERSION 1.6.2
 ENV AIRFLOW_HOME /usr/local/airflow
 ENV PYTHONLIBPATH /usr/lib/python2.7/dist-packages
 
