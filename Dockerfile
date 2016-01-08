@@ -21,6 +21,7 @@ RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
 
 RUN apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends \
+    ca-certificates \
     netcat \
     curl \
     python-pip \
@@ -32,6 +33,9 @@ RUN apt-get update -yqq \
     libffi-dev \
     build-essential \
     && pip install --install-option="--install-purelib=$PYTHONLIBPATH" cryptography \
+    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" pyOpenSSL \
+    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" ndg-httpsclient \
+    && pip install --install-option="--install-purelib=$PYTHONLIBPATH" pyasn1 \
     && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow==${AIRFLOW_VERSION} \
     && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow[celery]==${AIRFLOW_VERSION} \
     && pip install --install-option="--install-purelib=$PYTHONLIBPATH" airflow[mysql]==${AIRFLOW_VERSION} \
