@@ -7,7 +7,7 @@ This repository contains **Dockerfile** of [airflow](https://github.com/airbnb/a
 
 ## Informations
 
-* Based on Debian Wheezy official Image [debian:wheezy](https://registry.hub.docker.com/_/debian/)
+* Based on Debian Jessie official Image [debian:jessie](https://registry.hub.docker.com/_/debian/)
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
 * Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/airflow)
