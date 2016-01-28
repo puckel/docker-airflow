@@ -1,12 +1,13 @@
 mysql:
-    image: tutum/mysql
+    image: mysql
     restart: always
     ports:
         - "3306:3306"
     environment:
+        - MYSQL_RANDOM_ROOT_PASSWORD=true
         - MYSQL_USER=airflow
-        - MYSQL_PASS=airflow
-        - ON_CREATE_DB=airflow
+        - MYSQL_PASSWORD=airflow
+        - MYSQL_DATABASE=airflow
 
 rabbitmq:
     image: rabbitmq:3-management
@@ -49,6 +50,8 @@ flower:
 scheduler:
     image: puckel/docker-airflow
     restart: always
+    # volumes:
+    #     - /localpath/to/dags:/usr/local/airflow/dags
     environment:
         - AIRFLOW_HOME=/usr/local/airflow
     links:
@@ -59,6 +62,8 @@ scheduler:
 worker:
     image: puckel/docker-airflow
     restart: always
+    # volumes:
+    #     - /localpath/to/dags:/usr/local/airflow/dags
     environment:
         - AIRFLOW_HOME=/usr/local/airflow
     ports:
