@@ -1,4 +1,4 @@
-# VERSION 1.6.2-1
+# VERSION 1.6.2-2
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow
@@ -41,6 +41,7 @@ RUN echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sou
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
+    && pip install pytz==2015.7 \
     && pip install cryptography \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
