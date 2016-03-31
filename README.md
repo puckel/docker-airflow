@@ -1,8 +1,6 @@
 # Airflow Dockerfile
 Circle CI : [![](https://circleci.com/gh/puckel/docker-airflow.svg?style=svg)](https://circleci.com/gh/puckel/docker-airflow)
 
-ImageLayers : [![](https://badge.imagelayers.io/puckel/docker-airflow:latest.svg)](https://imagelayers.io/?images=puckel/docker-airflow:latest)
-
 This repository contains **Dockerfile** of [airflow](https://github.com/airbnb/airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
 ## Informations
