@@ -1,4 +1,4 @@
-# VERSION 1.7.0
+# VERSION 1.7.1.2
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow
@@ -10,7 +10,9 @@ MAINTAINER Puckel_
 # Never prompts the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
-ENV AIRFLOW_VERSION 1.7.0
+
+# Airflow
+ARG AIRFLOW_VERSION=1.7.1.2
 ENV AIRFLOW_HOME /usr/local/airflow
 
 # Define en_US.
@@ -46,9 +48,9 @@ RUN echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sou
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install airflow==${AIRFLOW_VERSION} \
-    && pip install airflow[celery]==${AIRFLOW_VERSION} \
-    && pip install airflow[mysql]==${AIRFLOW_VERSION} \
+    && pip install airflow==$AIRFLOW_VERSION \
+    && pip install airflow[celery]==$AIRFLOW_VERSION \
+    && pip install airflow[mysql]==$AIRFLOW_VERSION \
     && apt-get remove --purge -yqq build-essential python-pip python-dev libmysqlclient-dev libkrb5-dev libsasl2-dev libssl-dev libffi-dev \
     && apt-get clean \
     && rm -rf \

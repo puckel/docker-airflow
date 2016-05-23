@@ -57,7 +57,7 @@ scheduler:
     links:
         - mysql:mysql
         - rabbitmq:rabbitmq
-    command: scheduler
+    command: scheduler -n 5
 
 worker:
     image: puckel/docker-airflow
