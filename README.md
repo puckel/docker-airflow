@@ -1,5 +1,8 @@
-# Airflow Dockerfile
-Circle CI : [![](https://circleci.com/gh/puckel/docker-airflow.svg?style=svg)](https://circleci.com/gh/puckel/docker-airflow)
+# docker-airflow
+[![CircleCI](https://img.shields.io/circleci/project/puckel/docker-airflow.svg?maxAge=2592000)](https://circleci.com/gh/puckel/docker-airflow)
+[![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/puckel/docker-airflow/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/puckel/docker-airflow.svg?maxAge=2592000)]()
+[![Docker Stars](https://img.shields.io/docker/stars/puckel/docker-airflow.svg?maxAge=2592000)]()
 
 This repository contains **Dockerfile** of [airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
@@ -20,7 +23,7 @@ For example, if you need to install [Extra Packages](http://pythonhosted.org/air
 
         docker build --rm -t puckel/docker-airflow .
 
-# Usage
+## Usage
 
 Start the stack (mysql, rabbitmq, airflow-webserver, airflow-scheduler airflow-flower & airflow-worker) :
 
