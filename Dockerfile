@@ -38,6 +38,8 @@ RUN echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sou
     libffi-dev \
     build-essential \
     locales \
+    libblas-dev \
+    liblapack-dev \
     && apt-get install -yqq -t jessie-backports python-requests \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
@@ -51,6 +53,7 @@ RUN echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sou
     && pip install airflow==$AIRFLOW_VERSION \
     && pip install airflow[celery]==$AIRFLOW_VERSION \
     && pip install airflow[mysql]==$AIRFLOW_VERSION \
+    && pip install airflow[hive]==$AIRFLOW_VERSION \
     && apt-get remove --purge -yqq build-essential python-pip python-dev libmysqlclient-dev libkrb5-dev libsasl2-dev libssl-dev libffi-dev \
     && apt-get clean \
     && rm -rf \
