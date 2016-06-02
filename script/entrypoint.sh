@@ -12,7 +12,7 @@ FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fer
 sed -i "s/{FERNET_KEY}/${FERNET_KEY}/" $AIRFLOW_HOME/airflow.cfg
 
 # wait for rabbitmq
-if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] || [ "$@" = "flower" ] ; then
+if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ "$1" = "flower" ] ; then
   j=0
   while ! curl -sI -u $RABBITMQ_CREDS http://$RABBITMQ_HOST:15672/api/whoami |grep '200 OK'; do
     j=`expr $j + 1`
@@ -26,7 +26,7 @@ if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] || [ 
 fi
 
 # wait for DB
-if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] ; then
+if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; then
   i=0
   while ! nc $MYSQL_HOST $MYSQL_PORT >/dev/null 2>&1 < /dev/null; do
     i=`expr $i + 1`
@@ -37,7 +37,7 @@ if [ "$@" = "webserver" ] || [ "$@" = "worker" ] || [ "$@" = "scheduler" ] ; the
     echo "$(date) - waiting for ${MYSQL_HOST}:${MYSQL_PORT}... $i/$TRY_LOOP"
     sleep 5
   done
-  if [ "$@" = "webserver" ]; then
+  if [ "$1" = "webserver" ]; then
     echo "Initialize database..."
     $CMD initdb
   fi
