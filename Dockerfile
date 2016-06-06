@@ -31,7 +31,6 @@ RUN echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sou
     curl \
     python-pip \
     python-dev \
-    libmysqlclient-dev \
     libkrb5-dev \
     libsasl2-dev \
     libssl-dev \
@@ -40,7 +39,7 @@ RUN echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sou
     locales \
     libblas-dev \
     liblapack-dev \
-    && apt-get install -yqq -t jessie-backports python-requests \
+    && apt-get install -yqq -t jessie-backports python-requests libpq-dev \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
@@ -50,11 +49,9 @@ RUN echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sou
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install airflow==$AIRFLOW_VERSION \
-    && pip install airflow[celery]==$AIRFLOW_VERSION \
-    && pip install airflow[mysql]==$AIRFLOW_VERSION \
-    && pip install airflow[hive]==$AIRFLOW_VERSION \
-    && apt-get remove --purge -yqq build-essential python-pip python-dev libmysqlclient-dev libkrb5-dev libsasl2-dev libssl-dev libffi-dev \
+    && pip install psycopg2 \
+    && pip install airflow[celery,postgresql,hive]==$AIRFLOW_VERSION \
+    && apt-get remove --purge -yqq build-essential python-pip python-dev libkrb5-dev libsasl2-dev libssl-dev libffi-dev \
     && apt-get clean \
     && rm -rf \
     /var/lib/apt/lists/* \
@@ -67,8 +64,7 @@ RUN echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sou
 ADD script/entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
 ADD config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
-RUN \
-    chown -R airflow: ${AIRFLOW_HOME} \
+RUN chown -R airflow: ${AIRFLOW_HOME} \
     && chmod +x ${AIRFLOW_HOME}/entrypoint.sh
 
 EXPOSE 8080 5555 8793
