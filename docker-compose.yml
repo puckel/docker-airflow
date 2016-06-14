@@ -1,13 +1,9 @@
-mysql:
-    image: mysql
-    restart: always
-    ports:
-        - "3306:3306"
+postgres:
+    image: postgres
     environment:
-        - MYSQL_RANDOM_ROOT_PASSWORD=true
-        - MYSQL_USER=airflow
-        - MYSQL_PASSWORD=airflow
-        - MYSQL_DATABASE=airflow
+        - POSTGRES_USER=airflow
+        - POSTGRES_PASSWORD=airflow
+        - POSTGRES_DB=airflow
 
 rabbitmq:
     image: rabbitmq:3-management
@@ -21,7 +17,7 @@ rabbitmq:
         - RABBITMQ_DEFAULT_VHOST=airflow
 
 webserver:
-    image: puckel/docker-airflow
+    build: .
     restart: always
     # volumes:
     #     - /localpath/to/dags:/usr/local/airflow/dags
@@ -30,14 +26,14 @@ webserver:
     ports:
         - "8080:8080"
     links:
-        - mysql:mysql
+        - postgres:postgres
         - rabbitmq:rabbitmq
         - worker:worker
         - scheduler:scheduler
     command: webserver
 
 flower:
-    image: puckel/docker-airflow
+    build: .
     restart: always
     environment:
         - AIRFLOW_HOME=/usr/local/airflow
@@ -48,27 +44,25 @@ flower:
     command: flower
 
 scheduler:
-    image: puckel/docker-airflow
+    build: .
     restart: always
     # volumes:
     #     - /localpath/to/dags:/usr/local/airflow/dags
     environment:
         - AIRFLOW_HOME=/usr/local/airflow
     links:
-        - mysql:mysql
+        - postgres:postgres
         - rabbitmq:rabbitmq
     command: scheduler -n 5
 
 worker:
-    image: puckel/docker-airflow
+    build: .
     restart: always
     # volumes:
     #     - /localpath/to/dags:/usr/local/airflow/dags
     environment:
         - AIRFLOW_HOME=/usr/local/airflow
-    ports:
-        - "8793:8793"
     links:
-        - mysql:mysql
+        - postgres:postgres
         - rabbitmq:rabbitmq
     command: worker
