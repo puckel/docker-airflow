@@ -1,4 +1,4 @@
-# VERSION 1.7.1.2
+# VERSION 1.7.1.3
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow
@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=1.7.1.2
+ARG AIRFLOW_VERSION=1.7.1.3
 ENV AIRFLOW_HOME /usr/local/airflow
 
 # Define en_US.
