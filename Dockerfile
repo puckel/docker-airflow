@@ -23,22 +23,26 @@ ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 ENV LC_ALL  en_US.UTF-8
 
-RUN echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sources.list.d/backports.list \
+RUN set -ex \
+    && buildDeps=' \
+        python-pip \
+        python-dev \
+        libkrb5-dev \
+        libsasl2-dev \
+        libssl-dev \
+        libffi-dev \
+        build-essential \
+        libblas-dev \
+        liblapack-dev \
+    ' \
+    && echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sources.list.d/backports.list \
     && apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends \
-    apt-utils\
-    netcat \
-    curl \
-    python-pip \
-    python-dev \
-    libkrb5-dev \
-    libsasl2-dev \
-    libssl-dev \
-    libffi-dev \
-    build-essential \
-    locales \
-    libblas-dev \
-    liblapack-dev \
+        $buildDeps \
+        apt-utils \
+        curl \
+        netcat \
+        locales \
     && apt-get install -yqq -t jessie-backports python-requests libpq-dev \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
@@ -51,18 +55,18 @@ RUN echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sou
     && pip install pyasn1 \
     && pip install psycopg2 \
     && pip install airflow[celery,postgresql,hive]==$AIRFLOW_VERSION \
-    && apt-get remove --purge -yqq build-essential python-pip python-dev libkrb5-dev libsasl2-dev libssl-dev libffi-dev \
+    && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \
-    /var/lib/apt/lists/* \
-    /tmp/* \
-    /var/tmp/* \
-    /usr/share/man \
-    /usr/share/doc \
-    /usr/share/doc-base
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/* \
+        /usr/share/man \
+        /usr/share/doc \
+        /usr/share/doc-base
 
-ADD script/entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
-ADD config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY script/entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
+COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 RUN chown -R airflow: ${AIRFLOW_HOME} \
     && chmod +x ${AIRFLOW_HOME}/entrypoint.sh
