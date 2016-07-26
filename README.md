@@ -60,6 +60,10 @@ Easy scaling using docker-compose:
 
 This can be used to scale to a multi node setup using docker swarm.
 
+## Links
+
+ - Airflow on Kubernetes [kube-airflow](https://github.com/mumoshu/kube-airflow)
+
 # Wanna help?
 
 Fork, improve and PR. ;-)
