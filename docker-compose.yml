@@ -23,6 +23,8 @@ services:
         restart: always
         environment:
             - AIRFLOW_HOME=/usr/local/airflow
+        # volumes:
+        #     - /localpath/to/dags:/usr/local/airflow/dags
         ports:
             - "8080:8080"
         command: webserver
