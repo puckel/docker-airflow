@@ -1,12 +1,5 @@
 version: '2'
 services:
-    postgres:
-        image: postgres
-        environment:
-            - POSTGRES_USER=airflow
-            - POSTGRES_PASSWORD=airflow
-            - POSTGRES_DB=airflow
-
     rabbitmq:
         image: rabbitmq:3-management
         restart: always
@@ -18,11 +11,22 @@ services:
             - RABBITMQ_DEFAULT_PASS=airflow
             - RABBITMQ_DEFAULT_VHOST=airflow
 
-    webserver:
-        image: puckel/docker-airflow:1.7.1.3
-        restart: always
+    postgres:
+        image: postgres
         environment:
-            - AIRFLOW_HOME=/usr/local/airflow
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+
+    webserver:
+        image: puckel/docker-airflow:1.7.1.3-2
+        restart: always
+        depends_on:
+            - postgres
+            - rabbitmq
+        environment:
+            # - LOAD_EX=n
+            - EXECUTOR=Celery
         # volumes:
         #     - /localpath/to/dags:/usr/local/airflow/dags
         ports:
@@ -30,28 +34,35 @@ services:
         command: webserver
 
     flower:
-        image: puckel/docker-airflow:1.7.1.3
+        image: puckel/docker-airflow:1.7.1.3-2
         restart: always
+        depends_on:
+            - rabbitmq
         environment:
-            - AIRFLOW_HOME=/usr/local/airflow
+            - EXECUTOR=Celery
         ports:
             - "5555:5555"
         command: flower
 
     scheduler:
-        image: puckel/docker-airflow:1.7.1.3
+        image: puckel/docker-airflow:1.7.1.3-2
         restart: always
+        depends_on:
+            - webserver
         # volumes:
         #     - /localpath/to/dags:/usr/local/airflow/dags
         environment:
-            - AIRFLOW_HOME=/usr/local/airflow
+            # - LOAD_EX=n
+            - EXECUTOR=Celery
         command: scheduler -n 5
 
     worker:
-        image: puckel/docker-airflow:1.7.1.3
+        image: puckel/docker-airflow:1.7.1.3-2
         restart: always
+        depends_on:
+            - scheduler
         # volumes:
         #     - /localpath/to/dags:/usr/local/airflow/dags
         environment:
-            - AIRFLOW_HOME=/usr/local/airflow
+            - EXECUTOR=Celery
         command: worker

@@ -27,9 +27,25 @@ For example, if you need to install [Extra Packages](http://pythonhosted.org/air
 
 ## Usage
 
-Start the stack (postgres, rabbitmq, airflow-webserver, airflow-scheduler airflow-flower & airflow-worker):
+By default, docker-airflow run Airflow with **SequentialExecutor** :
 
-        docker-compose up -d
+        docker run -d -p 8080:8080 puckel/docker-airflow
+
+If you want to run other executor, you've to use the docker-compose.yml files provided in this repository.
+
+For **LocalExecutor** :
+
+        docker-compose -f docker-compose-LocalExecutor.yml up -d
+
+For **CeleryExecutor** :
+
+        docker-compose -f docker-compose-CeleryExecutor.yml up -d
+
+NB : If you don't want to have DAGs example loaded (default=True), you've to set the following environment variable :
+
+`LOAD_EX=n`
+
+        docker run -d -p 8080:8080 -e LOAD_EX=n puckel/docker-airflow
 
 If you want to use Ad hoc query, make sure you've configured connections:
 Go to Admin -> Connections and Edit "mysql_default" set this values (equivalent to values in airflow.cfg/docker-compose.yml) :
@@ -47,10 +63,6 @@ Check [Airflow Documentation](http://pythonhosted.org/airflow/)
 - RabbitMQ: [localhost:15672](http://localhost:15672/)
 
 When using OSX with boot2docker, use: open http://$(boot2docker ip):8080
-
-## Run the test "tutorial"
-
-        docker exec dockerairflow_webserver_1 airflow backfill tutorial -s 2015-05-01 -e 2015-06-01
 
 ## Scale the number of workers
 
