@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+AIRFLOW_HOME="/usr/local/airflow"
 CMD="airflow"
 TRY_LOOP="10"
 POSTGRES_HOST="postgres"
@@ -8,28 +9,19 @@ RABBITMQ_HOST="rabbitmq"
 RABBITMQ_CREDS="airflow:airflow"
 FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")
 
-# Generate Fernet key
-sed -i "s/{FERNET_KEY}/${FERNET_KEY}/" $AIRFLOW_HOME/airflow.cfg
-
-# wait for rabbitmq
-if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ "$1" = "flower" ] ; then
-  j=0
-  while ! curl -sI -u $RABBITMQ_CREDS http://$RABBITMQ_HOST:15672/api/whoami |grep '200 OK'; do
-    j=`expr $j + 1`
-    if [ $j -ge $TRY_LOOP ]; then
-      echo "$(date) - $RABBITMQ_HOST still not reachable, giving up"
-      exit 1
-    fi
-    echo "$(date) - waiting for RabbitMQ... $j/$TRY_LOOP"
-    sleep 5
-  done
+# Load DAGs exemples (default: Yes)
+if [ "x$LOAD_EX" = "xn" ]; then
+    sed -i "s/load_examples = True/load_examples = False/" "$AIRFLOW_HOME"/airflow.cfg
 fi
+
+# Generate Fernet key
+sed -i "s|\$FERNET_KEY|$FERNET_KEY|" "$AIRFLOW_HOME"/airflow.cfg
 
 # wait for DB
 if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; then
   i=0
   while ! nc $POSTGRES_HOST $POSTGRES_PORT >/dev/null 2>&1 < /dev/null; do
-    i=`expr $i + 1`
+    i=$((i+1))
     if [ $i -ge $TRY_LOOP ]; then
       echo "$(date) - ${POSTGRES_HOST}:${POSTGRES_PORT} still not reachable, giving up"
       exit 1
@@ -44,4 +36,34 @@ if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; the
   sleep 5
 fi
 
-exec $CMD "$@"
+# If we use docker-compose, we use Celery (rabbitmq container).
+if [ "x$EXECUTOR" = "xCelery" ]
+then
+# wait for rabbitmq
+  if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ "$1" = "flower" ] ; then
+    j=0
+    while ! curl -sI -u $RABBITMQ_CREDS http://$RABBITMQ_HOST:15672/api/whoami |grep '200 OK'; do
+      j=$((j+1))
+      if [ $j -ge $TRY_LOOP ]; then
+        echo "$(date) - $RABBITMQ_HOST still not reachable, giving up"
+        exit 1
+      fi
+      echo "$(date) - waiting for RabbitMQ... $j/$TRY_LOOP"
+      sleep 5
+    done
+  fi
+  exec $CMD "$@"
+elif [ "x$EXECUTOR" = "xLocal" ]
+then
+  sed -i "s/executor = CeleryExecutor/executor = LocalExecutor/" "$AIRFLOW_HOME"/airflow.cfg
+  exec $CMD "$@"
+else
+  if [ "$1" = "version" ]; then
+    exec $CMD version
+  fi
+  sed -i "s/executor = CeleryExecutor/executor = SequentialExecutor/" "$AIRFLOW_HOME"/airflow.cfg
+  sed -i "s#sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@postgres/airflow#sql_alchemy_conn = sqlite:////usr/local/airflow/airflow.db#" "$AIRFLOW_HOME"/airflow.cfg
+  echo "Initialize database..."
+  $CMD initdb
+  exec $CMD webserver
+fi
