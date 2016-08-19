@@ -1,11 +1,4 @@
-# VERSION 1.7.1.3-2
-# AUTHOR: Matthieu "Puckel_" Roisil
-# DESCRIPTION: Basic Airflow container
-# BUILD: docker build --rm -t puckel/docker-airflow
-# SOURCE: https://github.com/puckel/docker-airflow
-
-FROM debian:jessie
-MAINTAINER Puckel_
+FROM continuumio/miniconda3
 
 # Never prompts the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
@@ -34,6 +27,8 @@ RUN set -ex \
         build-essential \
         libblas-dev \
         liblapack-dev \
+        libxml2-dev \
+        libxslt1-dev \
     ' \
     && echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sources.list.d/backports.list \
     && apt-get update -yqq \
@@ -48,13 +43,17 @@ RUN set -ex \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
+    && pip install --upgrade pip \
     && pip install pytz==2015.7 \
     && pip install cryptography \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install psycopg2 \
-    && pip install airflow[celery,postgresql,hive]==$AIRFLOW_VERSION \
+    && pip install 'google-api-python-client>=1.5.0,<1.6.0' \
+    && pip install 'oauth2client>=2.0.2,<2.1.0' \
+    && pip install httplib2 \
+    && pip install -e git+http://github.com/markovianhq/incubator-airflow.git#egg=airflow \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \
