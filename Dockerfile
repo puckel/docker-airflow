@@ -27,6 +27,8 @@ RUN set -ex \
         build-essential \
         libblas-dev \
         liblapack-dev \
+        libxml2-dev \
+        libxslt1-dev \
     ' \
     && echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sources.list.d/backports.list \
     && apt-get update -yqq \
