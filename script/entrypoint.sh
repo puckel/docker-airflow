@@ -14,6 +14,11 @@ if [ "x$LOAD_EX" = "xn" ]; then
     sed -i "s/load_examples = True/load_examples = False/" "$AIRFLOW_HOME"/airflow.cfg
 fi
 
+# Install custome python package if requirements.txt is present
+if [ -e "/requirements.txt" ]; then
+    $(which pip) install --user -r /requirements.txt
+fi
+
 # Generate Fernet key
 sed -i "s|\$FERNET_KEY|$FERNET_KEY|" "$AIRFLOW_HOME"/airflow.cfg
 
