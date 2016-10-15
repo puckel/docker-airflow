@@ -1,4 +1,4 @@
-# VERSION 1.7.1.3-2
+# VERSION 1.7.1.3-3
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow
@@ -25,7 +25,6 @@ ENV LC_ALL  en_US.UTF-8
 
 RUN set -ex \
     && buildDeps=' \
-        python-pip \
         python-dev \
         libkrb5-dev \
         libsasl2-dev \
@@ -39,6 +38,7 @@ RUN set -ex \
     && apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
+        python-pip \
         apt-utils \
         curl \
         netcat \

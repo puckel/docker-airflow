@@ -56,6 +56,12 @@ Go to Admin -> Connections and Edit "mysql_default" set this values (equivalent 
 
 Check [Airflow Documentation](http://pythonhosted.org/airflow/)
 
+## Install custom python package
+
+- Create a file "requirements.txt" with the dedired python modules
+- Mount this file as a volume `-v $(pwd)/requirements.txt:/requirements.txt`
+- The entrypoint.sh script execute the pip install command (with --user option)
+
 ## UI Links
 
 - Airflow: [localhost:8080](http://localhost:8080/)

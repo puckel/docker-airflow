@@ -19,7 +19,7 @@ services:
             - POSTGRES_DB=airflow
 
     webserver:
-        image: puckel/docker-airflow:1.7.1.3-2
+        image: puckel/docker-airflow:1.7.1.3-3
         restart: always
         depends_on:
             - postgres
@@ -34,7 +34,7 @@ services:
         command: webserver
 
     flower:
-        image: puckel/docker-airflow:1.7.1.3-2
+        image: puckel/docker-airflow:1.7.1.3-3
         restart: always
         depends_on:
             - rabbitmq
@@ -45,7 +45,7 @@ services:
         command: flower
 
     scheduler:
-        image: puckel/docker-airflow:1.7.1.3-2
+        image: puckel/docker-airflow:1.7.1.3-3
         restart: always
         depends_on:
             - webserver
@@ -57,7 +57,7 @@ services:
         command: scheduler -n 5
 
     worker:
-        image: puckel/docker-airflow:1.7.1.3-2
+        image: puckel/docker-airflow:1.7.1.3-3
         restart: always
         depends_on:
             - scheduler
