@@ -7,7 +7,8 @@ POSTGRES_HOST="postgres"
 POSTGRES_PORT="5432"
 RABBITMQ_HOST="rabbitmq"
 RABBITMQ_CREDS="airflow:airflow"
-FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")
+: ${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")}
+# FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")
 
 # Load DAGs exemples (default: Yes)
 if [ "x$LOAD_EX" = "xn" ]; then
