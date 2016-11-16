@@ -1,7 +1,7 @@
 version: '2'
 services:
     rabbitmq:
-        image: rabbitmq:3-management
+        image: rabbitmq:3.6-management
         restart: always
         ports:
             - "15672:15672"
@@ -12,7 +12,7 @@ services:
             - RABBITMQ_DEFAULT_VHOST=airflow
 
     postgres:
-        image: postgres
+        image: postgres:9.6
         environment:
             - POSTGRES_USER=airflow
             - POSTGRES_PASSWORD=airflow
