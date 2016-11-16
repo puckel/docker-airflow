@@ -55,8 +55,9 @@ RUN set -ex \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install psycopg2 \
-    && pip install airflow[postgresql,hive]==$AIRFLOW_VERSION \
+    && pip install pandas==0.18.1 \
     && pip install celery==3.1.23 \
+    && pip install airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \
