@@ -26,6 +26,7 @@ services:
             - rabbitmq
         environment:
             # - LOAD_EX=n
+            - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
             - EXECUTOR=Celery
         # volumes:
         #     - /localpath/to/dags:/usr/local/airflow/dags
@@ -53,6 +54,7 @@ services:
         #     - /localpath/to/dags:/usr/local/airflow/dags
         environment:
             # - LOAD_EX=n
+            - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
             - EXECUTOR=Celery
         command: scheduler -n 5
 
@@ -64,5 +66,6 @@ services:
         # volumes:
         #     - /localpath/to/dags:/usr/local/airflow/dags
         environment:
+            - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
             - EXECUTOR=Celery
         command: worker
