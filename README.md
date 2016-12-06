@@ -21,7 +21,7 @@ Pull the image from the Docker repository.
 
 ## Build
 
-For example, if you need to install [Extra Packages](http://pythonhosted.org/airflow/installation.html#extra-package), edit the Dockerfile and than build-it.
+For example, if you need to install [Extra Packages](https://pythonhosted.org/airflow/installation.html#extra-package), edit the Dockerfile and than build-it.
 
         docker build --rm -t puckel/docker-airflow .
 
@@ -58,7 +58,7 @@ For encrypted connection passwords (in Local or Celery Executor), you must have 
 
         python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY"
 
-Check [Airflow Documentation](http://pythonhosted.org/airflow/)
+Check [Airflow Documentation](https://pythonhosted.org/airflow/)
 
 
 ## Install custom python package
