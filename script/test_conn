@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import psycopg2
+try:
+    from urllib.parse import urlparse # Python 3
+except ImportError: # Python 2
+    import urlparse
+
+schemes = ['postgres', 'psycopg2']
+url = urlparse.urlparse(os.getenv('AIRFLOW__CORE__SQL_ALCHEMY_CONN'))
+
+for scheme in schemes:
+    urlparse.uses_netloc.append(scheme)
+
+try:
+    psycopg2.connect(
+        database=url.path[1:],
+        user=url.username,
+        password=url.password,
+        host=url.hostname,
+        port=url.port)
+except:
+    sys.exit(1)
+
+sys.exit(0)
