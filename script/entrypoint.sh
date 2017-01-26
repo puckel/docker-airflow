@@ -20,6 +20,10 @@ if [ -e "/requirements.txt" ]; then
     $(which pip) install --user -r /requirements.txt
 fi
 
+# Give access to /var/run/docker.sock to aiflow user (its not always there)
+sudo chown airflow:airflow /var/run/docker.sock | true
+
+
 # Generate Fernet key
 sed -i "s|\$FERNET_KEY|$FERNET_KEY|" "$AIRFLOW_HOME"/airflow.cfg
 
