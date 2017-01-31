@@ -48,6 +48,10 @@ RUN set -ex \
         apt-transport-https \
         ca-certificates \
         vim \
+        wget \
+        unzip \
+        python3-pip \
+        python3-dev \
     && apt-get install -yqq --allow-unauthenticated  -t jessie-backports python-requests libpq-dev \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
@@ -59,24 +63,28 @@ RUN set -ex \
     && apt-key fingerprint 58118E89F3A912897C070ADBF76221572C52609D \
     && sudo add-apt-repository \
        "deb https://apt.dockerproject.org/repo/ \
-       ubuntu-$(lsb_release -cs) \
+       ubuntu-xenial \
        main" \
     && sudo apt-get update \
     && sudo apt-get -y install docker-engine \
-    && pip install packaging \
-    && pip install appdirs \
-    && pip install six==1.10 \
-    && pip install Cython \
-    && pip install pytz==2015.7 \
-    && pip install cryptography \
-    && pip install pyOpenSSL \
-    && pip install ndg-httpsclient \
-    && pip install pyasn1 \
-    && pip install psycopg2 \
-    && pip install pandas==0.18.1 \
-    && pip install celery==3.1.23 \
-    && pip install airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
-    && pip install https://github.com/apache/incubator-airflow/archive/master.zip \
+    && pip3 install --upgrade pip \
+    && pip3 install setuptools \
+    && pip3 install packaging \
+    && pip3 install appdirs \
+    && pip3 install six==1.10 \
+    && pip3 install wheel \
+    && pip3 install Cython \
+    && pip3 install pytz==2015.7 \
+    && pip3 install cryptography \
+    && pip3 install pyOpenSSL \
+    && pip3 install ndg-httpsclient \
+    && pip3 install pyasn1 \
+    && pip3 install psycopg2 \
+    && pip3 install pandas==0.18.1 \
+    && pip3 install celery==3.1.23 \
+    && pip3 install https://github.com/docker/docker-py/archive/1.10.6.zip \
+    && pip3 install airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
+    && pip3 install https://github.com/medicode/incubator-airflow/archive/feature/add_working_dir.zip \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \
