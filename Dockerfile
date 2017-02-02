@@ -1,4 +1,4 @@
-# VERSION 1.7.1.3-5
+# VERSION 1.7.1.3-6
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow .
@@ -33,6 +33,7 @@ RUN set -ex \
         build-essential \
         libblas-dev \
         liblapack-dev \
+        libpq-dev \
     ' \
     && echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sources.list.d/backports.list \
     && apt-get update -yqq \
@@ -43,22 +44,20 @@ RUN set -ex \
         curl \
         netcat \
         locales \
-    && apt-get install -yqq -t jessie-backports python-requests libpq-dev \
+    && apt-get install -yqq -t jessie-backports python-requests \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
+    && python -m pip install -U pip \
     && pip install Cython \
     && pip install pytz==2015.7 \
-    && pip install cryptography \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install psycopg2 \
-    && pip install pandas==0.18.1 \
-    && pip install celery==3.1.23 \
-    && pip install airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
-    && apt-get remove --purge -yqq $buildDeps libpq-dev \
+    && pip install airflow[crypto,celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
+    && pip install celery[redis]==3.1.17 \
+    && apt-get remove --purge -yqq $buildDeps \
     && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
