@@ -1,4 +1,4 @@
-# VERSION 1.7.1.3-6
+# VERSION 1.7.1.3-7
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow .
