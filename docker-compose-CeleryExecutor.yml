@@ -1,15 +1,7 @@
 version: '2'
 services:
-    rabbitmq:
-        image: rabbitmq:3.6-management
-        restart: always
-        ports:
-            - "15672:15672"
-            - "5672:5672"
-        environment:
-            - RABBITMQ_DEFAULT_USER=airflow
-            - RABBITMQ_DEFAULT_PASS=airflow
-            - RABBITMQ_DEFAULT_VHOST=airflow
+    redis:
+        image: 'redis:3.2.7'
 
     postgres:
         image: postgres:9.6
@@ -19,11 +11,11 @@ services:
             - POSTGRES_DB=airflow
 
     webserver:
-        image: puckel/docker-airflow:1.7.1.3-5
+        image: puckel/docker-airflow:1.7.1.3-6
         restart: always
         depends_on:
             - postgres
-            - rabbitmq
+            - redis
         environment:
             # - LOAD_EX=n
             - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
@@ -35,10 +27,10 @@ services:
         command: webserver
 
     flower:
-        image: puckel/docker-airflow:1.7.1.3-5
+        image: puckel/docker-airflow:1.7.1.3-6
         restart: always
         depends_on:
-            - rabbitmq
+            - redis
         environment:
             - EXECUTOR=Celery
         ports:
@@ -46,7 +38,7 @@ services:
         command: flower
 
     scheduler:
-        image: puckel/docker-airflow:1.7.1.3-5
+        image: puckel/docker-airflow:1.7.1.3-6
         restart: always
         depends_on:
             - webserver
@@ -59,7 +51,7 @@ services:
         command: scheduler -n 5
 
     worker:
-        image: puckel/docker-airflow:1.7.1.3-5
+        image: puckel/docker-airflow:1.7.1.3-6
         restart: always
         depends_on:
             - scheduler
