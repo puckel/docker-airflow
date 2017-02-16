@@ -63,7 +63,7 @@ Check [Airflow Documentation](https://pythonhosted.org/airflow/)
 
 ## Install custom python package
 
-- Create a file "requirements.txt" with the dedired python modules
+- Create a file "requirements.txt" with the desired python modules
 - Mount this file as a volume `-v $(pwd)/requirements.txt:/requirements.txt`
 - The entrypoint.sh script execute the pip install command (with --user option)
 
