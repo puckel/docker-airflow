@@ -21,7 +21,7 @@ ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
-ENV LC_ALL  en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
 
 RUN set -ex \
     && buildDeps=' \
@@ -55,7 +55,7 @@ RUN set -ex \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install "git+https://github.com/apache/incubator-airflow.git@v1-8-stable#egg=airflow[crypto,celery,postgres,hive,hdfs,jdbc]" \
-    && pip install celery[redis] \
+    && pip install celery[redis]==3.1.17 \
     && apt-get remove --purge -yqq $buildDeps \
     && apt-get clean \
     && rm -rf \
