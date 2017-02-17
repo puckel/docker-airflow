@@ -63,7 +63,7 @@ Check [Airflow Documentation](https://pythonhosted.org/airflow/)
 
 ## Install custom python package
 
-- Create a file "requirements.txt" with the dedired python modules
+- Create a file "requirements.txt" with the desired python modules
 - Mount this file as a volume `-v $(pwd)/requirements.txt:/requirements.txt`
 - The entrypoint.sh script execute the pip install command (with --user option)
 
@@ -81,10 +81,6 @@ Easy scaling using docker-compose:
         docker-compose scale worker=5
 
 This can be used to scale to a multi node setup using docker swarm.
-
-## Links
-
- - Airflow on Kubernetes [kube-airflow](https://github.com/mumoshu/kube-airflow)
 
 # Wanna help?
 
