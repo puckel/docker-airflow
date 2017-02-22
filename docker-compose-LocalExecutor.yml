@@ -16,7 +16,7 @@ services:
             # - LOAD_EX=n
             - EXECUTOR=Local
         # volumes:
-        #     - /localpath/to/dags:/usr/local/airflow/dags
+            # - ~/github/docker-airflow/dags:/usr/local/airflow/dags
         ports:
             - "8080:8080"
         command: webserver

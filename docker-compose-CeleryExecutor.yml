@@ -20,8 +20,8 @@ services:
             - LOAD_EX=n
             - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
             - EXECUTOR=Celery
-        volumes:
-            - /home/puckel/github/docker-airflow/dags:/usr/local/airflow/dags
+        # volumes:
+            # - ~/github/docker-airflow/dags:/usr/local/airflow/dags
         ports:
             - "8080:8080"
         command: webserver
@@ -42,21 +42,21 @@ services:
         restart: always
         depends_on:
             - webserver
-        volumes:
-            - /home/puckel/github/docker-airflow/dags:/usr/local/airflow/dags
+        # volumes:
+            # - ~/github/docker-airflow/dags:/usr/local/airflow/dags
         environment:
             - LOAD_EX=n
             - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
             - EXECUTOR=Celery
-        command: scheduler # -n 5
+        command: scheduler
 
     worker:
         image: puckel/docker-airflow:1.8.0rc4
         restart: always
         depends_on:
             - scheduler
-        volumes:
-            - /home/puckel/github/docker-airflow/dags:/usr/local/airflow/dags
+        # volumes:
+            # - ~/github/docker-airflow/dags:/usr/local/airflow/dags
         environment:
             - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
             - EXECUTOR=Celery
