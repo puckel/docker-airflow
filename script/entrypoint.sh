@@ -65,14 +65,10 @@ then
 elif [ "$EXECUTOR" = "Local" ]
 then
   sed -i "s/executor = CeleryExecutor/executor = LocalExecutor/" "$AIRFLOW_HOME"/airflow.cfg
-  if [ "$1" = "webserver" ]; then
     echo "Initialize database..."
     $CMD initdb
-    exec $CMD webserver
-  else
-    sleep 10
-    exec $CMD "$@"
-  fi
+    exec $CMD webserver &
+    exec $CMD scheduler
 # By default we use SequentialExecutor
 else
   if [ "$1" = "version" ]; then

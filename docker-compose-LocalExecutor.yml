@@ -15,23 +15,8 @@ services:
         environment:
             # - LOAD_EX=n
             - EXECUTOR=Local
-            - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
         # volumes:
         #     - /localpath/to/dags:/usr/local/airflow/dags
         ports:
             - "8080:8080"
         command: webserver
-
-    scheduler:
-        image: puckel/docker-airflow:1.8.0rc4
-        restart: always
-        depends_on:
-            - webserver
-        # volumes:
-            # - ./requirements.txt:/requirements.txt:ro
-            # - /localpath/to/dags:/usr/local/airflow/dags
-        environment:
-            # - LOAD_EX=n
-            - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
-            - EXECUTOR=Local
-        command: scheduler
