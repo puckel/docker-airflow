@@ -15,7 +15,7 @@ services:
         environment:
             # - LOAD_EX=n
             - EXECUTOR=Local
-            - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
+            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
         # volumes:
         #     - /localpath/to/dags:/usr/local/airflow/dags
         ports:
@@ -32,6 +32,6 @@ services:
             # - /localpath/to/dags:/usr/local/airflow/dags
         environment:
             # - LOAD_EX=n
-            - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
+            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Local
         command: scheduler -n 5
