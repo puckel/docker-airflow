@@ -24,7 +24,7 @@ services:
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
         # volumes:
-            # - ~/github/docker-airflow/dags:/usr/local/airflow/dags
+            # - ~/docker-airflow/dags:/usr/local/airflow/dags
         ports:
             - "8080:8080"
         command: webserver
@@ -46,7 +46,7 @@ services:
         depends_on:
             - webserver
         # volumes:
-            # - ~/github/docker-airflow/dags:/usr/local/airflow/dags
+            # - ~/docker-airflow/dags:/usr/local/airflow/dags
         environment:
             - LOAD_EX=y
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
@@ -62,7 +62,7 @@ services:
         depends_on:
             - scheduler
         # volumes:
-            # - ~/github/docker-airflow/dags:/usr/local/airflow/dags
+            # - ~/docker-airflow/dags:/usr/local/airflow/dags
         environment:
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
