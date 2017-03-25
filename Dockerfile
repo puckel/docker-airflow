@@ -70,6 +70,8 @@ RUN set -ex \
        main" \
     && sudo apt-get update \
     && sudo apt-get -y install docker-engine \
+    && wget -P /tmp https://github.com/NVIDIA/nvidia-docker/releases/download/v1.0.1/nvidia-docker_1.0.1-1_amd64.deb \
+    && sudo dpkg -i /tmp/nvidia-docker*.deb \
     && pip3 install --upgrade pip \
     && pip3 install setuptools \
     && pip3 install packaging \
