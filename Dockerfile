@@ -69,7 +69,7 @@ RUN set -ex \
        ubuntu-xenial \
        main" \
     && sudo apt-get update \
-    && sudo apt-get -y install docker-engine \
+    && sudo apt-get -y install docker-engine nvidia-modprobe \ 
     && wget -P /tmp https://github.com/NVIDIA/nvidia-docker/releases/download/v1.0.1/nvidia-docker_1.0.1-1_amd64.deb \
     && sudo dpkg -i /tmp/nvidia-docker*.deb \
     && pip3 install --upgrade pip \
