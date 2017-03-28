@@ -1,0 +1,8 @@
+pyyaml==3.12
+invoke==0.14.0
+tensorflow==1.0.0
+nltk==3.2.1
+sqlalchemy==1.1.2
+pytest==3.0.3
+pytest-mock==1.5.0
+mock==2.0.0
