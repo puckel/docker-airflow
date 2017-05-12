@@ -14,7 +14,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=1.7.1.3
+ARG AIRFLOW_VERSION=1.8.1
 ENV AIRFLOW_HOME /usr/local/airflow
 
 # Define en_US.
@@ -88,7 +88,7 @@ RUN set -ex \
     && pip3 install pandas==0.18.1 \
     && pip3 install celery==3.1.23 \
     && pip3 install https://github.com/docker/docker-py/archive/1.10.6.zip \
-    && pip3 install airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
+    && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
     && pip3 install https://github.com/medicode/incubator-airflow/archive/v1-8-stable.zip \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
