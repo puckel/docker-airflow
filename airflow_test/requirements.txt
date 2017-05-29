@@ -6,4 +6,4 @@ sqlalchemy==1.1.2
 pytest==3.0.3
 pytest-mock==1.5.0
 mock==2.0.0
-git+https://github.com/google/python-fire.git@b76f1c3deac6b6277ee621330556bf430252dc1c
+git+git://github.com/google/python-fire.git@v0.1.1
