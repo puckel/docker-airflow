@@ -13,7 +13,7 @@ This repository contains **Dockerfile** of [apache-airflow](https://github.com/a
 * Based on Debian Jessie official Image [debian:jessie](https://registry.hub.docker.com/_/debian/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
-* Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/airflow)
+* Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/apache-airflow)
 
 ## Installation
 
