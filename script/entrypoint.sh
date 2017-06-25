@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 AIRFLOW_HOME="/usr/local/airflow"
+HIVE_DIR="/usr/local/hive"
+HADOOP_DIR="/usr/local/hadoop"
 CMD="airflow"
 TRY_LOOP="20"
 
@@ -25,6 +27,24 @@ fi
 if [ -e "/requirements.txt" ]; then
     $(which pip) install --user -r /requirements.txt
 fi
+
+# Load DAGs exemples (default: Yes)
+if [ "$INSTALL_HIVE" = "y" ]; then
+    mkdir -p /tmp/hadoop
+    (cd /tmp/hadoop; curl -O https://archive.cloudera.com/cdh5/cdh/5/hadoop-2.6.0-cdh5.11.0.tar.gz)
+    (cd /tmp/hadoop; tar -zxf hadoop-2.6.0-cdh5.11.0.tar.gz)
+    (cd /tmp/hadoop; mv hadoop-2.6.0-cdh5.11.0/* $HADOOP_DIR)
+    mkdir -p /tmp/hive
+    (cd /tmp/hive; curl -O https://archive.cloudera.com/cdh5/cdh/5/hive-1.1.0-cdh5.11.0.tar.gz)
+    (cd /tmp/hive; tar -zxf hive-1.1.0-cdh5.11.0.tar.gz)
+    (cd /tmp/hive; mv hive-1.1.0-cdh5.11.0/* $HIVE_DIR)
+    rm -rf /tmp/hadoop
+    rm -rf /tmp/hive
+    cp /core-site.xml $HADOOP_DIR/etc/hadoop
+    cp /hdfs-site.xml $HADOOP_DIR/etc/hadoop
+    cp /mapred-site.xml $HADOOP_DIR/etc/hadoop
+fi
+
 
 # Update airflow config - Fernet key
 sed -i "s|\$FERNET_KEY|$FERNET_KEY|" "$AIRFLOW_HOME"/airflow.cfg
