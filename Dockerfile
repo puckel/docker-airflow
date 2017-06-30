@@ -73,6 +73,13 @@ RUN set -ex \
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
+# inject GCP credentials from pre-defined location on Jenkins server
+COPY $HOME/gcp-credentials/teads-automated-tests.json \
+  /etc/gcp/credentials/teads-automated-tests.json
+COPY $HOME/gcp-credentials/teads-sandbox-146410.json \
+  /etc/gcp/credentials/teads-sandbox-146410.json
+
+
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
 EXPOSE 8080 5555 8793
