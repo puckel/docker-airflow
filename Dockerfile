@@ -74,9 +74,9 @@ COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 # inject GCP credentials from pre-defined location on Jenkins server
-COPY $HOME/gcp-credentials/teads-automated-tests.json \
+ADD gcp-credentials/teads-automated-tests.json \
   /etc/gcp/credentials/teads-automated-tests.json
-COPY $HOME/gcp-credentials/teads-sandbox-146410.json \
+ADD gcp-credentials/teads-sandbox-146410.json \
   /etc/gcp/credentials/teads-sandbox-146410.json
 
 
