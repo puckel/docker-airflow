@@ -17,6 +17,9 @@ xargs -h 2>&1 | grep -q gnu && alias xargs='xargs -r'
 HASH=$(./teads-central vars hash)
 IMAGE=$(./teads-central vars image)
 
+# copy GCP credentials into work dir - they get copied during container build
+cp -R -f /var/lib/jenkins/gcp-credentials .
+
 # build and tag the image with git hash
 docker build -t ${IMAGE}:${HASH} .
 
