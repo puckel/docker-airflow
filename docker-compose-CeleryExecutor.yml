@@ -4,12 +4,15 @@ services:
         image: 'redis:3.2.7'
 
     webserver:
-        image: puckel/docker-airflow:1.8.1
+        build:
+            context: ./
+            dockerfile: ./Dockerfile
         restart: always
         depends_on:
             - redis
         environment:
-            - LOAD_EX=y
+            - LOAD_EX=n
+            - AIRFLOW_HOME=${AIRFLOW_HOME}
             - FERNET_KEY=${FERNET_KEY}
             - EXECUTOR=${EXECUTOR}
             - POSTGRES_HOST_PORT=${POSTGRES_HOST_PORT}
@@ -24,7 +27,9 @@ services:
         command: webserver
 
     flower:
-        image: puckel/docker-airflow:1.8.1
+        build:
+            context: ./
+            dockerfile: ./Dockerfile
         restart: always
         depends_on:
             - redis
@@ -38,13 +43,16 @@ services:
         command: flower
 
     scheduler:
-        image: puckel/docker-airflow:1.8.1
+        build:
+            context: ./
+            dockerfile: ./Dockerfile
         restart: always
         depends_on:
             - webserver
         environment:
-            - LOAD_EX=y
+            - LOAD_EX=n
             - FERNET_KEY=${FERNET_KEY}
+            - AIRFLOW_HOME=${AIRFLOW_HOME}
             - EXECUTOR=${EXECUTOR}
             - POSTGRES_HOST_PORT=${POSTGRES_HOST_PORT}
             - POSTGRES_USER=${POSTGRES_USER}
@@ -56,12 +64,16 @@ services:
         command: scheduler
 
     worker:
-        image: puckel/docker-airflow:1.8.1
+        build:
+            context: ./
+            dockerfile: ./Dockerfile
         restart: always
         depends_on:
             - scheduler
         environment:
+            - LOAD_EX=n
             - FERNET_KEY=${FERNET_KEY}
+            - AIRFLOW_HOME=${AIRFLOW_HOME}
             - EXECUTOR=${EXECUTOR}
             - POSTGRES_HOST_PORT=${POSTGRES_HOST_PORT}
             - POSTGRES_USER=${POSTGRES_USER}
