@@ -2,6 +2,8 @@ version: '2'
 services:
     redis:
         image: 'redis:3.2.7'
+        volumes:
+           - ./gospel:${AIRFLOW_HOME}/gospel
 
     webserver:
         build:
@@ -12,6 +14,7 @@ services:
             - redis
         environment:
             - LOAD_EX=n
+            - GIT_KEY=${GIT_KEY}
             - AIRFLOW_HOME=${AIRFLOW_HOME}
             - FERNET_KEY=${FERNET_KEY}
             - EXECUTOR=${EXECUTOR}
@@ -22,6 +25,8 @@ services:
             - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
+        volumes:
+            - ./gospel:${AIRFLOW_HOME}/gospel
         ports:
             - "8080:8080"
         command: webserver
@@ -34,10 +39,14 @@ services:
         depends_on:
             - redis
         environment:
+            - GIT_KEY=${GIT_KEY}
+            - AIRFLOW_HOME=${AIRFLOW_HOME}
             - EXECUTOR=${EXECUTOR}
             - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
+        volumes:
+            - ./gospel:${AIRFLOW_HOME}/gospel
         ports:
             - "5555:5555"
         command: flower
@@ -52,6 +61,7 @@ services:
         environment:
             - LOAD_EX=n
             - FERNET_KEY=${FERNET_KEY}
+            - GIT_KEY=${GIT_KEY}
             - AIRFLOW_HOME=${AIRFLOW_HOME}
             - EXECUTOR=${EXECUTOR}
             - POSTGRES_HOST_PORT=${POSTGRES_HOST_PORT}
@@ -61,6 +71,8 @@ services:
             - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
+        volumes:
+            - ./gospel:${AIRFLOW_HOME}/gospel
         command: scheduler
 
     worker:
@@ -73,6 +85,7 @@ services:
         environment:
             - LOAD_EX=n
             - FERNET_KEY=${FERNET_KEY}
+            - GIT_KEY=${GIT_KEY}
             - AIRFLOW_HOME=${AIRFLOW_HOME}
             - EXECUTOR=${EXECUTOR}
             - POSTGRES_HOST_PORT=${POSTGRES_HOST_PORT}
@@ -82,4 +95,6 @@ services:
             - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
+        volumes:
+            - ./gospel:${AIRFLOW_HOME}/gospel
         command: worker
