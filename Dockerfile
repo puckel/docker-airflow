@@ -14,7 +14,6 @@ ENV TERM linux
 # Airflow
 ARG AIRFLOW_VERSION=1.8.1
 ARG AIRFLOW_HOME=/usr/local/airflow
-ARG GIT_KEY=e3813f9b54fbc88c1627b1af2f6953dc98bbf1d3
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
@@ -59,7 +58,7 @@ RUN set -ex \
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
-RUN git clone https://${GIT_KEY}@github.com/bellhops/priest ${AIRFLOW_HOME}/priest
+RUN git clone https://$GIT_KEY@github.com/bellhops/priest ${AIRFLOW_HOME}/priest
 RUN cp -R ${AIRFLOW_HOME}/priest/dags ${AIRFLOW_HOME}/dags
 RUN set -ex \
     && pip install -r ${AIRFLOW_HOME}/priest/requirements.txt
