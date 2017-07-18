@@ -4,7 +4,6 @@ AIRFLOW_HOME="/usr/local/airflow"
 CMD="airflow"
 TRY_LOOP="20"
 
-
 # Load DAGs exemples (default: Yes)
 if [ "$POSTGRES_HOST_PORT" = "postgres" ]; then
     POSTGRES_HOST=$POSTGRES_HOST_PORT
@@ -21,6 +20,7 @@ fi
 
 # Replace SMTP username and password
 if [ -n "$SMTP_USER" ] || [ -n "$SMTP_PASSWORD" ]; then
+    echo "Configuring SMTP username and password"
     sed -i "s/\$SMTP_USER/$SMTP_USER/" "$AIRFLOW_HOME"/airflow.cfg
     sed -i "s/\$SMTP_PASSWORD/$SMTP_PASSWORD/" "$AIRFLOW_HOME"/airflow.cfg
 fi
@@ -76,9 +76,9 @@ then
       sleep 5
     done
   fi
-  sed -i "s#celery_result_backend = db+postgresql://airflow:airflow@postgres/airflow#celery_result_backend = db+postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB#" "$AIRFLOW_HOME"/airflow.cfg
-  sed -i "s#sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@postgres/airflow#sql_alchemy_conn = postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB#" "$AIRFLOW_HOME"/airflow.cfg
-  sed -i "s#broker_url = redis://redis:6379/1#broker_url = redis://$REDIS_PREFIX$REDIS_HOST:$REDIS_PORT/1#" "$AIRFLOW_HOME"/airflow.cfg
+  sed -i "s#celery_result_backend = db+postgresql://\$POSTGRES_USER:\$POSTGRES_PASSWORD@\$POSTGRES_HOST_PORT/\$POSTGRES_DB#celery_result_backend = db+postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB#" "$AIRFLOW_HOME"/airflow.cfg
+  sed -i "s#sql_alchemy_conn = postgresql+psycopg2://\$POSTGRES_USER:\$POSTGRES_PASSWORD@\$POSTGRES_HOST_PORT/\$POSTGRES_DB#sql_alchemy_conn = postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB#" "$AIRFLOW_HOME"/airflow.cfg
+  sed -i "s#broker_url = redis://\$REDIS_HOST:\$REDIS_PORT/\$REDIS_QUEUE#broker_url = redis://$REDIS_HOST:$REDIS_PORT/$REDIS_QUEUE#" "$AIRFLOW_HOME"/airflow.cfg
   if [ "$1" = "webserver" ]; then
     echo "Initialize database..."
     $CMD initdb
@@ -90,8 +90,8 @@ then
 elif [ "$EXECUTOR" = "Local" ]
 then
   sed -i "s/executor = CeleryExecutor/executor = LocalExecutor/" "$AIRFLOW_HOME"/airflow.cfg
-  sed -i "s#sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@postgres/airflow#sql_alchemy_conn = postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB#" "$AIRFLOW_HOME"/airflow.cfg
-  sed -i "s#broker_url = redis://redis:6379/1#broker_url = redis://$REDIS_PREFIX$REDIS_HOST:$REDIS_PORT/1#" "$AIRFLOW_HOME"/airflow.cfg
+  sed -i "s#sql_alchemy_conn = postgresql+psycopg2://\$POSTGRES_USER:\$POSTGRES_PASSWORD@\$POSTGRES_HOST_PORT/\$POSTGRES_DB#sql_alchemy_conn = postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB#" "$AIRFLOW_HOME"/airflow.cfg
+  sed -i "s#broker_url = redis://\$REDIS_HOST:\$REDIS_PORT/\$REDIS_QUEUE#broker_url = redis://$REDIS_HOST:$REDIS_PORT/$REDIS_QUEUE#" "$AIRFLOW_HOME"/airflow.cfg
   echo "Initialize database..."
   $CMD initdb
   exec $CMD webserver &

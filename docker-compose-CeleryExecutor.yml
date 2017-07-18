@@ -27,6 +27,9 @@ services:
             - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
+
         volumes:
             - ./shared:${AIRFLOW_HOME}/shared
         ports:
@@ -46,9 +49,15 @@ services:
             - GIT_KEY=${GIT_KEY}
             - AIRFLOW_HOME=${AIRFLOW_HOME}
             - EXECUTOR=${EXECUTOR}
+            - POSTGRES_HOST_PORT=${POSTGRES_HOST_PORT}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
             - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
         volumes:
             - ./shared:${AIRFLOW_HOME}/shared
         ports:
@@ -77,6 +86,8 @@ services:
             - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
         volumes:
             - ./shared:${AIRFLOW_HOME}/shared
         command: scheduler
@@ -103,6 +114,8 @@ services:
             - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
         volumes:
             - ./shared:${AIRFLOW_HOME}/shared
         command: worker
