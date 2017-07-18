@@ -79,14 +79,14 @@ then
   sed -i "s#celery_result_backend = db+postgresql://airflow:airflow@postgres/airflow#celery_result_backend = db+postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB#" "$AIRFLOW_HOME"/airflow.cfg
   sed -i "s#sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@postgres/airflow#sql_alchemy_conn = postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB#" "$AIRFLOW_HOME"/airflow.cfg
   sed -i "s#broker_url = redis://redis:6379/1#broker_url = redis://$REDIS_PREFIX$REDIS_HOST:$REDIS_PORT/1#" "$AIRFLOW_HOME"/airflow.cfg
-  #if [ "$1" = "webserver" ]; then
-    #echo "Initialize database..."
-    #$CMD initdb
-     #exec $CMD webserver
-   #else
-     #sleep 10
-     #exec $CMD "$@"
-  #fi
+  if [ "$1" = "webserver" ]; then
+    echo "Initialize database..."
+    $CMD initdb
+    exec $CMD webserver
+  else
+    sleep 10
+    exec $CMD "$@"
+  fi
 elif [ "$EXECUTOR" = "Local" ]
 then
   sed -i "s/executor = CeleryExecutor/executor = LocalExecutor/" "$AIRFLOW_HOME"/airflow.cfg

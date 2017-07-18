@@ -3,10 +3,12 @@ services:
     redis:
         image: 'redis:3.2.7'
         volumes:
-           - ./gospel:${AIRFLOW_HOME}/gospel
+           - ./shared:${AIRFLOW_HOME}/shared
 
     webserver:
         build:
+            args:
+                - GIT_KEY=${GIT_KEY}
             context: ./
             dockerfile: ./Dockerfile
         restart: always
@@ -26,13 +28,15 @@ services:
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
         volumes:
-            - ./gospel:${AIRFLOW_HOME}/gospel
+            - ./shared:${AIRFLOW_HOME}/shared
         ports:
             - "8080:8080"
         command: webserver
 
     flower:
         build:
+            args:
+                - GIT_KEY=${GIT_KEY}
             context: ./
             dockerfile: ./Dockerfile
         restart: always
@@ -46,13 +50,15 @@ services:
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
         volumes:
-            - ./gospel:${AIRFLOW_HOME}/gospel
+            - ./shared:${AIRFLOW_HOME}/shared
         ports:
             - "5555:5555"
         command: flower
 
     scheduler:
         build:
+            args:
+                - GIT_KEY=${GIT_KEY}
             context: ./
             dockerfile: ./Dockerfile
         restart: always
@@ -72,11 +78,13 @@ services:
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
         volumes:
-            - ./gospel:${AIRFLOW_HOME}/gospel
+            - ./shared:${AIRFLOW_HOME}/shared
         command: scheduler
 
     worker:
         build:
+            args:
+                - GIT_KEY=${GIT_KEY}
             context: ./
             dockerfile: ./Dockerfile
         restart: always
@@ -96,5 +104,5 @@ services:
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_QUEUE=${REDIS_QUEUE}
         volumes:
-            - ./gospel:${AIRFLOW_HOME}/gospel
+            - ./shared:${AIRFLOW_HOME}/shared
         command: worker
