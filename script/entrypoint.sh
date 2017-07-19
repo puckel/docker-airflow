@@ -50,16 +50,6 @@ if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; the
   done
 fi
 
-# git clone 
-if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; then
-    if [ -d "${AIRFLOW_HOME}/priest" ] ; then
-	cd ${AIRFLOW_HOME}/priest && git pull https://${GIT_KEY}@github.com/bellhops/priest master && cd -
-    else
-	git clone https://${GIT_KEY}@github.com/bellhops/priest ${AIRFLOW_HOME}/priest
-	cp -R ${AIRFLOW_HOME}/priest/dags ${AIRFLOW_HOME}/dags
-    fi
-fi
-
 # Update configuration depending the type of Executor
 if [ "$EXECUTOR" = "Celery" ]
 then

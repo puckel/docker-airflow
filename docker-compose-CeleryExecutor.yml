@@ -29,7 +29,8 @@ services:
             - REDIS_QUEUE=${REDIS_QUEUE}
             - SMTP_USER=${SMTP_USER}
             - SMTP_PASSWORD=${SMTP_PASSWORD}
-
+            - PRIEST_GIT_URL=${PRIEST_GIT_URL}
+            - PRIEST_BRANCH_NAME=${PRIEST_BRANCH_NAME}
         volumes:
             - ./shared:${AIRFLOW_HOME}/shared
         ports:
@@ -58,6 +59,8 @@ services:
             - REDIS_QUEUE=${REDIS_QUEUE}
             - SMTP_USER=${SMTP_USER}
             - SMTP_PASSWORD=${SMTP_PASSWORD}
+            - PRIEST_GIT_URL=${PRIEST_GIT_URL}
+            - PRIEST_BRANCH_NAME=${PRIEST_BRANCH_NAME}
         volumes:
             - ./shared:${AIRFLOW_HOME}/shared
         ports:
@@ -88,6 +91,8 @@ services:
             - REDIS_QUEUE=${REDIS_QUEUE}
             - SMTP_USER=${SMTP_USER}
             - SMTP_PASSWORD=${SMTP_PASSWORD}
+            - PRIEST_GIT_URL=${PRIEST_GIT_URL}
+            - PRIEST_BRANCH_NAME=${PRIEST_BRANCH_NAME}
         volumes:
             - ./shared:${AIRFLOW_HOME}/shared
         command: scheduler
@@ -116,6 +121,8 @@ services:
             - REDIS_QUEUE=${REDIS_QUEUE}
             - SMTP_USER=${SMTP_USER}
             - SMTP_PASSWORD=${SMTP_PASSWORD}
+            - PRIEST_GIT_URL=${PRIEST_GIT_URL}
+            - PRIEST_BRANCH_NAME=${PRIEST_BRANCH_NAME}
         volumes:
             - ./shared:${AIRFLOW_HOME}/shared
         command: worker
