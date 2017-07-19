@@ -2,71 +2,127 @@ version: '2'
 services:
     redis:
         image: 'redis:3.2.7'
-
-    postgres:
-        image: postgres:9.6
-        environment:
-            - POSTGRES_USER=airflow
-            - POSTGRES_PASSWORD=airflow
-            - POSTGRES_DB=airflow
+        volumes:
+           - ./shared:${AIRFLOW_HOME}/shared
 
     webserver:
-        image: puckel/docker-airflow:1.8.1
+        build:
+            args:
+                - GIT_KEY=${GIT_KEY}
+            context: ./
+            dockerfile: ./Dockerfile
         restart: always
         depends_on:
-            - postgres
             - redis
         environment:
-            - LOAD_EX=y
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
-        # volumes:
-            # - ~/docker-airflow/dags:/usr/local/airflow/dags
+            - LOAD_EX=n
+            - GIT_KEY=${GIT_KEY}
+            - AIRFLOW_HOME=${AIRFLOW_HOME}
+            - FERNET_KEY=${FERNET_KEY}
+            - EXECUTOR=${EXECUTOR}
+            - POSTGRES_HOST_PORT=${POSTGRES_HOST_PORT}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_QUEUE=${REDIS_QUEUE}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
+            - PRIEST_GIT_URL=${PRIEST_GIT_URL}
+            - PRIEST_BRANCH_NAME=${PRIEST_BRANCH_NAME}
+        volumes:
+            - ./shared:${AIRFLOW_HOME}/shared
         ports:
             - "8080:8080"
         command: webserver
 
     flower:
-        image: puckel/docker-airflow:1.8.1
+        build:
+            args:
+                - GIT_KEY=${GIT_KEY}
+            context: ./
+            dockerfile: ./Dockerfile
         restart: always
         depends_on:
             - redis
         environment:
-            - EXECUTOR=Celery
+            - GIT_KEY=${GIT_KEY}
+            - AIRFLOW_HOME=${AIRFLOW_HOME}
+            - EXECUTOR=${EXECUTOR}
+            - POSTGRES_HOST_PORT=${POSTGRES_HOST_PORT}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_QUEUE=${REDIS_QUEUE}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
+            - PRIEST_GIT_URL=${PRIEST_GIT_URL}
+            - PRIEST_BRANCH_NAME=${PRIEST_BRANCH_NAME}
+        volumes:
+            - ./shared:${AIRFLOW_HOME}/shared
         ports:
             - "5555:5555"
         command: flower
 
     scheduler:
-        image: puckel/docker-airflow:1.8.1
+        build:
+            args:
+                - GIT_KEY=${GIT_KEY}
+            context: ./
+            dockerfile: ./Dockerfile
         restart: always
         depends_on:
             - webserver
-        # volumes:
-            # - ~/docker-airflow/dags:/usr/local/airflow/dags
         environment:
-            - LOAD_EX=y
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
+            - LOAD_EX=n
+            - FERNET_KEY=${FERNET_KEY}
+            - GIT_KEY=${GIT_KEY}
+            - AIRFLOW_HOME=${AIRFLOW_HOME}
+            - EXECUTOR=${EXECUTOR}
+            - POSTGRES_HOST_PORT=${POSTGRES_HOST_PORT}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_QUEUE=${REDIS_QUEUE}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
+            - PRIEST_GIT_URL=${PRIEST_GIT_URL}
+            - PRIEST_BRANCH_NAME=${PRIEST_BRANCH_NAME}
+        volumes:
+            - ./shared:${AIRFLOW_HOME}/shared
         command: scheduler
 
     worker:
-        image: puckel/docker-airflow:1.8.1
+        build:
+            args:
+                - GIT_KEY=${GIT_KEY}
+            context: ./
+            dockerfile: ./Dockerfile
         restart: always
         depends_on:
             - scheduler
-        # volumes:
-            # - ~/docker-airflow/dags:/usr/local/airflow/dags
         environment:
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
+            - LOAD_EX=n
+            - FERNET_KEY=${FERNET_KEY}
+            - GIT_KEY=${GIT_KEY}
+            - AIRFLOW_HOME=${AIRFLOW_HOME}
+            - EXECUTOR=${EXECUTOR}
+            - POSTGRES_HOST_PORT=${POSTGRES_HOST_PORT}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_QUEUE=${REDIS_QUEUE}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
+            - PRIEST_GIT_URL=${PRIEST_GIT_URL}
+            - PRIEST_BRANCH_NAME=${PRIEST_BRANCH_NAME}
+        volumes:
+            - ./shared:${AIRFLOW_HOME}/shared
         command: worker
