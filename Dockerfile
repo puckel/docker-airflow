@@ -1,10 +1,10 @@
-# VERSION 1.8.1
+# VERSION 1.8.1-1
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow .
 # SOURCE: https://github.com/puckel/docker-airflow
 
-FROM debian:stretch
+FROM python:3.6-stretch
 MAINTAINER Puckel_
 
 # Never prompts the user for choices on installation/configuration of packages
@@ -25,7 +25,7 @@ ENV LC_ALL en_US.UTF-8
 
 RUN set -ex \
     && buildDeps=' \
-        python-dev \
+        python3-dev \
         libkrb5-dev \
         libsasl2-dev \
         libssl-dev \
@@ -39,8 +39,8 @@ RUN set -ex \
     && apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
-        python-pip \
-        python-requests \
+        python3-pip \
+        python3-requests \
         apt-utils \
         curl \
         netcat \
@@ -55,7 +55,7 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install apache-airflow[crypto,celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
+    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc]==$AIRFLOW_VERSION \
     && pip install celery[redis]==3.1.17 \
     && apt-get remove --purge -yqq $buildDeps \
     && apt-get clean \
