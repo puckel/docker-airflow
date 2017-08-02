@@ -87,9 +87,10 @@ RUN set -ex \
     && pip3 install psycopg2 \
     && pip3 install pandas==0.18.1 \
     && pip3 install celery==3.1.23 \
+    && pip3 install kubernetes \
     && pip3 install https://github.com/docker/docker-py/archive/1.10.6.zip \
     && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
-    && pip3 install https://github.com/medicode/incubator-airflow/archive/v1-8-stable.zip \
+    && pip3 install https://github.com/medicode/incubator-airflow/archive/v1-8-test.zip \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \
