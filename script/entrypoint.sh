@@ -8,6 +8,10 @@ TRY_LOOP="20"
 : ${REDIS_PORT:="6379"}
 : ${REDIS_PASSWORD:=""}
 
+: ${WEBSERVER_AUTH_USERNAME=""}
+: ${WEBSERVER_AUTH_EMAIL=""}
+: ${WEBSERVER_AUTH_PASSWORD=""}
+
 : ${POSTGRES_HOST:="postgres"}
 : ${POSTGRES_PORT:="5432"}
 : ${POSTGRES_USER:="airflow"}
@@ -33,6 +37,14 @@ if [ -n "$REDIS_PASSWORD" ]; then
     REDIS_PREFIX=:${REDIS_PASSWORD}@
 else
     REDIS_PREFIX=
+fi
+
+if [ -n "${WEBSERVER_AUTH_USERNAME}" ]; then
+    WEBSERVER_USERNAME_OPTION="-u ${WEBSERVER_AUTH_USERNAME}"
+fi
+
+if [ -n "${WEBSERVER_AUTH_EMAIL}" ]; then
+    WEBSERVER_EMAIL_OPTION="-e ${WEBSERVER_AUTH_EMAIL}"
 fi
 
 # Wait for Postresql
@@ -73,6 +85,16 @@ then
   if [ "$1" = "webserver" ]; then
     echo "Initialize database..."
     $CMD initdb
+
+    if [ -n ${WEBSERVER_AUTH_PASSWORD} ] && ([ -n ${WEBSERVER_AUTH_USERNAME} ] || [ -n ${WEBSERVER_AUTH_EMAIL} ]); then
+        python /add-user-webserver.py ${WEBSERVER_USERNAME_OPTION} ${WEBSERVER_EMAIL_OPTION} -p $WEBSERVER_AUTH_PASSWORD
+        CHANGE_FROM="authenticate = False"
+        CHANGE_TO="authenticate = True\nauth_backend = airflow.contrib.auth.backends.password_auth"
+        sed -i -e '/\[webserver\]/!b' -e ':a' \
+            -e "s/${CHANGE_FROM}/${CHANGE_TO}/;t trail" \
+            -e 'n;ba' -e ':trail' -e 'n;btrail' ${AIRFLOW_HOME}/airflow.cfg
+    fi
+
     exec $CMD webserver
   else
     sleep 10
