@@ -8,6 +8,10 @@ TRY_LOOP="20"
 : ${REDIS_PORT:="6379"}
 : ${REDIS_PASSWORD:=""}
 
+: ${WEBSERVER_AUTH_USERNAME:=""}
+: ${WEBSERVER_AUTH_EMAIL:=""}
+: ${WEBSERVER_AUTH_PASSWORD:=""}
+
 : ${POSTGRES_HOST:="postgres"}
 : ${POSTGRES_PORT:="5432"}
 : ${POSTGRES_USER:="airflow"}
@@ -34,6 +38,28 @@ if [ -n "$REDIS_PASSWORD" ]; then
 else
     REDIS_PREFIX=
 fi
+
+if [ -n "${WEBSERVER_AUTH_USERNAME}" ]; then
+    WEBSERVER_USERNAME_OPTION="-u ${WEBSERVER_AUTH_USERNAME}"
+fi
+
+if [ -n "${WEBSERVER_AUTH_EMAIL}" ]; then
+    WEBSERVER_EMAIL_OPTION="-e ${WEBSERVER_AUTH_EMAIL}"
+fi
+
+# add a user for basic webserver authentication if specified. must be called after initdb
+register_webauth()
+{
+    if [ -n "${WEBSERVER_AUTH_PASSWORD}" ] && ([ -n "${WEBSERVER_AUTH_USERNAME}" ] || [ -n "${WEBSERVER_AUTH_EMAIL}" ]); then
+        echo "Registering authenticated user..."
+        python /add-user-webserver.py ${WEBSERVER_USERNAME_OPTION} ${WEBSERVER_EMAIL_OPTION} -p $WEBSERVER_AUTH_PASSWORD
+        CHANGE_FROM="authenticate = False"
+        CHANGE_TO="authenticate = True\nauth_backend = airflow.contrib.auth.backends.password_auth"
+        sed -i -e '/\[webserver\]/!b' -e ':a' \
+            -e "s/${CHANGE_FROM}/${CHANGE_TO}/;t trail" \
+            -e 'n;ba' -e ':trail' -e 'n;btrail' ${AIRFLOW_HOME}/airflow.cfg
+    fi
+}
 
 # Wait for Postresql
 if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; then
@@ -73,6 +99,7 @@ then
   if [ "$1" = "webserver" ]; then
     echo "Initialize database..."
     $CMD initdb
+    register_webauth
     exec $CMD webserver
   else
     sleep 10
@@ -85,6 +112,7 @@ then
   sed -i "s#broker_url = redis://redis:6379/1#broker_url = redis://$REDIS_PREFIX$REDIS_HOST:$REDIS_PORT/1#" "$AIRFLOW_HOME"/airflow.cfg
   echo "Initialize database..."
   $CMD initdb
+  register_webauth
   exec $CMD webserver &
   exec $CMD scheduler
 # By default we use SequentialExecutor
