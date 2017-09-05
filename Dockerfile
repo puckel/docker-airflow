@@ -69,7 +69,7 @@ RUN set -ex \
        ubuntu-xenial \
        main" \
     && sudo apt-get update \
-    && sudo apt-get -y install docker-engine nvidia-modprobe \ 
+    && sudo apt-get -y install docker-engine nvidia-modprobe \
     && wget -P /tmp https://github.com/NVIDIA/nvidia-docker/releases/download/v1.0.1/nvidia-docker_1.0.1-1_amd64.deb \
     && sudo dpkg -i /tmp/nvidia-docker*.deb \
     && pip3 install --upgrade pip \
@@ -91,6 +91,7 @@ RUN set -ex \
     && pip3 install https://github.com/docker/docker-py/archive/1.10.6.zip \
     && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
     && pip3 install https://github.com/medicode/incubator-airflow/archive/v1-8-test.zip \
+    && pip3 install beautifulsoup4==4.6.0 \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \
