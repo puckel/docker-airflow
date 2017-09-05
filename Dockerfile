@@ -4,7 +4,7 @@
 # BUILD: docker build --rm -t puckel/docker-airflow .
 # SOURCE: https://github.com/puckel/docker-airflow
 
-FROM python:3.6-stretch
+FROM python:3.6-slim
 MAINTAINER Puckel_
 
 # Never prompts the user for choices on installation/configuration of packages
@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=1.8.1
+ARG AIRFLOW_VERSION=1.8.2
 ARG AIRFLOW_HOME=/usr/local/airflow
 
 # Define en_US.
