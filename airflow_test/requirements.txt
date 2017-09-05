@@ -8,3 +8,4 @@ pytest-mock==1.5.0
 mock==2.0.0
 git+git://github.com/google/python-fire.git@v0.1.1
 defusedxml==0.4.1
+beautifulsoup4==4.6.0
