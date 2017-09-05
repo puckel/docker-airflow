@@ -11,26 +11,26 @@ services:
             - POSTGRES_DB=airflow
 
     webserver:
-        image: puckel/docker-airflow:1.8.1-1
+        image: puckel/docker-airflow:1.8.2
         restart: always
         depends_on:
             - postgres
             - redis
         environment:
-            - LOAD_EX=y
+            - LOAD_EX=n
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
-        # volumes:
-            # - ~/docker-airflow/dags:/usr/local/airflow/dags
+        volumes:
+            - ./dags:/usr/local/airflow/dags
         ports:
             - "8080:8080"
         command: webserver
 
     flower:
-        image: puckel/docker-airflow:1.8.1-1
+        image: puckel/docker-airflow:1.8.2
         restart: always
         depends_on:
             - redis
@@ -41,14 +41,14 @@ services:
         command: flower
 
     scheduler:
-        image: puckel/docker-airflow:1.8.1-1
+        image: puckel/docker-airflow:1.8.2
         restart: always
         depends_on:
             - webserver
-        # volumes:
-            # - ~/docker-airflow/dags:/usr/local/airflow/dags
+        volumes:
+            - ./dags:/usr/local/airflow/dags
         environment:
-            - LOAD_EX=y
+            - LOAD_EX=n
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
             # - POSTGRES_USER=airflow
@@ -57,12 +57,12 @@ services:
         command: scheduler
 
     worker:
-        image: puckel/docker-airflow:1.8.1-1
+        image: puckel/docker-airflow:1.8.2
         restart: always
         depends_on:
             - scheduler
-        # volumes:
-            # - ~/docker-airflow/dags:/usr/local/airflow/dags
+        volumes:
+            - ./dags:/usr/local/airflow/dags
         environment:
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
