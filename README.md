@@ -62,7 +62,13 @@ For encrypted connection passwords (in Local or Celery Executor), you must have 
 
         python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY"
 
-Check [Airflow Documentation](https://pythonhosted.org/airflow/)
+## Configurating Airflow
+
+It is possible to set any configuration value for Airflow from environment variables, which are used over values from the airflow.cfg. The general rule is the environment variable should be named `AIRFLOW__<section>__<key>`, for example `AIRFLOW__CORE__SQL_ALCHEMY_CONN` sets the `sql_alchemy_conn` config option in the `[core]` section.
+
+Check out the [Airflow documentation](http://airflow.readthedocs.io/en/latest/configuration.html?highlight=__CORE__#setting-configuration-options) for more details
+
+You can also define connections via environment variables by prefixing them with `AIRFLOW_CONN_` - for example `AIRFLOW_CONN_POSTGRES_MASTER=postgres://user:password@localhost:5432/master` for a connection called "postgres_master". The value is parsed as a URI. This will work for hooks etc, but won't show up in the "Ad-hoc Query" section unless an (empty) connection is also created in the DB
 
 
 ## Install custom python package
