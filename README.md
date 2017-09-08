@@ -91,6 +91,21 @@ Easy scaling using docker-compose:
 
 This can be used to scale to a multi node setup using docker swarm.
 
+## Running other airflow commands
+
+If you want to run other airflow sub-commands, such as `list_dags` or `clear` you can do so like this:
+
+        docker run --rm -ti puckel/docker-airflow airflow list_dags
+
+or with your docker-compose set up like this:
+
+        docker-compose -f docker-compose-CeleryExecutor.yml run --rm webserver airflow list_dags
+
+You can also use this to run a bash shell or any other command in the same environment that airflow would be run in:
+
+          docker run --rm -ti puckel/docker-airflow bash
+          docker run --rm -ti puckel/docker-airflow ipython
+
 # Wanna help?
 
 Fork, improve and PR. ;-)
