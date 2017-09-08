@@ -43,20 +43,22 @@ else
     REDIS_PREFIX=
 fi
 
-# Wait for Postresql
-if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; then
-  i=0
-  while ! nc -z "$POSTGRES_HOST" "$POSTGRES_PORT" >/dev/null 2>&1 < /dev/null; do
-    i=$((i+1))
-    if [ "$1" = "webserver" ]; then
-      echo "$(date) - waiting for ${POSTGRES_HOST}:${POSTGRES_PORT}... $i/$TRY_LOOP"
-      if [ $i -ge $TRY_LOOP ]; then
-        echo "$(date) - ${POSTGRES_HOST}:${POSTGRES_PORT} still not reachable, giving up"
-        exit 1
-      fi
+wait_for_port() {
+  local name="$1" host="$2" port="$3"
+  local j=0
+  while ! nc -z "$host" "$port" >/dev/null 2>&1 < /dev/null; do
+    j=$((j+1))
+    if [ $j -ge $TRY_LOOP ]; then
+      echo >&2 "$(date) - $host:$port still not reachable, giving up"
+      exit 1
     fi
-    sleep 10
+    echo "$(date) - waiting for $name... $j/$TRY_LOOP"
+    sleep 5
   done
+}
+
+if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; then
+  wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
 fi
 
 AIRFLOW__CORE__SQL_ALCHEMY_CONN="postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
@@ -68,16 +70,7 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]
 then
   # Wait for Redis
   if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ "$1" = "flower" ] ; then
-    j=0
-    while ! nc -z "$REDIS_HOST" "$REDIS_PORT" >/dev/null 2>&1 < /dev/null; do
-      j=$((j+1))
-      if [ $j -ge $TRY_LOOP ]; then
-        echo "$(date) - $REDIS_HOST still not reachable, giving up"
-        exit 1
-      fi
-      echo "$(date) - waiting for Redis... $j/$TRY_LOOP"
-      sleep 5
-    done
+    wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
   fi
   if [ "$1" = "webserver" ]; then
     echo "Initialize database..."
