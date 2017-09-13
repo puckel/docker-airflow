@@ -43,6 +43,7 @@ RUN set -ex \
         python3-requests \
         apt-utils \
         curl \
+        rsync \
         netcat \
         locales \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
