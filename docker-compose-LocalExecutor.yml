@@ -34,4 +34,4 @@ services:
             # - LOAD_EX=n
             - FERNET_KEY=9IoTgQ_EJ0hCsamBU3Mctc7F9OkODnndOKCwkwXCAA
             - EXECUTOR=Local
-        command: scheduler -n 5
+        command: scheduler
