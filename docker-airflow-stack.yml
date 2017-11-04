@@ -95,7 +95,7 @@ services:
   worker:
     image: puckel/docker-airflow:1.8.2
     networks:
-      - scheduler
+      - backend
     volumes:
       - dag-data:/usr/local/airflow/dags
     environment:
@@ -114,9 +114,9 @@ services:
     command: worker
 
 networks:
-  frontend: airflow-frontend
-  backend: airflow-backend
+  frontend:
+  backend:
 
 volumes:
-  db-data: /mnt/nfs/db
-  dag-data: /mnt/nfs/dag
+  db-data:
+  dag-data:
