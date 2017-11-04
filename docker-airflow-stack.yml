@@ -1,0 +1,122 @@
+version: '2'
+services:
+  redis:
+    image: 'redis:3.2.7'
+    ports:
+      - "6379"
+    networks:
+      - frontend
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+  
+  postgres:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  webserver:
+    image: puckel/docker-airflow:1.8.2
+    networks:
+      - backend
+      - frontend
+    environment:
+      - LOAD_EX=n
+      - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - EXECUTOR=Celery
+      # - POSTGRES_USER=airflow
+      # - POSTGRES_PASSWORD=airflow
+      # - POSTGRES_DB=airflow
+    volumes:
+      - dag-data:/usr/local/airflow/dags
+    ports:
+      - "8080:8080"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    command: webserver
+
+  flower:
+    image: puckel/docker-airflow:1.8.2
+    networks:
+      - frontend
+    environment:
+      - EXECUTOR=Celery
+    ports:
+      - "5555:5555"
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == manager]
+    command: flower
+
+  scheduler:
+    image: puckel/docker-airflow:1.8.2
+    networks:
+      - backend
+    volumes:
+      - dag-data:/usr/local/airflow/dags
+    environment:
+      - LOAD_EX=n
+      - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - EXECUTOR=Celery
+      # - POSTGRES_USER=airflow
+      # - POSTGRES_PASSWORD=airflow
+      # - POSTGRES_DB=airflow
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == manager]
+    command: scheduler
+
+  worker:
+    image: puckel/docker-airflow:1.8.2
+    networks:
+      - scheduler
+    volumes:
+      - dag-data:/usr/local/airflow/dags
+    environment:
+      - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+      - EXECUTOR=Celery
+      # - POSTGRES_USER=airflow
+      # - POSTGRES_PASSWORD=airflow
+      # - POSTGRES_DB=airflow
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    command: worker
+
+networks:
+  frontend: airflow-frontend
+  backend: airflow-backend
+
+volumes:
+  db-data: /mnt/nfs/db
+  dag-data: /mnt/nfs/dag
