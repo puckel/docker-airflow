@@ -77,6 +77,9 @@ Check [Airflow Documentation](https://pythonhosted.org/airflow/)
 - Flower: [localhost:5555](http://localhost:5555/)
 
 
+## Rest Api
+added rest api plugin [airflow-rest-api-plugin](https://github.com/teamclairvoyant/airflow-rest-api-plugin)
+
 ## Scale the number of workers
 
 Easy scaling using docker-compose:
