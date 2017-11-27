@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+LC_ALL="en_US.UTF-8"
+
 AIRFLOW_HOME="/usr/local/airflow"
 CMD="airflow"
 TRY_LOOP="20"
@@ -21,7 +23,7 @@ if [ "$LOAD_EX" = "n" ]; then
     sed -i "s/load_examples = True/load_examples = False/" "$AIRFLOW_HOME"/airflow.cfg
 fi
 
-# Install custome python package if requirements.txt is present
+# Install custom python package if requirements.txt is present
 if [ -e "/requirements.txt" ]; then
     $(which pip) install --user -r /requirements.txt
 fi
@@ -99,3 +101,4 @@ else
   $CMD initdb
   exec $CMD webserver
 fi
+
