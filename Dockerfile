@@ -1,27 +1,32 @@
-# VERSION 1.8.1-1
-# AUTHOR: Matthieu "Puckel_" Roisil
+# VERSION 1.8.1-2
+# AUTHOR: Brian Call (forked from puckel/docker-airflow)
 # DESCRIPTION: Basic Airflow container
-# BUILD: docker build --rm -t puckel/docker-airflow .
-# SOURCE: https://github.com/puckel/docker-airflow
+# BUILD: docker build --rm -t call/docker-airflow .
+# SOURCE: https://github.com/call/docker-airflow
 
 FROM python:3.6-slim
-MAINTAINER Puckel_
-
-# Never prompts the user for choices on installation/configuration of packages
-ENV DEBIAN_FRONTEND noninteractive
+LABEL maintainer call
 ENV TERM linux
 
-# Airflow
-ARG AIRFLOW_VERSION=1.8.2
+# Airflow git ref, e.g. 'master', 'tags/1.0.1'
+ARG AIRFLOW_GIT_REF=master
 ARG AIRFLOW_HOME=/usr/local/airflow
 
-# Define en_US.
-ENV LANGUAGE en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
-ENV LC_CTYPE en_US.UTF-8
-ENV LC_MESSAGES en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
+# Set Locale for Debian
+# Tip to https://github.com/cpuguy83/docker-debian/blob/master/Dockerfile
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update -qq \
+    && apt-get install -y -qq locales \
+    && locale-gen en_US.UTF-8 en_us \
+    && dpkg-reconfigure locales \
+    && locale-gen C.UTF-8 \
+    && /usr/sbin/update-locale LANG=C.UTF-8
+
+ENV LANG C.UTF-8
+ENV LANGUAGE C.UTF-8
+ENV LC_ALL C.UTF-8
+
+COPY requirements.txt /tmp/requirements.txt
 
 RUN set -ex \
     && buildDeps=' \
@@ -36,18 +41,14 @@ RUN set -ex \
         libpq-dev \
         git \
     ' \
-    && apt-get update -yqq \
-    && apt-get install -yqq --no-install-recommends \
+    && apt-get update -qq -y \
+    && apt-get install -qq -y --no-install-recommends \
         $buildDeps \
         python3-pip \
         python3-requests \
         apt-utils \
         curl \
         netcat \
-        locales \
-    && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
-    && locale-gen \
-    && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
     && python -m pip install -U pip setuptools wheel \
     && pip install Cython \
@@ -55,9 +56,12 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc]==$AIRFLOW_VERSION \
+    && git clone https://github.com/apache/incubator-airflow.git /tmp/incubator-airflow \
+    && git -C /tmp/incubator-airflow/ checkout ${AIRFLOW_GIT_REF} \
+    && pip install /tmp/incubator-airflow[crypto,celery,ldap,postgres] \
     && pip install celery[redis]==3.1.17 \
-    && apt-get purge --auto-remove -yqq $buildDeps \
+    && pip install -r /tmp/requirements.txt \
+    && apt-get purge --auto-remove -qq -y $buildDeps \
     && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
@@ -69,6 +73,8 @@ RUN set -ex \
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY dags/ ${AIRFLOW_HOME}/dags/
+COPY plugins/ ${AIRFLOW_HOME}/plugins/
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
@@ -77,3 +83,6 @@ EXPOSE 8080 5555 8793
 USER airflow
 WORKDIR ${AIRFLOW_HOME}
 ENTRYPOINT ["/entrypoint.sh"]
+
+# Reset build ENV settings
+ENV DEBIAN_FRONTEND teletype

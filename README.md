@@ -1,39 +1,30 @@
 # docker-airflow
-[![CircleCI branch](https://img.shields.io/circleci/project/puckel/docker-airflow/master.svg?maxAge=2592000)](https://circleci.com/gh/puckel/docker-airflow/tree/master)
-[![Docker Build Status](https://img.shields.io/docker/build/puckel/docker-airflow.svg)]()
 
-[![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/puckel/docker-airflow/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/puckel/docker-airflow.svg)]()
-[![Docker Stars](https://img.shields.io/docker/stars/puckel/docker-airflow.svg)]()
+This repository contains **Dockerfile** of [apache-airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/).
 
-This repository contains **Dockerfile** of [apache-airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
+## Information
 
-## Informations
-
-* Based on Python (3.6-stretch) official Image [python:3.6-stretch](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
+* Based on Python (3.6-slim) official Image [python:3.6-slim](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
-* Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/apache-airflow)
-
-/!\ If you want to use Airflow using Python 2, use TAG [1.8.1](https://github.com/puckel/docker-airflow/releases/tag/1.8.1)
 
 ## Installation
 
-Pull the image from the Docker repository.
+Clone this repo. 
 
-        docker pull puckel/docker-airflow
+In the Dockerfile, set AIRFLOW_VERSION to the git ref (commit sha, branch name, tags/foo_tag) for the version of Airflow you'd like to build. Default is 'master'.
+
+List any additional python packages needed to run your Airflow code in requirements.txt.
 
 ## Build
 
-For example, if you need to install [Extra Packages](https://pythonhosted.org/airflow/installation.html#extra-package), edit the Dockerfile and then build it.
-
-        docker build --rm -t puckel/docker-airflow .
+        docker build --rm -t call/docker-airflow .
 
 ## Usage
 
 By default, docker-airflow runs Airflow with **SequentialExecutor** :
 
-        docker run -d -p 8080:8080 puckel/docker-airflow
+        docker run -d -p 8080:8080 call/docker-airflow
 
 If you want to run another executor, use the other docker-compose.yml files provided in this repository.
 
@@ -66,6 +57,8 @@ Check [Airflow Documentation](https://pythonhosted.org/airflow/)
 
 
 ## Install custom python package
+
+### This is from the original README– may no longer be necessary.
 
 - Create a file "requirements.txt" with the desired python modules
 - Mount this file as a volume `-v $(pwd)/requirements.txt:/requirements.txt`
