@@ -26,6 +26,10 @@ if [ -e "/requirements.txt" ]; then
     $(which pip) install --user -r /requirements.txt
 fi
 
+if [ -e "/variables.json" ]; then
+    $CMD variables -i /variables.json
+fi
+
 # Update airflow config - Fernet key
 sed -i "s|\$FERNET_KEY|$FERNET_KEY|" "$AIRFLOW_HOME"/airflow.cfg
 
