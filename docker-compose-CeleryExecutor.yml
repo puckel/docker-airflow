@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 services:
     redis:
         image: 'redis:3.2.7'
@@ -28,6 +28,11 @@ services:
         ports:
             - "8080:8080"
         command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
 
     flower:
         image: puckel/docker-airflow:1.8.2
