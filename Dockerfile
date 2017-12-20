@@ -24,7 +24,7 @@ ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 ENV LC_ALL  en_US.UTF-8
-ENV PYTHONPATH=:/usr/local/airflow/dags
+ENV PYTHONPATH=:/usr/local/airflow/dags:/usr/local/airflow/config
 
 RUN set -ex \
     && buildDeps=' \
@@ -87,10 +87,15 @@ RUN set -ex \
     && pip3 install psycopg2 \
     && pip3 install pandas==0.18.1 \
     && pip3 install celery==4.1.0 \
+    && pip3 install flower>=0.7.3 \
     && pip3 install kubernetes \
     && pip3 install https://github.com/docker/docker-py/archive/1.10.6.zip \
-    && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
-    && pip3 install https://github.com/medicode/incubator-airflow/archive/v1-8-test.zip \
+    # && pip3 install airflow[celery,postgres,gcp_api] \
+    && pip3 install https://github.com/apache/incubator-airflow/archive/v1-9-stable.zip \
+    && pip3 install httplib2 \
+    && pip3 install "google-api-python-client>=1.5.0,<1.6.0" \
+    && pip3 install "oauth2client>=2.0.2,<2.1.0" \
+    && pip3 install pandas-gbq \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \
