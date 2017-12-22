@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-CMD="airflow"
 TRY_LOOP="20"
 
 : "${REDIS_HOST:="redis"}"
@@ -43,63 +42,60 @@ else
     REDIS_PREFIX=
 fi
 
-# Wait for Postresql
-if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; then
-  i=0
-  while ! nc -z "$POSTGRES_HOST" "$POSTGRES_PORT" >/dev/null 2>&1 < /dev/null; do
-    i=$((i+1))
-    if [ "$1" = "webserver" ]; then
-      echo "$(date) - waiting for ${POSTGRES_HOST}:${POSTGRES_PORT}... $i/$TRY_LOOP"
-      if [ $i -ge $TRY_LOOP ]; then
-        echo "$(date) - ${POSTGRES_HOST}:${POSTGRES_PORT} still not reachable, giving up"
-        exit 1
-      fi
+wait_for_port() {
+  local name="$1" host="$2" port="$3"
+  local j=0
+  while ! nc -z "$host" "$port" >/dev/null 2>&1 < /dev/null; do
+    j=$((j+1))
+    if [ $j -ge $TRY_LOOP ]; then
+      echo >&2 "$(date) - $host:$port still not reachable, giving up"
+      exit 1
     fi
-    sleep 10
+    echo "$(date) - waiting for $name... $j/$TRY_LOOP"
+    sleep 5
   done
-fi
+}
+
+wait_for_redis() {
+  # Wait for Redis iff we are using it
+  if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]
+  then
+    wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
+  fi
+}
 
 AIRFLOW__CORE__SQL_ALCHEMY_CONN="postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
 AIRFLOW__CELERY__BROKER_URL="redis://$REDIS_PREFIX$REDIS_HOST:$REDIS_PORT/1"
 AIRFLOW__CELERY__CELERY_RESULT_BACKEND="db+postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
 
-# Update configuration depending the type of Executor
-if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]
-then
-  # Wait for Redis
-  if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ "$1" = "flower" ] ; then
-    j=0
-    while ! nc -z "$REDIS_HOST" "$REDIS_PORT" >/dev/null 2>&1 < /dev/null; do
-      j=$((j+1))
-      if [ $j -ge $TRY_LOOP ]; then
-        echo "$(date) - $REDIS_HOST still not reachable, giving up"
-        exit 1
-      fi
-      echo "$(date) - waiting for Redis... $j/$TRY_LOOP"
-      sleep 5
-    done
-  fi
-  if [ "$1" = "webserver" ]; then
-    echo "Initialize database..."
-    $CMD initdb
-    exec "$CMD" webserver
-  else
+case "$1" in
+  webserver)
+    wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
+    wait_for_redis
+    airflow initdb
+    if [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ];
+    then
+      # With the "Local" executor it should all run in one container.
+      airflow scheduler &
+    fi
+    exec airflow webserver
+    ;;
+  worker|scheduler)
+    wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
+    wait_for_redis
+    # To give the webserver time to run initdb.
     sleep 10
-    exec "$CMD" "$@"
-  fi
-elif [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ]
-then
-  echo "Initialize database..."
-  $CMD initdb
-  exec "$CMD" webserver &
-  exec "$CMD" scheduler
-# By default we use SequentialExecutor
-else
-  if [ "$1" = "version" ]; then
-    exec "$CMD" version
-    exit
-  fi
-  echo "Initialize database..."
-  $CMD initdb
-  exec "$CMD" webserver
-fi
+    exec airflow "$@"
+    ;;
+  flower)
+    wait_for_redis
+    exec airflow "$@"
+    ;;
+  version)
+    exec airflow "$@"
+    ;;
+  *)
+    # The command is something like bash, not an airflow subcommand. Just run it in the right environment.
+    exec "$@"
+    ;;
+esac
