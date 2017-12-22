@@ -2,6 +2,7 @@ version: '2.1'
 services:
     redis:
         image: 'redis:3.2.7'
+        # command: redis-server --requirepass redispass
 
     postgres:
         image: postgres:9.6
@@ -9,6 +10,10 @@ services:
             - POSTGRES_USER=airflow
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
+        # Uncomment these lines to persist data on the local filesystem.
+        #     - PGDATA=/var/lib/postgresql/data/pgdata
+        # volumes:
+        #     - ./pgdata:/var/lib/postgresql/data/pgdata
 
     webserver:
         image: puckel/docker-airflow:1.8.2
@@ -23,6 +28,7 @@ services:
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
+            # - REDIS_PASSWORD=redispass
         volumes:
             - ./dags:/usr/local/airflow/dags
         ports:
@@ -41,6 +47,7 @@ services:
             - redis
         environment:
             - EXECUTOR=Celery
+            # - REDIS_PASSWORD=redispass
         ports:
             - "5555:5555"
         command: flower
@@ -59,6 +66,7 @@ services:
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
+            # - REDIS_PASSWORD=redispass
         command: scheduler
 
     worker:
@@ -74,4 +82,5 @@ services:
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
+            # - REDIS_PASSWORD=redispass
         command: worker
