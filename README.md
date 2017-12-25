@@ -10,6 +10,9 @@ This repository contains **Dockerfile** of [apache-airflow](https://github.com/a
 
 ## Informations
 
+
+
+
 * Based on Python (3.6-slim) official Image [python:3.6-slim](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
