@@ -77,6 +77,8 @@ case "$1" in
   webserver)
     # wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
     wait_for_redis
+    cat /usr/local/airflow/airflow.cfg |grep sql
+
     airflow initdb
     # 安装dag-ui-manager
     python /usr/local/airflow/dcmp/tools/upgradedb.py
