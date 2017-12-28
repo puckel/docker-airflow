@@ -75,7 +75,7 @@ echo "AIRFLOW__CELERY__CELERY_RESULT_BACKEND=$AIRFLOW__CELERY__CELERY_RESULT_BAC
 
 case "$1" in
   webserver)
-    wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
+    # wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
     wait_for_redis
     airflow initdb
     # 安装dag-ui-manager
@@ -89,7 +89,7 @@ case "$1" in
     exec airflow webserver
     ;;
   worker|scheduler)
-    wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
+    # wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
     wait_for_redis
     # To give the webserver time to run initdb.
     sleep 10
