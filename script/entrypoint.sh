@@ -81,7 +81,7 @@ case "$1" in
 
     airflow initdb
     # 安装dag-ui-manager
-    python /usr/local/airflow/dcmp/tools/upgradedb.py
+    python /usr/local/airflow/plugins/dcmp/tools/upgradedb.py
 
     if [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ];
     then
