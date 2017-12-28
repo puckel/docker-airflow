@@ -15,13 +15,13 @@ ENV TERM linux
 ARG AIRFLOW_VERSION=1.8.2
 ARG AIRFLOW_HOME=/usr/local/airflow
 
-# Define zh_CN.
-ENV LANGUAGE zh_CN.UTF-8
-ENV LANG zh_CN.UTF-8
-ENV LC_ALL zh_CN.UTF-8
-ENV LC_CTYPE zh_CN.UTF-8
-ENV LC_MESSAGES zh_CN.UTF-8
-ENV LC_ALL zh_CN.UTF-8
+# Define en_US.
+ENV LANGUAGE en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+ENV LC_CTYPE en_US.UTF-8
+ENV LC_MESSAGES en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
 
 RUN set -ex \
     && buildDeps=' \
@@ -51,7 +51,7 @@ RUN set -ex \
 	
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
-    && update-locale LANG=zh_CN.UTF-8 LC_ALL=zh_CN.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
     && python -m pip install -U pip \
     && pip install Cython \
