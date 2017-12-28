@@ -1,0 +1,32 @@
+{% if readonly %}
+<div class="form-group">
+    <div class="col-md-offset-2 col-md-10 submit-row">
+        {% if conf.dag_name %}
+            <input id="view" type="button" class="btn btn-primary" value="View" />
+        {% endif %}
+        <a href="list" class="btn btn-danger" role="button">Back</a>
+    </div>
+</div>
+{% else %}
+<div style="clear: both;"></div>
+<hr>
+<div class="form-group">
+    <div class="col-md-offset-2 col-md-10 submit-row">
+        <input id="save-btn" type="button" class="btn btn-primary" value="Save" />
+        <input id="save-add-btn" name="_add_another" type="button" class="btn btn-default" value="Save and Add Another" />
+        <input id="save-edit-btn" name="_continue_editing" type="button" class="btn btn-default" value="Save and Continue Editing" />
+        {% if conf.dag_name %}
+            {% if not need_approver %}<input id="save-view" name="_save_view" type="button" class="btn btn-default" value="Save and View" />{% endif %}
+            <input id="view" type="button" class="btn btn-primary" value="View" />
+        {% endif %}
+        <a href="list" class="btn btn-danger" role="button">Cancel</a>
+    </div>
+</div>
+<div class="form-group">
+    <div class="col-md-offset-2 col-md-10 submit-row">
+        <input id="export-json-btn" name="_export_json" type="button" class="btn btn-primary" value="Export" />
+        <input id="import-json-btn" name="_import_json" type="button" class="btn btn-danger" value="Import" />
+        <input type="file" id="import-file" name="file" accept=".json" style="display: none;" />
+    </div>
+</div>
+{% endif %}

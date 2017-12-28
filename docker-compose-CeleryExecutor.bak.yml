@@ -4,12 +4,12 @@ services:
         image: 'redis:3.2.7'
         # command: redis-server --requirepass redispass
 
-    # postgres:
-    #     image: postgres:9.6
-    #     environment:
-    #         - POSTGRES_USER=airflow
-    #         - POSTGRES_PASSWORD=airflow
-    #         - POSTGRES_DB=airflow
+    postgres:
+        image: postgres:9.6
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
         # Uncomment these lines to persist data on the local filesystem.
         #     - PGDATA=/var/lib/postgresql/data/pgdata
         # volumes:
@@ -19,7 +19,7 @@ services:
         image: puckel/docker-airflow:1.8.2
         restart: always
         depends_on:
-            # - postgres
+            - postgres
             - redis
         environment:
             - LOAD_EX=n
@@ -29,12 +29,10 @@ services:
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
-        privileged: true
         volumes:
-            - /data/docker-airflow/work/dags:/usr/local/airflow/dags
-            - /root/docker-airflow/work/plugins:/usr/local/airflow/plugins
+            - ./dags:/usr/local/airflow/dags
         ports:
-            - "8086:8080"
+            - "8080:8080"
         command: webserver
         healthcheck:
             test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
@@ -60,10 +58,7 @@ services:
         depends_on:
             - webserver
         volumes:
-        privileged: true
-        volumes:
-            - /data/docker-airflow/work/dags:/usr/local/airflow/dags
-            - /root/docker-airflow/work/plugins:/usr/local/airflow/plugins
+            - ./dags:/usr/local/airflow/dags
         environment:
             - LOAD_EX=n
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
@@ -79,10 +74,8 @@ services:
         restart: always
         depends_on:
             - scheduler
-        privileged: true
         volumes:
-            - /data/docker-airflow/work/dags:/usr/local/airflow/dags
-            - /root/docker-airflow/work/plugins:/usr/local/airflow/plugins
+            - ./dags:/usr/local/airflow/dags
         environment:
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery

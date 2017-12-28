@@ -68,11 +68,19 @@ AIRFLOW__CORE__SQL_ALCHEMY_CONN="postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_
 AIRFLOW__CELERY__BROKER_URL="redis://$REDIS_PREFIX$REDIS_HOST:$REDIS_PORT/1"
 AIRFLOW__CELERY__CELERY_RESULT_BACKEND="db+postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
 
+echo "AIRFLOW__CELERY__BROKER_URL=$AIRFLOW__CELERY__BROKER_URL"
+echo "AIRFLOW__CORE__SQL_ALCHEMY_CONN=$AIRFLOW__CORE__SQL_ALCHEMY_CONN"
+echo "AIRFLOW__CELERY__CELERY_RESULT_BACKEND=$AIRFLOW__CELERY__CELERY_RESULT_BACKEND"
+
+
 case "$1" in
   webserver)
     wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
     wait_for_redis
     airflow initdb
+    # 安装dag-ui-manager
+    python /usr/local/airflow/dcmp/tools/upgradedb.py
+
     if [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ];
     then
       # With the "Local" executor it should all run in one container.

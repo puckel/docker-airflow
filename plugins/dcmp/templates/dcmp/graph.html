@@ -1,0 +1,107 @@
+{% extends "dcmp/edit.html" %}
+{% set graph = True %}
+
+{% block title %}DAG Config Graph - {{ conf.dag_name }}{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dagre.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='graph.css') }}">
+    <link href="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/css/graph.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div id="main-container" class="container">
+        <div graph="{{ graph }}" style="display: none;"></div>
+        {% include "dcmp/edit_dag_header.html" with context %}
+        <div style="margin-top: 15px;">
+            <div class="legend_item" style="border-width:1px;float:none;display:inline-block;background:#f0ede4;color:#000;">
+                default
+            </div>
+            {% for category, bg_color in DAG_CREATION_MANAGER_TASK_CATEGORYS %}
+                <div class="legend_item" style="border-width:1px;float:none;display:inline-block;background:{{ bg_color }};color:#000;">
+                    {{ " ".join(category.split("_")) }}
+                </div>
+            {% endfor %}
+            <div class="form-group" style="float: right;">
+                <label for="wide-screen" class="control-label">Widescreen&nbsp;</label>
+                <input id="wide-screen" type="checkbox" data-toggle="toggle" data-size="mini">
+            </div>
+        </div>
+        <div id="svg_container" style="position: relative">
+            <div class="input-group" style="bottom: 15px; left: 15px; position: absolute;">
+                <input type="text" id="searchbox" class="form-control" placeholder="Search for..." onenter="null">
+                <button class="btn btn-default" id="clear_search" style="position: absolute; margin-left: 10px;">
+                    <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="input-group" style="bottom: 15px; right: 15px; position: absolute;">
+                <button class="btn btn-default" id="view_streams" style="margin-right: 15px;">
+                    <span aria-hidden="true">View Streams</span>
+                </button>
+                {% if not readonly %}
+                <button class="btn btn-primary" id="change_upstreams" style="margin-right: 15px;">
+                    <span aria-hidden="true">Change Upstreams</span>
+                </button>
+                <button class="btn btn-primary" id="add_task" style="margin-right: 15px;">
+                    <span aria-hidden="true">Add Task</span>
+                </button>
+                <a href="javascript:void(0)" class="btn btn-danger" id="remove_task">
+                    <span aria-hidden="true">Remove Task</span>
+                </a>
+                {% endif %}
+            </div>
+            <svg width="100%" height="700">
+                <g id='dig' transform="translate(20,20)"/>
+                <filter id="blur-effect-1">
+                <feGaussianBlur stdDeviation="3" />
+                </filter>
+            </svg>
+            <img id="loading" alt="spinner" src="{{ url_for('static', filename='loading.gif') }}" style="display: block; position: absolute; top: 15px; left: 15px;">
+        </div>
+        <form id="container-form" action="" method="POST" role="form" class="admin-form form-horizontal" enctype="multipart/form-data">
+            {% include "dcmp/edit_dag_container.html" with context %}
+            <div id="tasks-container">
+            </div>
+            {% include "dcmp/edit_dag_tail.html" with context %}
+        </form>
+    </div>
+</div>
+<div class="modal fade" id="graph-display-modal" tabindex="-1" role="dialog" style="overflow: hidden;">
+    <div class="container" style="height: 100%;">
+        <div class="modal-dialog" role="document" style="width: 90%; height: 80%; margin: 9% auto;">
+            <div class="modal-content" style="width: 100%; height: 100%;">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">View Streams</h4>
+                </div>
+                <div style="position: absolute; width: 100%; height: 99%; padding-top: 56px; top: 0; z-index: -1;">
+                    <img src="{{ url_for('static', filename='loading.gif') }}" style="padding-top: 56px; display: block; position: absolute; top: 15px; left: 15px; z-index: -2;">
+                    <iframe id="graph-display-iframe" name="graph-display-iframe" height="100%" width="100%" style="border: none;" src=""></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<form id="graph-display-form" action="graph_display" method="post" target="graph-display-iframe" style="display:none">
+    <input id="graph-display-conf" type="hidden" name="conf" value="" />
+    <input id="graph-display-active-job-id" type="hidden" name="active_job_id" value="" />
+</form>
+<a id="download-anchor-elem" style="display:none"></a>
+{% endblock %}
+
+{% block tail %}
+    <script src="{{ url_for('static', filename='d3.v3.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='dagre-d3.js') }}"></script>
+    {{ super() }}
+{% endblock %}
+
+{% block tail_extra_js %}
+    <script>
+        window.line_interpolate = "{{ DAG_CREATION_MANAGER_LINE_INTERPOLATE }}"; // see https://github.com/d3/d3-3.x-api-reference/blob/master/SVG-Shapes.md#line_interpolate
+    </script>
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/graph.js') }}"></script>
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/edit.js') }}"></script>
+{% endblock %}

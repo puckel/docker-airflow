@@ -1,0 +1,195 @@
+{% extends "airflow/master.html" %}
+
+{% block title %}Params{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <style type="text/css">
+        .wy-table-responsive {
+            margin-bottom: 24px;
+            max-width: 100%;
+            overflow: auto;
+        }
+        table.docutils {
+            border: 1px solid #e1e4e5;
+        }
+        .wy-table-bordered-all table.docutils {
+            border-collapse: collapse;
+            border-spacing: 0;
+            empty-cells: show;
+            margin-bottom: 24px;
+        }
+        
+        code.literal {
+            color: #E74C3C;
+        }
+        
+        code {
+            white-space: nowrap;
+            max-width: 100%;
+            background: #fff;
+            border: solid 1px #e1e4e5;
+            font-size: 75%;
+            padding: 2px 5px;
+            font-family: Consolas,"Andale Mono WT","Andale Mono","Lucida Console","Lucida Sans Typewriter","DejaVu Sans Mono","Bitstream Vera Sans Mono","Liberation Mono","Nimbus Mono L",Monaco,"Courier New",Courier,monospace;
+            color: #E74C3C;
+            overflow-x: auto;
+        }
+        
+        table.docutils thead{
+            color: #000;
+            text-align: left;
+            vertical-align: bottom;
+            white-space: nowrap;
+            border-collapse: collapse;
+            border-spacing: 0;
+            empty-cells: show;
+            margin-bottom: 24px;
+        }
+        table.docutils th:first-child{
+            border-left-width: 0;
+        }
+        table.docutils thead th{
+            font-weight: bold;
+            border-bottom: solid 2px #e1e4e5;
+            background-color: white;
+        }
+        table.docutils th,td{
+            font-size: 90%;
+            margin: 0;
+            overflow: visible;
+            padding: 8px 16px;
+        }
+        table.docutils:not(.field-list) tr:nth-child(2n-1) td {
+            background-color: #f3f6f6;
+        }
+        
+        table.docutils td {
+            border-bottom: 1px solid #e1e4e5;
+            border-left: 1px solid #e1e4e5;
+        }
+        table.docutils td{
+            background-color: transparent;
+            vertical-align: middle;
+        }
+        .wy-table-responsive table td{
+            white-space: nowrap;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+{% raw %}
+<div id="main-container" class="container">
+    <h2>Params</h2>
+    <div class="wy-table-responsive">
+        <table border="1" class="docutils">
+            <colgroup>
+                <col width="38%">
+                <col width="62%">
+            </colgroup>
+            <thead valign="bottom">
+                <tr class="row-odd">
+                <th class="head">Variable</th>
+                <th class="head">Description</th>
+            </tr>
+            </thead>
+            <tbody valign="top">
+                <tr class="row-even">
+                    <td>
+                        <code class="docutils literal">
+                            <span class="pre">{{</span><span class="pre">params.today</span><span class="pre">}}</span>
+                        </code>
+                    </td>
+                    <td>today's date as
+                        <code class="docutils literal">
+                            <span class="pre">YYYY-MM-DD</span></code>
+                    </td>
+                </tr>
+                <tr class="row-odd">
+                    <td>
+                        <code class="docutils literal">
+                            <span class="pre">{{</span><span class="pre">params.yesterday</span><span class="pre">}}</span>
+                        </code>
+                    </td>
+                    <td>yesterday's date as
+                        <code class="docutils literal">
+                            <span class="pre">YYYY-MM-DD</span></code>
+                    </td>
+                </tr>
+                <tr class="row-even">
+                    <td>
+                        <code class="docutils literal">
+                            <span class="pre">{{</span><span class="pre">params.this_month</span><span class="pre">}}</span>
+                        </code>
+                    </td>
+                    <td>this month as
+                        <code class="docutils literal">
+                            <span class="pre">YYYY-MM</span></code>
+                    </td>
+                </tr>
+                <tr class="row-odd">
+                    <td>
+                        <code class="docutils literal">
+                            <span class="pre">{{</span><span class="pre">params.this_month_first_day</span><span class="pre">}}</span>
+                        </code>
+                    </td>
+                    <td>the first day of this month's date as
+                        <code class="docutils literal">
+                            <span class="pre">YYYY-MM-DD</span></code>
+                    </td>
+                </tr>
+                <tr class="row-even">
+                    <td>
+                        <code class="docutils literal">
+                            <span class="pre">{{</span><span class="pre">params.this_month_last_day</span><span class="pre">}}</span>
+                        </code>
+                    </td>
+                    <td>the last day of this month's as
+                        <code class="docutils literal">
+                            <span class="pre">YYYY-MM-DD</span></code>
+                    </td>
+                </tr>
+                <tr class="row-odd">
+                    <td>
+                        <code class="docutils literal">
+                            <span class="pre">{{</span><span class="pre">params.last_month</span><span class="pre">}}</span>
+                        </code>
+                    </td>
+                    <td>last month as
+                        <code class="docutils literal">
+                            <span class="pre">YYYY-MM</span></code>
+                    </td>
+                </tr>
+                <tr class="row-even">
+                    <td>
+                        <code class="docutils literal">
+                            <span class="pre">{{</span><span class="pre">params.last_month_first_day</span><span class="pre">}}</span>
+                        </code>
+                    </td>
+                    <td>the first day of last month's date as
+                        <code class="docutils literal">
+                            <span class="pre">YYYY-MM-DD</span></code>
+                    </td>
+                </tr>
+                <tr class="row-odd">
+                    <td>
+                        <code class="docutils literal">
+                            <span class="pre">{{</span><span class="pre">params.last_month_last_day</span><span class="pre">}}</span>
+                        </code>
+                    </td>
+                    <td>the last day of last month's as
+                        <code class="docutils literal">
+                            <span class="pre">YYYY-MM-DD</span></code>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endraw %}
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+{% endblock %}

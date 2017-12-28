@@ -1,0 +1,57 @@
+{% extends "dcmp/graph.html" %}
+
+{% block title %}DAG Config Graph Display{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <style>
+        html{
+            height: 100%;
+            overflow: hidden;
+        }
+        body{
+            padding-top: 0 !important;
+            height: 100%;
+        }
+    </style>
+{% endblock %}
+
+{% block page_body %}
+<div id="svg_container" style="position: relative; margin-top: 0; height: 100%;">
+    <div class="input-group" style="bottom: 15px; left: 15px; position: absolute;">
+        <input type="text" id="searchbox" class="form-control" placeholder="Search for..." onenter="null">
+        <button class="btn btn-default" id="clear_search" style="position: absolute; margin-left: 10px;">
+            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+        </button>
+    </div>
+    <svg width="100%" height="100%">
+        <g id='dig' transform="translate(20,20)"/>
+        <filter id="blur-effect-1">
+        <feGaussianBlur stdDeviation="3" />
+        </filter>
+    </svg>
+    <img id="loading" alt="spinner" src="{{ url_for('static', filename='loading.gif') }}" style="display: block; position: absolute; top: 15px; left: 15px;">
+</div>
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script>
+        (function($) {
+            setTimeout(function() {
+                var active_job_id = "{{ active_job_id }}" || "dag-container";
+                change_cur_job(active_job_id);
+//                var transform = d3.transform(d3.select("#graph_" + active_job_id).attr("transform"));
+//                transform.translate = [
+//                    -transform.translate[0] + ($("#svg_container svg").width() / 2.2),
+//                    -(transform.translate[1] - ($("#svg_container svg").height() / 2))
+//                ];
+//                transform.scale = [1, 1];
+//        
+//                d3.select("g.zoom")
+//                    .transition()
+//                    .attr("transform", transform.toString());
+            }, 0);
+        })(jQuery);
+    </script>
+{% endblock %}

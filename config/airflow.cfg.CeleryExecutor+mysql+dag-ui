@@ -30,7 +30,7 @@ executor = CeleryExecutor
 # SqlAlchemy supports many different database engine, more information
 # their website
 # sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@postgres/airflow
-sql_alchemy_conn = mysql://root:123456@192.168.1.181:3306/airflowmeta
+sql_alchemy_conn = mysql://root:123456@localhost/airflowmeta
 
 # The SqlAlchemy pool size is the maximum number of database connections
 # in the pool.
@@ -228,7 +228,7 @@ broker_url = redis://redis:6379/1
 
 # Another key Celery setting
 # celery_result_backend = db+postgresql://airflow:airflow@postgres/airflow
-celery_result_backend = db+mysql://root:123456@192.168.1.181:3306/airflowmeta
+celery_result_backend = db+mysql://root:123456@localhost/airflowmeta
 
 # Celery Flower is a sweet UI for Celery. Airflow has a shortcut to start
 # it `airflow flower`. This defines the IP that Celery Flower runs on
@@ -344,7 +344,7 @@ api_rev = v3
 hide_sensitive_variable_fields = True
 
 
-# dag ui π‹¿Ì
+# dag ui ÁÆ°ÁêÜ
 # https://github.com/lattebank/airflow-dag-creation-manager-plugin
 [dag_creation_manager]
 

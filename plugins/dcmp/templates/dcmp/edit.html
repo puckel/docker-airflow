@@ -1,0 +1,93 @@
+{% extends "airflow/master.html" %}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block title %}DAG Config - {{ conf.dag_name }}{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    {{ lib.form_css() }}
+    <link href="{{ url_for("static", filename="bootstrap-toggle.min.css") }}" rel="stylesheet" type="text/css">
+    <link href="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/css/jquery-ui.css') }}" type="text/css" rel="stylesheet" media="all">
+    <link href="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/css/edit.css') }}" rel="stylesheet" type="text/css">
+    <script>
+        var _wasPageCleanedUp = false;
+        function pageCleanup()
+        {
+            if (!_wasPageCleanedUp)
+            {
+                if(window.save_draft) window.save_draft();
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET", "api?api=end_editing&dag_name={{ conf.dag_name }}", false);
+                xmlhttp.send();
+                _wasPageCleanedUp = true;
+            }
+        }
+        
+        window.onbeforeunload = function() {
+            pageCleanup();
+        };
+        
+        window.onunload = function() {
+            pageCleanup();
+        };
+    </script>
+{% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div id="main-container" class="container col-md-10">
+        {% include "dcmp/edit_dag_header.html" with context %}
+        <form id="container-form" action="" method="POST" role="form" class="admin-form form-horizontal" enctype="multipart/form-data">
+            {% include "dcmp/edit_dag_container.html" with context %}
+            <div id="tasks-container">
+            </div>
+            <img id="loading" style="width: 35px; margin: 0 auto; display: block;" src="{{ url_for("static", filename="loading.gif") }}">
+            <hr>
+            <input type="button" class="btn btn-primary task-add" style="float: right;" value="Add" />
+            {% include "dcmp/edit_dag_tail.html" with context %}
+        </form>
+    </div>
+    <div class="bs-docs-sidebar col-md-2">
+    <ul class="nav nav-stacked col-md-2 affix" style="z-index: 1;">
+        <li class="task-nav"><a href="#main-container">[DAG]</a></li>
+    </ul>
+    <ul id="task-list" class="nav nav-stacked col-md-2 affix" style="margin-top: 30px; overflow: auto;">
+    </ul>
+    </div>
+</div>
+<a id="download-anchor-elem" style="display:none"></a>
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    {{ lib.form_js() }}
+    <script language="javascript">
+        window.readonly = {% if readonly %}true{% else %}false{% endif %};
+        window.dag_name = "{{ conf.dag_name }}";
+        window.refresh_url_template = '{{ url_for("airflow.refresh", dag_id="DAG_ID") }}';
+        window.graph_url_template = '{{ url_for("airflow.graph", dag_id="DAG_ID") }}';
+        window.loading_img_url = '{{ url_for("static", filename="loading.gif") }}';
+        window.queue_pools = {{ DAG_CREATION_MANAGER_QUEUE_POOL|tojson }};
+        window.task_types = {{ TASK_TYPES|tojson }};
+        window.task_categorys = {{ DAG_CREATION_MANAGER_TASK_CATEGORYS|tojson }};
+        window.task_category_default_color = "#f0ede4";
+        window.task_categorys.unshift(["", task_category_default_color]);
+        window.task_categorys_dict = {};
+        for(var i=0; i<task_categorys.length; i++){
+            var task_category = task_categorys[i];
+            task_categorys_dict[task_category[0]] = task_category[1];
+        }
+        window.conf = {{ conf|tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='bootstrap-toggle.min.js') }}"></script>
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/js.cookie.js') }}"></script>
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/ace.js') }}"></script>
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/mode-sql.js') }}"></script>
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/mode-python.js') }}"></script>
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/mode-sh.js') }}"></script>
+    {% block tail_extra_js %}
+        <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/jquery-ui.sortable.min.js') }}"></script>
+        <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/edit.js') }}"></script>
+    {% endblock %}
+{% endblock %}

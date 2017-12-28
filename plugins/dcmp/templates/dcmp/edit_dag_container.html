@@ -1,0 +1,113 @@
+<div id="dag-container">
+    <div class="form-group">
+        <label for="dag_name" class="col-md-2 control-label">DAG Name &nbsp;<strong style="color: red">*</strong></label>
+        <div class="col-md-10 form-field">
+            <input class="form-control" id="dag_name" name="dag_name" type="text" value="{{ conf.dag_name }}" {% if readonly %}readonly="readonly"{% endif %}></div>
+    </div>
+    <div class="form-group">
+        <label for="cron" class="col-md-2 control-label">Cron <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='Defines how often that DAG runs. Use string as a cron expression or None for exclusively "externally triggered" DAG.'></span> &nbsp;<strong style="color: red">*</strong></label>
+        <div class="col-md-10 form-field">
+            <input class="form-control" id="cron" name="cron" type="text" value="{{ conf.cron }}" {% if readonly %}readonly="readonly"{% endif %}></div>
+    </div>
+    <div class="form-group">
+        <label for="category" class="col-md-2 control-label">Category &nbsp;<strong style="color: red">*</strong></label>
+        <div class="col-md-10 form-field">
+            <span name="category" class="btn-group btn-group-input btn-group-input-single">
+            {% for category in DAG_CREATION_MANAGER_CATEGORYS %}
+                <button type="button" class="btn btn-item{% if category == conf.category %} active{% endif %}" field-value="{{ category }}">{{ " ".join(category.split(",")) }}</button>
+            {% endfor %}
+            </span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="retries" class="col-md-2 control-label">Retries <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='The number of retries that should be performed before failing the task.'></span> &nbsp;</label>
+        <div class="col-md-10 form-field">
+            <input class="form-control" id="retries" name="retries" type="number" min="0" step="1" value="{{ conf.retries }}" {% if readonly %}readonly="readonly"{% endif %}></div>
+    </div>
+    <div class="panel panel-default advanced-settings-collapse">
+        <div class="panel-heading" role="tab" id="dag_advanced_settings_header">
+            <h4 class="panel-title">
+                <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#dag_advanced_settings" aria-expanded="false" aria-controls="dag_advanced_settings">Advanced Settings</a>
+                <span class="advanced-settings-tool-bar">
+                    <a href="javascript:void(0)" class="advanced-settings-expand-all advanced-settings-tool">Expand All</a>
+                    <span class="advanced-settings-tool">/</span>
+                    <a href="javascript:void(0)" class="advanced-settings-collapse-all advanced-settings-tool" style="margin-right: 20px;">Collapse All</a>
+                </span>
+            </h4>
+        </div>
+        <div id="dag_advanced_settings" class="panel-collapse collapse" style="background: transparent;" role="tabpanel" aria-labelledby="dag_advanced_settings_header">
+            <div class="panel-body">
+                <div class="form-group">
+                    <label for="retry_delay_minutes" class="col-md-2 control-label long-label">Retry Delay Minutes <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='Delay minutes between retries.'></span> &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="retry_delay_minutes" name="retry_delay_minutes" type="number" min="0" step="1" value="{{ conf.retry_delay_minutes }}" {% if readonly %}readonly="readonly"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="start_date" class="col-md-2 control-label long-label">Start Date <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='If this field is blank, it will be auto set.'></span> &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" data-date-format='YYYY-MM-DD HH:mm:ss' data-role="datetimepicker" id="start_date" name="start_date" value="{{ conf.start_date }}"  {% if readonly %}readonly="readonly"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="end_date" class="col-md-2 control-label long-label">End Date <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='if specified, the scheduler will not go beyond this date.'></span> &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" data-date-format='YYYY-MM-DD HH:mm:ss' data-role="datetimepicker" id="end_date" name="end_date" value="{{ conf.end_date }}"  {% if readonly %}readonly="readonly"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="email_on_failure" class="col-md-2 control-label">Email On Failure &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="email_on_failure" name="email_on_failure" type="checkbox" data-toggle="toggle" data-size="mini" {% if conf.email_on_failure %}checked="checked"{% endif %} {% if readonly %}disabled="disabled"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="email_on_retry" class="col-md-2 control-label">Email On Retry &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="email_on_retry" name="email_on_retry" type="checkbox" data-toggle="toggle" data-size="mini" {% if conf.email_on_retry %}checked="checked"{% endif %} {% if readonly %}disabled="disabled"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="depends_on_past" class="col-md-2 control-label">Depend On Past &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="depends_on_past" name="depends_on_past" type="checkbox" data-toggle="toggle" data-size="mini" {% if conf.depends_on_past %}checked="checked"{% endif %} {% if readonly %}disabled="disabled"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="concurrency" class="col-md-2 control-label">Concurrency &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="concurrency" name="concurrency" type="number" min="0" step="1" value="{{ conf.concurrency }}" {% if readonly %}readonly="readonly"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="max_active_runs" class="col-md-2 control-label">Max Active Runs &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="max_active_runs" name="max_active_runs" type="number" min="0" step="1" value="{{ conf.max_active_runs }}" {% if readonly %}readonly="readonly"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="add_start_task" class="col-md-2 control-label">Add Start Task <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='Add a start task as the start of the DAG.'></span> &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="add_start_task" name="add_start_task" type="checkbox" data-toggle="toggle" data-size="mini" {% if conf.add_start_task %}checked="checked"{% endif %} {% if readonly %}disabled="disabled"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="add_end_task" class="col-md-2 control-label">Add End Task <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='Add a end task as the end of the DAG.'></span> &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="add_end_task" name="add_end_task" type="checkbox" data-toggle="toggle" data-size="mini" {% if conf.add_end_task %}checked="checked"{% endif %} {% if readonly %}disabled="disabled"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="skip_dag_not_latest" class="col-md-2 control-label long-label">Skip DAG Not Latest <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='Add a task at the beginning of the DAG in order to skip the whole DAG Run when the DAG Run is not running during the most recent schedule interval. If the DAG Run is externally triggered, do not skip.'></span> &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="skip_dag_not_latest" name="skip_dag_not_latest" type="checkbox" data-toggle="toggle" data-size="mini" {% if conf.skip_dag_not_latest %}checked="checked"{% endif %} {% if readonly %}disabled="disabled"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="skip_dag_on_prev_running" class="col-md-2 control-label long-label">Skip DAG On Prev Running <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='Add a task at the beginning of the DAG in order to skip the whole DAG Run when previous DAG Run is still running. If the DAG Run is externally triggered, do not skip.'></span> &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="skip_dag_on_prev_running" name="skip_dag_on_prev_running" type="checkbox" data-toggle="toggle" data-size="mini" {% if conf.skip_dag_on_prev_running %}checked="checked"{% endif %} {% if readonly %}disabled="disabled"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="email_on_skip_dag" class="col-md-2 control-label">Email On Skip DAG <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='Send email when the whole DAG has been skipped.'></span> &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="email_on_skip_dag" name="email_on_skip_dag" type="checkbox" data-toggle="toggle" data-size="mini" {% if conf.email_on_skip_dag %}checked="checked"{% endif %} {% if readonly %}disabled="disabled"{% endif %}></div>
+                </div>
+                <div class="form-group">
+                    <label for="emails" class="col-md-2 control-label">Emails <span class="glyphicon glyphicon-info-sign" aria-hidden="true" title='Emails split by comma. If this field is blank, default emails are used.'></span> &nbsp;</label>
+                    <div class="col-md-10 form-field">
+                        <input class="form-control" id="emails" name="emails" type="text" value="{{ conf.emails }}" {% if readonly %}readonly="readonly"{% endif %}></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

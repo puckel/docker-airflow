@@ -24,13 +24,13 @@ s3_log_folder =
 
 # The executor class that airflow should use. Choices include
 # SequentialExecutor, LocalExecutor, CeleryExecutor
-executor = CeleryExecutor
+executor = LocalExecutor
 
 # The SqlAlchemy connection string to the metadata database.
 # SqlAlchemy supports many different database engine, more information
 # their website
 # sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@postgres/airflow
-sql_alchemy_conn = mysql://root:123456@192.168.1.181:3306/airflowmeta
+sql_alchemy_conn = mysql://root:123456@localhost/airflowmeta
 
 # The SqlAlchemy pool size is the maximum number of database connections
 # in the pool.
@@ -228,7 +228,7 @@ broker_url = redis://redis:6379/1
 
 # Another key Celery setting
 # celery_result_backend = db+postgresql://airflow:airflow@postgres/airflow
-celery_result_backend = db+mysql://root:123456@192.168.1.181:3306/airflowmeta
+celery_result_backend = db+mysql://root:123456@localhost/airflowmeta
 
 # Celery Flower is a sweet UI for Celery. Airflow has a shortcut to start
 # it `airflow flower`. This defines the IP that Celery Flower runs on
@@ -342,32 +342,3 @@ api_rev = v3
 [admin]
 # UI to hide sensitive variable fields when set to True
 hide_sensitive_variable_fields = True
-
-
-# dag ui №ЬАн
-# https://github.com/lattebank/airflow-dag-creation-manager-plugin
-[dag_creation_manager]
-
-# see https://github.com/d3/d3-3.x-api-reference/blob/master/SVG-Shapes.md#line_interpolate
-# DEFAULT: basis
-dag_creation_manager_line_interpolate = basis
-
-# Choices for queue and pool
-dag_creation_manager_queue_pool = your_queue_pool_name1:your_queue1|your_pool1,your_queue_pool_name2:your_queue2|your_pool2
-
-# MR queue for queue pool
-dag_creation_manager_queue_pool_mr_queue = your_queue_pool_name1:your_mr_queue1,your_queue_pool_name2:your_mr_queue2
-
-# Category for display
-dag_creation_manager_category = custom,cus01,cus02
-
-# Task category for display
-dag_creation_manager_task_category = custom_task:#ffba40
-
-# Your email address to receive email
-# DEFAULT: 
-dag_creation_manager_default_email = caihm@chinatelecom.cn
- 
-dag_creation_manager_need_approver = False
- 
-dag_creation_manager_can_approve_self = True

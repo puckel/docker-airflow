@@ -1,0 +1,111 @@
+{% extends "airflow/master.html" %}
+{% set details = True %}
+{% set readonly = True %}
+
+{% block title %}DAG Config Details - {{ conf.dag_name }}{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <style>
+    mark, .mark{
+        background: #F1C40F;
+        display: inline-block;
+        font-weight: bold;
+        padding: 0 6px;
+    }
+    a.anchor {
+        display: block;
+        position: relative;
+        top: -55px;
+        visibility: hidden;
+    }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div id="main-container" class="container">
+        <div details="{{ details }}" readonly="{{ readonly }}" style="display: none;"></div>
+        {% include "dcmp/edit_dag_header.html" with context %}
+        <div style="margin-top: 15px;">
+            <h4>{{ conf["dag_name"] }}</h4>
+            <div>
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Value</th>
+                    </tr>
+                    {% for key in conf.keys()|sort %}
+                        {% if key not in ["tasks", ] %}
+                            <tr>
+                                <td>{{ key }}</td>
+                                <td class='code context'><a class="anchor" id="__{{ key }}"></a>{{ conf[key] }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </div>
+            {% for task in conf["tasks"] %}
+                <hr/>
+                <h4 id="{{ task['task_name'] }}">{{ task["task_name"] }}</h4>
+                <div>
+                    <div class="context">
+                        <a class="anchor" id="{{ task['task_name'] }}__command"></a>
+                        {{ command_render(task["task_type"], task["command"])|safe }}
+                    </div>
+                    <table class="table table-striped table-bordered">
+                        <tr>
+                            <th>Attribute</th>
+                            <th>Value</th>
+                        </tr>
+                        {% for key in task.keys()|sort %}
+                            {% if key not in ["command", ] %}
+                                <tr>
+                                    <td>{{ key }}</td>
+                                    <td class='code context'>
+                                        <a class="anchor" id="{{ task['task_name'] }}__{{ key }}"></a>
+                                        {% if key == "upstreams" %}
+                                            {{ ", ".join(task[key]) }}
+                                        {% else %}
+                                            {{ task[key] }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </table>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/jquery.mark.js') }}"></script>
+    <script>
+    var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
+    
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');
+    
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : sParameterName[1];
+            }
+        }
+    };
+
+    $(document).ready(function(){
+        var highlight = getUrlParameter("highlight");
+        if(highlight){
+            $(".context").mark(highlight, {});
+        };
+    });
+    </script>
+{% endblock %}
