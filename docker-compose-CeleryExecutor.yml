@@ -31,8 +31,8 @@ services:
             # - REDIS_PASSWORD=redispass
         privileged: true
         volumes:
-            - /data/docker-airflow/work/dags:/usr/local/airflow/dags
-            - /root/docker-airflow/work/plugins:/usr/local/airflow/plugins
+            - ./dags:/usr/local/airflow/dags
+           # - /root/docker-airflow/work/plugins:/usr/local/airflow/plugins
         ports:
             - "8086:8080"
         command: webserver
@@ -62,7 +62,7 @@ services:
         volumes:
         privileged: true
         volumes:
-            - /data/docker-airflow/dags:/usr/local/airflow/dags
+            - ./dags:/usr/local/airflow/dags
          #   - /root/docker-airflow/plugins:/usr/local/airflow/plugins
         environment:
             - LOAD_EX=n
