@@ -62,8 +62,8 @@ services:
         volumes:
         privileged: true
         volumes:
-            - /data/docker-airflow/work/dags:/usr/local/airflow/dags
-            - /root/docker-airflow/work/plugins:/usr/local/airflow/plugins
+            - /data/docker-airflow/dags:/usr/local/airflow/dags
+         #   - /root/docker-airflow/plugins:/usr/local/airflow/plugins
         environment:
             - LOAD_EX=n
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
@@ -81,8 +81,8 @@ services:
             - scheduler
         privileged: true
         volumes:
-            - /data/docker-airflow/work/dags:/usr/local/airflow/dags
-            - /root/docker-airflow/work/plugins:/usr/local/airflow/plugins
+            - /data/docker-airflow/dags:/usr/local/airflow/dags
+         #   - /root/docker-airflow/plugins:/usr/local/airflow/plugins
         environment:
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
