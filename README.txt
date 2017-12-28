@@ -25,6 +25,6 @@ git clone https://github.com/jet2007/docker-airflow
 
 
 3.2 重新buiild puckel/docker-airflow:1.8.2
-docker build -t puckel/docker-airflow:1.8.1  . 
+docker build -t puckel/docker-airflow:1.8.2  . 
 
 
