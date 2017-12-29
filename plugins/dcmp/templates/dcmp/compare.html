@@ -1,0 +1,48 @@
+{% extends "airflow/master.html" %}
+{% set compare = True %}
+{% set readonly = True %}
+
+{% block title %}DAG Config Compare - {{ dcmp_dag.dag_name }}{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link href="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/css/diff.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div id="main-container" class="container" style="margin-bottom: 15px;">
+        <div compare="{{ compare }}" readonly="{{ readonly }}" style="display: none;"></div>
+        {% include "dcmp/edit_dag_header.html" with context %}
+        <div style="margin-top: 15px;">
+            {% if dcmp_dag_confs %}
+                <div style="margin-bottom: 15px;">
+                    <div class="dropdown" style="display: inline-block;">
+                        <button class="dropdown-toggle btn btn-default" data-toggle="dropdown" href="javascript:void(0)">
+                            Version: <span id="version">{{ version1 }}</span> <img id="version-loading" style="width: 15px; display: none;" src="{{ url_for("static", filename="loading.gif") }}"> <b class="caret"></b>
+                        </button>
+                        <ul class="dropdown-menu field-filters">
+                            {% for dcmp_dag_conf in dcmp_dag_confs %}
+                                <li><a href="?dag_name={{ dcmp_dag.dag_name }}&version1={{ dcmp_dag_conf.version }}&version2={{ version2 }}" class="compare-version compare-version1" version1="{{ dcmp_dag_conf.version }}" version2="{{ version2 }}">[{{ dcmp_dag_conf.version }}] {{ dcmp_dag_conf.created_at.strftime('%Y-%m-%d %H:%M') }} {{ dcmp_dag_conf.creator_user_name }}{% if dcmp_dag_conf.approved_at %} <span class="glyphicon glyphicon-ok-sign" aria-hidden="true" title="Approved by {{ dcmp_dag_conf.approver_user_name }} {{ dcmp_dag_conf.approved_at.strftime('%Y-%m-%d %H:%M') }}"></span>{% endif %}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <span style="margin: 0 5px;">vs</span>
+                    <div class="dropdown" style="display: inline-block;">
+                        <button class="dropdown-toggle btn btn-default" data-toggle="dropdown" href="javascript:void(0)">
+                            Version: <span id="version">{{ version2 }}</span> <img id="version-loading" style="width: 15px; display: none;" src="{{ url_for("static", filename="loading.gif") }}"> <b class="caret"></b>
+                        </button>
+                        <ul class="dropdown-menu field-filters">
+                            {% for dcmp_dag_conf in dcmp_dag_confs %}
+                                <li><a href="?dag_name={{ dcmp_dag.dag_name }}&version1={{ version1 }}&version2={{ dcmp_dag_conf.version }}" class="compare-version compare-version2" version1="{{ version1 }}" version2="{{ dcmp_dag_conf.version }}">[{{ dcmp_dag_conf.version }}] {{ dcmp_dag_conf.created_at.strftime('%Y-%m-%d %H:%M') }} {{ dcmp_dag_conf.creator_user_name }}{% if dcmp_dag_conf.approved_at %} <span class="glyphicon glyphicon-ok-sign" aria-hidden="true" title="Approved by {{ dcmp_dag_conf.approver_user_name }} {{ dcmp_dag_conf.approved_at.strftime('%Y-%m-%d %H:%M') }}"></span>{% endif %}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+            {{ diff_table|safe }}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,385 @@
+{% extends "airflow/master.html" %}
+{% import 'admin/lib.html' as lib with context %}
+
+{% block title %}DAG Configs{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    {{ lib.form_css() }}
+    <style>
+        span.highlighted{
+            background: #F1C40F;
+            display: inline-block;
+            font-weight: bold;
+            padding: 0 6px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+<h2>DAG Configs</h2>
+<hr/>
+<ul class="nav nav-tabs actions-nav">
+    <li class="active">
+        <a href="javascript:void(0)">List ({{ dcmp_dags_count }})</a>
+    </li>
+    <li>
+        <a href="graph" title="Create New Record">Create</a>
+    </li>
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
+            Add Filter<b class="caret"></b>
+        </a>
+        <ul class="dropdown-menu field-filters">
+            {% for k in filter_groups %}
+            <li>
+                <a href="javascript:void(0)" class="filter" onclick="return false;">{{ k }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </li>
+    <form method="GET" action="" class="navbar-form navbar-left" role="search">
+        {% if search %}
+        <div class="input-group">
+            <input type="text" name="search" value="{{ search }}" class="col-md-2 form-control" placeholder="Search">
+            <a href="?" class="input-group-addon clear"><span class="fa fa-times glyphicon glyphicon-remove"></span></a>
+        </div>
+        {% else %}
+        <div class="form-group">
+            <input type="text" name="search" value="" class="col-md-2 form-control" placeholder="Search">
+        </div>
+        {% endif %}
+    </form>
+</ul>
+<form id="filter_form" method="GET" action="">
+    <div class="pull-right">
+        <button type="submit" class="btn btn-primary" style="display: none">Apply</button>
+        {% if active_filters %}
+        <a href="?" class="btn btn-default">Reset Filters</a>
+        {% endif %}
+    </div>
+
+    <table class="filters"></table>
+</form>
+<div class="clearfix"></div>
+<table class="table table-striped table-bordered table-hover model-list">
+    <thead>
+        <tr>
+            <th class="col-md-1">&nbsp;</th>
+            <th class="column-header">
+                State
+            </th>
+            <th class="column-header">
+                DAG Config Name
+            </th>
+            <th class="column-header">
+                Category
+            </th>
+            <th class="column-header">
+                Schedule
+            </th>
+            <th style="padding-left: 5px;">
+                Recent Tasks
+                <span id="statuses_info" class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Status of tasks from all active DAG runs or, if not currently active, from most recent run."></span>
+                <img id="recent_tasks_loading" width="15" src="{{ url_for("static", filename="loading.gif") }}">
+            </th>
+            <th class="column-header">
+                DAG Runs
+                <span id="statuses_info" class="glyphicon glyphicon-info-sign" aria-hidden="true" title="Status of all previous DAG runs."></span>
+                <img id="dag_runs_loading" width="15" src="{{ url_for("static", filename="loading.gif") }}">
+            </th>
+            {% if search %}
+            <th class="column-header">
+                Search Results
+            </th>
+            {% endif %}
+        </tr>
+    </thead>
+    {% for dcmp_dag in dcmp_dags %}
+    <tr>
+        <td class="list-buttons-column">
+            <a class="icon link-tooltip" href="graph?dag_name={{ dcmp_dag.conf.dag_name }}" title="Edit">
+              <span class="fa fa-pencil glyphicon glyphicon-pencil" data-original-title="" title=""></span>
+            </a>
+            <a class="icon link-tooltip" href="details?dag_name={{ dcmp_dag.conf.dag_name }}" title="Details">
+              <span class="fa fa-pencil glyphicon glyphicon-list" data-original-title="" title=""></span>
+            </a>
+            <a class="icon link-tooltip" href="compare?dag_name={{ dcmp_dag.dag_name }}&version1={{ dcmp_dag.version }}&version2={{ dcmp_dag.version }}" title="Compare">
+              <span class="fa fa-pencil glyphicon glyphicon-duplicate" data-original-title="" title=""></span>
+            </a>
+            {% if can_access_approver %}
+                <form class="icon" action="javascript:void(0)">
+                    <button class="delete-btn link-tooltip" dagname="{{ dcmp_dag.conf.dag_name }}" title="Delete">
+                        <span class="fa fa-trash glyphicon glyphicon-trash"></span>
+                    </button>
+                </form>
+                {% if not dcmp_dag.editing and dcmp_dag.version != dcmp_dag.approved_version %}
+                    <a class="icon link-tooltip" href="approve?dag_name={{ dcmp_dag.conf.dag_name }}" title="Approve">
+                      <span class="fa fa-pencil glyphicon glyphicon-plane" data-original-title="" title=""></span>
+                    </a>
+                {% endif %}
+            {% endif %}
+        </td>
+        <td>
+            {% if dcmp_dag.editing %}
+                <span class="label" style="background-color:lime;" title="{{ dcmp_dag.editing_user_name }}{{ dcmp_dag.editing_start.strftime(' %Y-%m-%d %H:%M') if dcmp_dag.editing_start else '' }}">editing</span>
+            {% elif dcmp_dag.version != dcmp_dag.approved_version %}
+                {% if can_access_approver %}<a href="approve?dag_name={{ dcmp_dag.conf.dag_name }}" style="text-decoration: none;">{% endif %}<span class="label" style="background-color:gold;" title="{{ dcmp_dag.last_editor_user_name }}{{ dcmp_dag.last_edited_at.strftime(' %Y-%m-%d %H:%M') if dcmp_dag.last_edited_at else '' }}">need approve</span>{% if can_access_approver %}</a>{% endif %}
+            {% else %}
+                <span class="label" style="background-color:green;" title="{{ dcmp_dag.approver_user_name }}{{ dcmp_dag.last_approved_at.strftime(' %Y-%m-%d %H:%M') if dcmp_dag.last_approved_at else '' }}">published</span>
+            {% endif %}
+        </td>
+        <td><a href="graph?dag_name={{ dcmp_dag.conf.dag_name }}&readonly=True" class="dag-name" dagname="{{ dcmp_dag.conf.dag_name }}">{{ dcmp_dag.conf.dag_name }}</a> <img class="loading" style="display: none;" width="15" src="{{ url_for("static", filename="loading.gif") }}"></td>
+        <td>{{ dcmp_dag.conf.category }}</td>
+        <td><span class="label label-default">{{ dcmp_dag.conf.cron }}</span></td>
+        <td style="padding:0px; width:200px; height:10px;">
+            <svg height="10" width="10" id='task-run-{{ dcmp_dag.conf.dag_name }}' style="display: block;"></svg>
+        </td>
+        </td>
+        <td style="padding:0px; width:140px; height:10px;">
+            <svg height="10" width="10" id='dag-run-{{ dcmp_dag.conf.dag_name }}' style="display: block;"></svg>
+        </td>
+        {% if search %}
+        <td>
+            {% for search_result in dcmp_dag.search_results %}
+                <div {% if not loop.last %}style="margin-bottom: 5px;"{% endif %}>
+                    <a class="link-tooltip" href="details?dag_name={{ dcmp_dag.conf.dag_name }}&highlight={{ search }}#{{ search_result['full_key'] }}" title="View Record">
+                      <span class="fa fa-pencil glyphicon glyphicon-search" data-original-title="" title=""></span>
+                    </a>
+                    {{ search_result["html_line"]|safe }}
+<!--
+                    <a class="link-tooltip" href="raw?dag_name={{ dcmp_dag.conf.dag_name }}&highlight={{ search }}" title="Edit Record">
+                      <span class="fa fa-pencil glyphicon glyphicon-pencil" data-original-title="" title=""></span>
+                    </a>
+-->
+                </div>
+            {% endfor %}
+        </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+<script src="{{ admin_static.url(filename='admin/js/filters.js', v='1.0.0') }}"></script>
+{{ lib.form_js() }}
+<script language="javascript">
+    (function($) {
+        {% if filter_groups %}
+            var filter = new AdminFilters(
+                '#filter_form', '.field-filters',
+                {{ filter_groups|tojson|safe }},
+                {{ active_filters|tojson|safe }}
+            );
+        {% endif %}
+    })(jQuery);
+</script>
+<script src="{{ url_for('static', filename='d3.v3.min.js') }}"></script>
+<script language="javascript">
+    (function($) {
+        $(".link-tooltip").tooltip();
+
+        diameter = 25;
+        circle_margin = 4;
+        stroke_width = 2;
+        stroke_width_hover = 6;
+        d3.json("{{ url_for('airflow.task_stats') }}", function(error, json) {
+            for(var dag_id in json) {
+                states = json[dag_id];
+                g = d3.select('svg#task-run-' + dag_id)
+                  .attr('height', diameter + (stroke_width_hover * 2))
+                  .attr('width', '180px')
+                  .selectAll("g")
+                  .data(states)
+                  .enter()
+                  .append('g')
+                  .attr('transform', function(d, i) {
+                    x = (i * (diameter + circle_margin)) + (diameter/2 + circle_margin);
+                    y = (diameter/2) + stroke_width_hover;
+                    return 'translate(' + x + ',' + y + ')';
+                  });
+            
+                g.append('text')
+                  .attr('fill', 'black')
+                  .attr('text-anchor', 'middle')
+                  .attr('vertical-align', 'middle')
+                  .attr('font-size', 8)
+                  .attr('y', 3)
+                  .text(function(d){ return d.count > 0 ? d.count : ''; });
+            
+                g.append('circle')
+                  .attr('stroke-width', function(d) {
+                      if (d.count > 0)
+                        return stroke_width;
+                      else {
+                        return 1;
+                      }
+                  })
+                  .attr('stroke', function(d) {
+                      if (d.count > 0)
+                        return d.color;
+                      else {
+                        return 'gainsboro';
+                      }
+                  })
+                  .attr('fill-opacity', 0)
+                  .attr('r', diameter/2)
+                  .attr('title', function(d) {return d.state})
+                  .attr('style', function(d) {
+                    if (d.count > 0)
+                        return"cursor:pointer;"
+                  })
+                  .on('click', function(d, i) {
+                      if (d.count > 0)
+                        window.location = "/admin/taskinstance/?flt1_dag_id_equals=" + d.dag_id + "&flt2_state_equals=" + d.state;
+                  })
+                  .on('mouseover', function(d, i) {
+                    if (d.count > 0) {
+                        d3.select(this).transition().duration(400)
+                          .attr('fill-opacity', 0.3)
+                          .style("stroke-width", stroke_width_hover);
+                    }
+                  })
+                  .on('mouseout', function(d, i) {
+                    if (d.count > 0) {
+                        d3.select(this).transition().duration(400)
+                          .attr('fill-opacity', 0)
+                          .style("stroke-width", stroke_width);
+                    }
+                  })
+                  .style("opacity", 0)
+                  .transition()
+                  .duration(500)
+                  .delay(function(d, i){return i*50;})
+                  .style("opacity", 1);
+                d3.select("#recent_tasks_loading").remove();
+            }
+            $("#statuses_info").tooltip();
+            
+            $("circle").tooltip({
+                html: true,
+                container: "body",
+            });
+        });
+        d3.json("{{ url_for('airflow.dag_stats') }}", function(error, json) {
+            for(var dag_id in json) {
+                states = json[dag_id];
+                g = d3.select('svg#dag-run-' + dag_id)
+                  .attr('height', diameter + (stroke_width_hover * 2))
+                  .attr('width', '110px')
+                  .selectAll("g")
+                  .data(states)
+                  .enter()
+                  .append('g')
+                  .attr('transform', function(d, i) {
+                    x = (i * (diameter + circle_margin)) + (diameter/2 + circle_margin);
+                    y = (diameter/2) + stroke_width_hover;
+                    return 'translate(' + x + ',' + y + ')';
+                  });
+            
+                g.append('text')
+                  .attr('fill', 'black')
+                  .attr('text-anchor', 'middle')
+                  .attr('vertical-align', 'middle')
+                  .attr('font-size', 8)
+                  .attr('y', 3)
+                  .text(function(d){ return d.count > 0 ? d.count : ''; });
+            
+                g.append('circle')
+                  .attr('stroke-width', function(d) {
+                      if (d.count > 0)
+                        return stroke_width;
+                      else {
+                        return 1;
+                      }
+                  })
+                  .attr('stroke', function(d) {
+                      if (d.count > 0)
+                        return d.color;
+                      else {
+                        return 'gainsboro';
+                      }
+                  })
+                  .attr('fill-opacity', 0)
+                  .attr('r', diameter/2)
+                  .attr('title', function(d) {return d.state})
+                  .attr('style', function(d) {
+                    if (d.count > 0)
+                        return"cursor:pointer;"
+                  })
+                  .on('click', function(d, i) {
+                      if (d.count > 0)
+                        window.location = "/admin/dagrun/?flt1_dag_id_equals=" + d.dag_id + "&flt2_state_equals=" + d.state;
+                  })
+                  .on('mouseover', function(d, i) {
+                    if (d.count > 0) {
+                        d3.select(this).transition().duration(400)
+                          .attr('fill-opacity', 0.3)
+                          .style("stroke-width", stroke_width_hover);
+                    }
+                  })
+                  .on('mouseout', function(d, i) {
+                    if (d.count > 0) {
+                        d3.select(this).transition().duration(400)
+                          .attr('fill-opacity', 0)
+                          .style("stroke-width", stroke_width);
+                    }
+                  })
+                  .style("opacity", 0)
+                  .transition()
+                  .duration(500)
+                  .delay(function(d, i){return i*50;})
+                  .style("opacity", 1);
+                d3.select("#dag_runs_loading").remove();
+            }
+            $("#statuses_info").tooltip();
+            
+            $("circle").tooltip({
+                html: true,
+                container: "body",
+            });
+        });
+
+        $(".delete-btn").click(function() {
+            var self = this;
+            if(confirm("Are you sure you want to delete this record?")){
+                $.ajax({
+                    url: 'api?api=delete_dag&dag_name=' + $(self).attr("dagname"),
+                    type: 'GET',
+                    success: function(data){ 
+                        if(data.code == 0){
+                            location.reload();
+                        }else{
+                            alert(data.detail);
+                        }
+                    },
+                    error: function(data) {
+                        alert('Failed!');
+                    }
+                });
+            }
+        });
+        
+//        $(".dag-name").click(function() {
+//            var self = this;
+//            $(self).siblings(".loading").show();
+//            $.ajax({
+//                url: '{{ url_for("airflow.refresh", dag_id="DAG_ID") }}'.replace(/DAG_ID/g, $(self).attr("dagname")),
+//                type: 'GET',
+//                success: function(data){
+//                    $(self).siblings(".loading").hide();
+//                    location.href = '{{ url_for("airflow.graph", dag_id="DAG_ID") }}'.replace(/DAG_ID/g, $(self).attr("dagname"));
+//                },
+//                error: function(data) {
+//                    alert('Failed!');
+//                }
+//            });
+//        });
+    })(jQuery);
+</script>
+{% endblock %}
+

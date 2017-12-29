@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import json
+import logging
+from datetime import datetime, date, time, timedelta
+
+import requests
+from dateutil.relativedelta import relativedelta
+from airflow import DAG
+from airflow import settings
+from airflow.models import Variable, TaskInstance, DagRun
+from airflow.operators.bash_operator import BashOperator
+from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.hive_operator import HiveOperator
+from airflow.operators.python_operator import PythonOperator, ShortCircuitOperator
+from airflow.operators.sensors import TimeSensor, TimeDeltaSensor
+from airflow.utils.email import send_email
+
+
+TI = TaskInstance
+
+
+def send_alert_email(mark, context, raise_exception=False):
+    title = "[%%s] %%s@%%s: Airflow alert" %% (mark, context["dag"].dag_id, context["ti"].hostname)
+    body = (
+        "Log: <a href='{ti.log_url}'>Link</a><br>"
+        "Host: {ti.hostname}<br>"
+        "Log file: {ti.log_filepath}<br>"
+    ).format(**{"ti": context["ti"]})
+    try:
+        send_email(context["task"].email, title, body)
+    except Exception as e:
+        logging.exception("send email failed")
+        if raise_exception:
+            raise e
+
+
+def get_default_params():
+    now = datetime.now()
+    last_month = now + relativedelta(months=-1)
+    return {
+        'yesterday': (now - timedelta(days=1)).strftime("%%Y-%%m-%%d"),
+        'today': now.strftime("%%Y-%%m-%%d"),
+        'this_month': now.strftime("%%Y-%%m"),
+        'this_month_first_day': (now + relativedelta(day=1)).strftime("%%Y-%%m-%%d"),
+        'this_month_last_day': (now + relativedelta(day=31)).strftime("%%Y-%%m-%%d"),
+        'last_month': last_month.strftime("%%Y-%%m"),
+        'last_month_first_day': (last_month + relativedelta(day=1)).strftime("%%Y-%%m-%%d"),
+        'last_month_last_day': (last_month + relativedelta(day=31)).strftime("%%Y-%%m-%%d"),
+    }
+
+
+default_params = get_default_params()
+
+
+default_args = {
+    'owner': '%(owner)s',
+    'start_date': %(start_date_code)s,
+    'end_date': %(end_date_code)s,
+    'email': %(email_code)s,
+    'email_on_failure': %(email_on_failure)s,
+    'email_on_retry': %(email_on_retry)s,
+    'retries': %(retries)s,
+    'retry_delay': timedelta(minutes=%(retry_delay_minutes)s),
+    'depends_on_past': %(depends_on_past)s,
+}
+
+
+dag = DAG(
+    '%(dag_name)s', default_args=default_args, params=default_params, concurrency=%(concurrency)s, max_active_runs=%(max_active_runs)s, schedule_interval=%(cron_code)s)
+
+_ = {}

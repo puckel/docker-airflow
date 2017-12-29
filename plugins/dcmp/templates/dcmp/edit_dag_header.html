@@ -1,0 +1,58 @@
+<h2><span>DAG Config</span>
+    {% if not details %}
+        {% if readonly %}
+            <a href="?dag_name={{ dcmp_dag.dag_name }}" >
+                <span class="glyphicon glyphicon-edit" aria-hidden="true" ></span>
+            </a>
+        {% else %}
+            <small>[{% if dcmp_dag.dag_name %}edit{% else %}create{% endif %}]</small>
+        {% endif %}
+    {% endif %}
+</h2>
+<ul class="nav nav-tabs">
+    <li>
+        <a href="list">List</a></li>
+    <li>
+        <a href="?">Create</a></li>
+    <li {% if graph %}class="active"{% endif %}>
+        <a href="graph?dag_name={{ dcmp_dag.dag_name }}&readonly={{ 'readonly' if readonly else '' }}"><span class="glyphicon glyphicon-certificate" aria-hidden="true"></span> Graph</a></li>
+    <li {% if not graph and not raw and not details and not compare and not approve %}class="active"{% endif %}>
+        <a href="edit?dag_name={{ dcmp_dag.dag_name }}&readonly={{ 'readonly' if readonly else '' }}"><span class="glyphicon glyphicon-tasks" aria-hidden="true"></span> Tasks</a></li>
+    <li {% if raw %}class="active"{% endif %}>
+        <a href="raw?dag_name={{ dcmp_dag.dag_name }}&readonly={{ 'readonly' if readonly else '' }}"><span class="glyphicon glyphicon-flash" aria-hidden="true"></span> Code</a></li>
+    <li {% if details %}class="active"{% endif %}>
+        <a href="details?dag_name={{ dcmp_dag.dag_name }}"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Details</a></li>
+    {% if dcmp_dag.dag_name %}
+    <li {% if compare %}class="active"{% endif %}>
+        <a href="compare?dag_name={{ dcmp_dag.dag_name }}&version1={{ dcmp_dag.version }}&version2={{ dcmp_dag.version }}"><span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span> Compare</a></li>
+    {% endif %}
+    {% if can_access_approver and dcmp_dag.dag_name and dcmp_dag.version != dcmp_dag.approved_version %}
+    <li {% if approve %}class="active"{% endif %}>
+        <a href="approve?dag_name={{ dcmp_dag.dag_name }}"><span class="glyphicon glyphicon-plane" aria-hidden="true"></span> Approve</a></li>
+    {% endif %}
+    {% if not details and not compare and not approve %}
+        {% if dcmp_dag_confs %}
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
+                    Version: <span id="version">{{ dcmp_dag.version }}</span> <img id="version-loading" style="width: 15px; display: none;" src="{{ url_for("static", filename="loading.gif") }}"> <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu field-filters">
+                    {% for dcmp_dag_conf in dcmp_dag_confs %}
+                        <li><a href="javascript:void(0)" class="checkout-version" version="{{ dcmp_dag_conf.version }}">[{{ dcmp_dag_conf.version }}] {{ dcmp_dag_conf.created_at.strftime('%Y-%m-%d %H:%M') }} {{ dcmp_dag_conf.creator_user_name }}{% if dcmp_dag_conf.approved_at %} <span class="glyphicon glyphicon-ok-sign" aria-hidden="true" title="Approved by {{ dcmp_dag_conf.approver_user_name }} {{ dcmp_dag_conf.approved_at.strftime('%Y-%m-%d %H:%M') }}"></span>{% endif %}</a></li>
+                    {% if loop.index == 1 and dcmp_dag_confs|length > 1 %}
+                        <li role="separator" class="divider"></li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
+                Draft <img id="draft-loading" style="width: 15px;" src="{{ url_for("static", filename="loading.gif") }}"> <b class="caret"></b>
+            </a>
+            <ul id="draft-container" class="dropdown-menu field-filters">
+                <li><a href="javascript:void(0)">None</a></li>
+            </ul>
+        </li>
+    {% endif %}
+</ul>

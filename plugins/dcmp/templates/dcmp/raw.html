@@ -1,0 +1,113 @@
+{% extends "dcmp/edit.html" %}
+{% set raw = True %}
+
+{% block title %}DAG Config Code - {{ conf.dag_name }}{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div id="main-container" class="container">
+        <div raw="{{ raw }}" style="display: none;"></div>
+        {% include "dcmp/edit_dag_header.html" with context %}
+        <div id="container-form" action="" method="POST" role="form" class="admin-form form-horizontal" enctype="multipart/form-data" style="margin-top: 15px;">
+            <input class="form-control" id="dag_name" name="dag_name" type="text" style="display: none;" value="{{ conf.dag_name }}">
+            <div style="position: relative">
+                {% if not readonly %}
+                <button class="btn btn-default" id="format_conf" style="position: absolute; right: 15px; top: 15px; z-index: 10;">
+                    <span class="glyphicon glyphicon-align-left" aria-hidden="true"></span>
+                </button>
+                {% endif %}
+                <textarea id="conf" style="display: none;"></textarea>
+            </div>
+            {% include "dcmp/edit_dag_tail.html" with context %}
+        </div>
+    </div>
+</div>
+<a id="download-anchor-elem" style="display:none"></a>
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+{% endblock %}
+
+{% block tail_extra_js %}
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/worker-json.js') }}"></script>
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/mode-json.js') }}"></script>
+    <script>
+    var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
+    
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');
+    
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : sParameterName[1];
+            }
+        }
+    };
+    
+    window.init_conf = function() {
+        var value = JSON.stringify(conf, undefined, 4);
+        try{
+            editor.setValue(value);
+        }catch(e){
+            $("#conf").val(value);
+        };
+        refresh_last_draft_conf_string();
+    };
+    
+    window.form_to_conf = function(no_alert) {
+        try{
+            conf = JSON.parse($("#conf").val());
+        }catch(e){
+            if(!no_alert){
+                alert("JSON parse failed");
+            }
+            throw e;
+        };
+        return conf;
+    };
+
+    $(document).ready(function(){
+        var textarea_clone = $('#conf').clone().attr('id', 'conf_clone').appendTo($('#conf').parent());
+        var textarea = $('#conf').hide();
+        window.editor = ace.edit('conf_clone');
+        editor.setTheme('ace/theme/crimson_editor');
+        var options = {
+            readOnly: readonly,
+            wrap: "free",
+            showPrintMargin: false,
+            minLines: 20,
+            maxLines: Infinity
+        }
+        editor.setOptions(options);
+        editor.getSession().setMode('ace/mode/json');
+        editor.getSession().on('change', function(){
+            textarea.val(editor.getSession().getValue());
+            try{
+                $("#dag_name").val(JSON.parse(textarea.val()).dag_name);
+            }catch(e){
+                ;
+            };
+        });
+        
+        var highlight = getUrlParameter("highlight");
+        if(highlight){
+            editor.findAll(highlight);
+        };
+        
+        $("#format_conf").click(function() {
+            form_to_conf();
+            init_conf();
+        });
+    });
+    </script>
+    <script src="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/js/edit.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "airflow/master.html" %}
+{% set approve = True %}
+{% set readonly = True %}
+
+{% block title %}DAG Config Approve - {{ dcmp_dag.dag_name }}{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link href="{{ url_for('dag_creation_manager_bp.static', filename='dcmp/css/diff.css') }}" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block body %}
+
+<div class="row">
+    <div id="main-container" class="container" style="margin-bottom: 15px;">
+        <div compare="{{ approve }}" readonly="{{ readonly }}" style="display: none;"></div>
+        {% include "dcmp/edit_dag_header.html" with context %}
+        <div style="margin-top: 15px;">
+            {{ diff_table|safe }}
+        </div>
+        <hr>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10 submit-row">
+                <input id="approve-btn" type="button" class="btn btn-primary" value="Approve" />
+                <a href="list" class="btn btn-danger" role="button">Cancel</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script>
+    $(document).ready(function(){
+        var approve_dag = function(success_cb, error_cb) {
+            success_cb = success_cb || function() {};
+            error_cb = error_cb || function() { alert('Failed!'); };
+            $.ajax({
+                url: 'api?api=approve_dag&dag_name={{ dcmp_dag.dag_name }}&version={{ dcmp_dag.version }}',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                success: success_cb,
+                error: error_cb
+            });
+        };
+        $("#approve-btn").click(function() {
+            approve_dag(function(data){ 
+                if(data.code == 0){
+                    location.href = "list";
+                }else{
+                    alert(data.detail);
+                }
+            });
+        });
+    });
+    </script>
+{% endblock %}
