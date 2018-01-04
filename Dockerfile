@@ -89,7 +89,12 @@ RUN set -ex \
     && pip3 install celery==4.1.0 \
     && pip3 install kubernetes \
     && pip3 install https://github.com/docker/docker-py/archive/1.10.6.zip \
-    && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc,gcp_api]==$AIRFLOW_VERSION \
+    && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
+    && pip3 install httplib2 \
+    && pip3 install "google-api-python-client>=1.5.0,<1.6.0" \
+    && pip3 install "PyOpenSSL" \
+    && pip3 install "oauth2client>=2.0.2,<2.1.0" \
+    && pip3 install pandas-gbq \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \
