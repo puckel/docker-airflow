@@ -14,7 +14,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=1.8.1
+ARG AIRFLOW_VERSION=1.9.0
 ENV AIRFLOW_HOME /usr/local/airflow
 
 # Define en_US.
@@ -24,7 +24,7 @@ ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 ENV LC_ALL  en_US.UTF-8
-ENV PYTHONPATH=:/usr/local/airflow/dags
+ENV PYTHONPATH=:/usr/local/airflow/dags:/usr/local/airflow/config
 
 RUN set -ex \
     && buildDeps=' \
@@ -89,8 +89,7 @@ RUN set -ex \
     && pip3 install celery==4.1.0 \
     && pip3 install kubernetes \
     && pip3 install https://github.com/docker/docker-py/archive/1.10.6.zip \
-    && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
-    && pip3 install https://github.com/medicode/incubator-airflow/archive/v1-8-test.zip \
+    && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc,gcp_api]==$AIRFLOW_VERSION \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \

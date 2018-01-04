@@ -42,6 +42,7 @@ if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; the
   if [ "$1" = "webserver" ]; then
     echo "Initialize database..."
     $CMD initdb
+    $CMD connections --add --conn_id gcs --conn_type google_cloud_platorm --conn_extra '{"extra__google_cloud_platform__key_path":"/usr/local/airflow/secrets/gcs_key.json", "extra__google_cloud_platform__project": "fathom-containers", "extra__google_cloud_platform__scope": "https://www.googleapis.com/auth/cloud-platform"}'
   fi
   sleep 5
 fi
