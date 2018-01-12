@@ -17,6 +17,8 @@ services:
             - EXECUTOR=Local
         volumes:
             - ./dags:/usr/local/airflow/dags
+            # Uncomment to include custom plugins 
+            # - ./plugins:/usr/local/airflow/dags
         ports:
             - "8080:8080"
         command: webserver
