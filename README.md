@@ -78,7 +78,7 @@ In order to incorporate plugins into your docker container
 - Create the plugins folders `plugins/` with your custom plugins.
 - Mount the folder as a volume by doing either of the following: 
     - Include the folder as a volume in command-line `-v $(pwd)/plugins/:/usr/local/airflow/plugins`
-    - Use docker-compose-LocalExecutor.yml or docker-compose-CeleryExecutor.yml which contain support for adding the plugins folder as a volume
+    - Use docker-compose-LocalExecutor.yml or docker-compose-CeleryExecutor.yml which contains support for adding the plugins folder as a volume
 
 ## Install custom python package
 
