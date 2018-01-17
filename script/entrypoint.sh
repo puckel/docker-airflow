@@ -31,7 +31,7 @@ then
   AIRFLOW__CORE__LOAD_EXAMPLES=False
 fi
 
-# Install custome python package if requirements.txt is present
+# Install custom python package if requirements.txt is present
 if [ -e "/requirements.txt" ]; then
     $(which pip) install --user -r /requirements.txt
 fi
