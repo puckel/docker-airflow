@@ -70,6 +70,15 @@ Check out the [Airflow documentation](http://airflow.readthedocs.io/en/latest/co
 
 You can also define connections via environment variables by prefixing them with `AIRFLOW_CONN_` - for example `AIRFLOW_CONN_POSTGRES_MASTER=postgres://user:password@localhost:5432/master` for a connection called "postgres_master". The value is parsed as a URI. This will work for hooks etc, but won't show up in the "Ad-hoc Query" section unless an (empty) connection is also created in the DB
 
+## Custom Airflow plugins
+
+Airflow allows for custom user-created plugins which are typically found in `${AIRFLOW_HOME}/plugins` folder. Documentation on plugins can be found [here](https://airflow.apache.org/plugins.html)
+
+In order to incorporate plugins into your docker container
+- Create the plugins folders `plugins/` with your custom plugins.
+- Mount the folder as a volume by doing either of the following: 
+    - Include the folder as a volume in command-line `-v $(pwd)/plugins/:/usr/local/airflow/plugins`
+    - Use docker-compose-LocalExecutor.yml or docker-compose-CeleryExecutor.yml which contains support for adding the plugins folder as a volume
 
 ## Install custom python package
 
