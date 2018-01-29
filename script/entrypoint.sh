@@ -57,7 +57,7 @@ wait_for_port() {
 }
 
 wait_for_redis() {
-  # Wait for Redis iff we are using it
+  # Wait for Redis if we are using it
   if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]
   then
     wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
