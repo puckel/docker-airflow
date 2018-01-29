@@ -36,6 +36,7 @@ RUN set -ex \
         git \
     ' \
     && apt-get update -yqq \
+    && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
         python3-pip \
