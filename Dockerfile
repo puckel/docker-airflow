@@ -92,7 +92,6 @@ RUN set -ex \
     && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
     && pip3 install httplib2 \
     && pip3 install "google-api-python-client>=1.5.0,<1.6.0" \
-    && pip3 install google-cloud-storage==1.6.0 \
     && pip3 install "PyOpenSSL" \
     && pip3 install "oauth2client>=2.0.2,<2.1.0" \
     && pip3 install pandas-gbq \
