@@ -39,9 +39,9 @@ RUN set -ex \
     ' \
     && echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sources.list.d/backports.list \
     && apt-get update -yqq \
+    && apt-get install -y --no-install-recommends software-properties-common python-software-properties \
     && apt-get install -yqq --no-install-recommends --allow-unauthenticated \
         $buildDeps \
-        python-pip \
         apt-utils \
         curl \
         netcat \
@@ -53,8 +53,6 @@ RUN set -ex \
         vim \
         wget \
         unzip \
-        python3-pip \
-        python3-dev \
     && apt-get install -yqq --allow-unauthenticated  -t jessie-backports python-requests libpq-dev \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
@@ -71,8 +69,23 @@ RUN set -ex \
     && sudo apt-get update \
     && sudo apt-get -y --allow-unauthenticated install docker-engine nvidia-modprobe \
     && wget -P /tmp https://github.com/NVIDIA/nvidia-docker/releases/download/v1.0.1/nvidia-docker_1.0.1-1_amd64.deb \
-    && sudo dpkg -i /tmp/nvidia-docker*.deb \
-    && pip3 install --upgrade pip \
+    && sudo dpkg -i /tmp/nvidia-docker*.deb
+
+RUN add-apt-repository ppa:jonathonf/python-3.6 && apt-get update
+RUN apt-get install -yqq python3.6 python3.6-dev
+
+RUN rm /usr/bin/python3 && ln -s /usr/bin/python3.6 /usr/bin/python3
+
+RUN echo 'alias python=python3.6' >> ~/.bashrc
+RUN echo 'alias python3=python3.6' >> ~/.bashrc
+RUN echo 'alias pip=pip3.6' >> ~/.bashrc
+RUN echo 'alias pip3=pip3.6' >> ~/.bashrc
+
+RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
+    python3.6 get-pip.py && \
+    rm get-pip.py
+
+RUN pip3 install --upgrade pip \
     && pip3 install setuptools \
     && pip3 install packaging \
     && pip3 install appdirs \
