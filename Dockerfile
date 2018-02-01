@@ -108,8 +108,6 @@ RUN pip3 install --upgrade pip \
     && pip3 install "PyOpenSSL" \
     && pip3 install "oauth2client>=2.0.2,<2.1.0" \
     && pip3 install pandas-gbq \
-    && pip3 install google-cloud-storage \
-    && pip3 install google-cloud-logging \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \

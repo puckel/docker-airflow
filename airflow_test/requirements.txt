@@ -9,8 +9,3 @@ mock==2.0.0
 git+git://github.com/google/python-fire.git@v0.1.1
 defusedxml==0.4.1
 beautifulsoup4==4.6.0
-google-cloud-storage==1.6.0
-google-cloud-logging==1.4.0
-dogpile.cache==0.6.4
-lru-dict==1.1.6
-sympy==1.1.1
