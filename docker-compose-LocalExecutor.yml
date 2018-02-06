@@ -17,6 +17,7 @@ services:
             - EXECUTOR=Local
         volumes:
             - ./dags:/usr/local/airflow/dags
+            - ./config:/usr/local/airflow/config
             # Uncomment to include custom plugins 
             # - ./plugins:/usr/local/airflow/plugins
         ports:
