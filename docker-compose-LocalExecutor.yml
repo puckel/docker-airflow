@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 services:
     postgres:
         image: postgres:9.6
@@ -8,7 +8,7 @@ services:
             - POSTGRES_DB=airflow
 
     webserver:
-        image: puckel/docker-airflow:1.8.2
+        image: puckel/docker-airflow:1.9.0
         restart: always
         depends_on:
             - postgres
@@ -17,6 +17,13 @@ services:
             - EXECUTOR=Local
         volumes:
             - ./dags:/usr/local/airflow/dags
+            # Uncomment to include custom plugins 
+            # - ./plugins:/usr/local/airflow/plugins
         ports:
             - "8080:8080"
         command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
