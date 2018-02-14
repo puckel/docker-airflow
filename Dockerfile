@@ -41,8 +41,8 @@ RUN set -ex \
         $buildDeps \
         python3-pip \
         python3-requests \
-        libmysqlclient-dev \
-        mysql \
+        mysql-client \
+        mysql-server \
         apt-utils \
         curl \
         rsync \
