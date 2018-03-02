@@ -6,10 +6,10 @@ machine:
 
 dependencies:
   override:
-    - docker build -t puckel/docker-airflow .
+    - docker build -t stibbons31/docker-airflow-dev:2.0dev .
 
 test:
   pre:
     - sleep 5
   override:
-    - docker run puckel/docker-airflow version |grep '1.9.0'
+    - docker run stibbons31/docker-airflow-dev:2.0dev version |grep '1.10.0dev0'
