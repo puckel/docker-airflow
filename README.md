@@ -62,23 +62,8 @@ For encrypted connection passwords (in Local or Celery Executor), you must have 
 
         python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY"
 
-## Configurating Airflow
+Check [Airflow Documentation](https://pythonhosted.org/airflow/)
 
-It is possible to set any configuration value for Airflow from environment variables, which are used over values from the airflow.cfg. The general rule is the environment variable should be named `AIRFLOW__<section>__<key>`, for example `AIRFLOW__CORE__SQL_ALCHEMY_CONN` sets the `sql_alchemy_conn` config option in the `[core]` section.
-
-Check out the [Airflow documentation](http://airflow.readthedocs.io/en/latest/configuration.html?highlight=__CORE__#setting-configuration-options) for more details
-
-You can also define connections via environment variables by prefixing them with `AIRFLOW_CONN_` - for example `AIRFLOW_CONN_POSTGRES_MASTER=postgres://user:password@localhost:5432/master` for a connection called "postgres_master". The value is parsed as a URI. This will work for hooks etc, but won't show up in the "Ad-hoc Query" section unless an (empty) connection is also created in the DB
-
-## Custom Airflow plugins
-
-Airflow allows for custom user-created plugins which are typically found in `${AIRFLOW_HOME}/plugins` folder. Documentation on plugins can be found [here](https://airflow.apache.org/plugins.html)
-
-In order to incorporate plugins into your docker container
-- Create the plugins folders `plugins/` with your custom plugins.
-- Mount the folder as a volume by doing either of the following: 
-    - Include the folder as a volume in command-line `-v $(pwd)/plugins/:/usr/local/airflow/plugins`
-    - Use docker-compose-LocalExecutor.yml or docker-compose-CeleryExecutor.yml which contains support for adding the plugins folder as a volume
 
 ## Install custom python package
 
@@ -92,6 +77,9 @@ In order to incorporate plugins into your docker container
 - Flower: [localhost:5555](http://localhost:5555/)
 
 
+## Rest Api
+added rest api plugin [airflow-rest-api-plugin](https://github.com/teamclairvoyant/airflow-rest-api-plugin)
+
 ## Scale the number of workers
 
 Easy scaling using docker-compose:
@@ -99,21 +87,6 @@ Easy scaling using docker-compose:
         docker-compose scale worker=5
 
 This can be used to scale to a multi node setup using docker swarm.
-
-## Running other airflow commands
-
-If you want to run other airflow sub-commands, such as `list_dags` or `clear` you can do so like this:
-
-        docker run --rm -ti puckel/docker-airflow airflow list_dags
-
-or with your docker-compose set up like this:
-
-        docker-compose -f docker-compose-CeleryExecutor.yml run --rm webserver airflow list_dags
-
-You can also use this to run a bash shell or any other command in the same environment that airflow would be run in:
-
-          docker run --rm -ti puckel/docker-airflow bash
-          docker run --rm -ti puckel/docker-airflow ipython
 
 # Wanna help?
 
