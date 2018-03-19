@@ -1,4 +1,4 @@
-FROM fathomhealth/docker-airflow
+FROM gcr.io/fathom-containers/docker-airflow
 
 COPY requirements.txt /usr/local/airflow
 
