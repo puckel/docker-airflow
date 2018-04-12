@@ -62,6 +62,7 @@ RUN set -ex \
     && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql]==$AIRFLOW_VERSION \
     && pip install celery[redis]==4.0.2 \
     && apt-get purge --auto-remove -yqq $buildDeps \
+    && apt-get autoremove -yqq --purge \
     && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
