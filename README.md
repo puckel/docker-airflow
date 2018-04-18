@@ -45,6 +45,13 @@ For **CeleryExecutor** :
 
         docker-compose -f docker-compose-CeleryExecutor.yml up -d
 
+
+For **CeleryExecutor in docker swarm mode**: (This stack yml file helps when working with docker swarm mode)
+
+        docker stack deploy -c docker-airflow-stack.yml airflow  #to deploy serivces stack
+        docker stack airflow ps #for viewing all linked services for particualar stack
+
+
 NB : If you don't want to have DAGs example loaded (default=True), you've to set the following environment variable :
 
 `LOAD_EX=n`
