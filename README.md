@@ -33,7 +33,7 @@ For example, if you need to install [Extra Packages](https://airflow.incubator.a
 
 By default, docker-airflow runs Airflow with **SequentialExecutor** :
 
-        docker run -d -p 8080:8080 puckel/docker-airflow
+        docker run -d -p 8080:8080 puckel/docker-airflow webserver
 
 If you want to run another executor, use the other docker-compose.yml files provided in this repository.
 
