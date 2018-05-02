@@ -106,6 +106,7 @@ RUN pip3 install --upgrade pip \
     && pip3 install httplib2 \
     && pip3 install "google-api-python-client>=1.5.0,<1.6.0" \
     && pip3 install "PyOpenSSL" \
+    && pip3 install flask-oauthlib \
     && pip3 install "oauth2client>=2.0.2,<2.1.0" \
     && pip3 install pandas-gbq \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
