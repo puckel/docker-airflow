@@ -31,6 +31,8 @@ For example, if you need to install [Extra Packages](https://airflow.incubator.a
 
 Don't forget to update the airflow images in the docker-compose files to puckel/docker-airflow:latest.
 
+Don't forget to update the airflow images in the docker-compose files to puckel/docker-airflow:latest.
+
 ## Usage
 
 By default, docker-airflow runs Airflow with **SequentialExecutor** :
