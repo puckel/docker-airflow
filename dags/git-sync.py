@@ -18,6 +18,6 @@ dag = DAG(
     'git_sync',
     default_args=default_args,
     catchup=False,
-    schedule_interval='* * * * *')
+    schedule_interval='*/5 * * * *')
 
 BashOperator(task_id='git-sync', bash_command='git-sync.sh ', dag=dag)

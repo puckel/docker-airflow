@@ -75,7 +75,14 @@ RUN set -ex \
 RUN apt-get update && apt-get install git -yqq
 
 ENV BIN_HOME=/usr/local/bin
+ENV AIRFLOW__CORE__AIRFLOW_HOME=${AIRFLOW_HOME}
+ENV AIRFLOW__CORE__DAGS_FOLDER=${AIRFLOW_HOME}/dags
+ENV AIRFLOW__CORE__BASE_LOG_FOLDER=${AIRFLOW_HOME}/logs
 ENV AIRFLOW__CORE__EXECUTOR=LocalExecutor
+ENV AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
+ENV AIRFLOW__CORE__LOAD_EXAMPLES=False
+ENV AIRFLOW__CORE__PLUGINS_FOLDER=${AIRFLOW_HOME}/plugins
+ENV AIRFLOW__CORE__DONOT_PICKLE=True
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY script/git-sync.py ${BIN_HOME}/git-sync.py
@@ -83,9 +90,11 @@ COPY script/git-sync.sh ${BIN_HOME}/git-sync.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 COPY resources/known_hosts ${AIRFLOW_HOME}/.ssh/known_hosts
 
-RUN chown -R airflow: ${AIRFLOW_HOME} \
+RUN \
+  mkdir -p ${AIRFLOW_HOME}/dags \
   && chmod 755 ${BIN_HOME}/git-sync.* \
-  && chmod 755 ${AIRFLOW_HOME}/.ssh/known_hosts
+  && chmod 755 ${AIRFLOW_HOME}/.ssh/known_hosts \
+  && chown -R airflow: ${AIRFLOW_HOME}
 
 EXPOSE 8080 5555 8793
 

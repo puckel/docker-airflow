@@ -19,7 +19,7 @@ services:
             - LOAD_EX=n
             - EXECUTOR=Local
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - ./dags:/usr/local/airflow/dags/system_dags
             - ~/.ssh/airflow_rsa:/usr/local/airflow/.ssh/id_rsa
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
