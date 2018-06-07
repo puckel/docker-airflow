@@ -6,9 +6,12 @@ services:
             - POSTGRES_USER=airflow
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
+        ports:
+            - "5433:5432"
 
     webserver:
         image: we/docker-airflow:1.9.0-3
+        env_file: dev.env
         restart: always
         depends_on:
             - postgres
@@ -17,7 +20,7 @@ services:
             - EXECUTOR=Local
         volumes:
             - ./dags:/usr/local/airflow/dags
-            # - ~/.ssh/airflow_rsa:
+            - ~/.ssh/airflow_rsa:/usr/local/airflow/.ssh/id_rsa
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
@@ -28,22 +31,3 @@ services:
             interval: 30s
             timeout: 30s
             retries: 3
-
-    scheduler:
-        image: we/docker-airflow:1.9.0-3
-        restart: always
-        depends_on:
-            - webserver
-        volumes:
-            - ./dags:/usr/local/airflow/dags
-            # Uncomment to include custom plugins
-            # - ./plugins:/usr/local/airflow/plugins
-        environment:
-            - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
-            # - REDIS_PASSWORD=redispass
-        command: scheduler

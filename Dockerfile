@@ -72,10 +72,20 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
-COPY script/entrypoint.sh /entrypoint.sh
-COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+RUN apt-get update && apt-get install git -yqq
 
-RUN chown -R airflow: ${AIRFLOW_HOME}
+ENV BIN_HOME=/usr/local/bin
+ENV AIRFLOW__CORE__EXECUTOR=LocalExecutor
+
+COPY script/entrypoint.sh /entrypoint.sh
+COPY script/git-sync.py ${BIN_HOME}/git-sync.py
+COPY script/git-sync.sh ${BIN_HOME}/git-sync.sh
+COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY resources/known_hosts ${AIRFLOW_HOME}/.ssh/known_hosts
+
+RUN chown -R airflow: ${AIRFLOW_HOME} \
+  && chmod 755 ${BIN_HOME}/git-sync.* \
+  && chmod 755 ${AIRFLOW_HOME}/.ssh/known_hosts
 
 EXPOSE 8080 5555 8793
 
