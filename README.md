@@ -1,3 +1,17 @@
+# WeWork's Airflow Docker Image
+
+This is WeWork's fork of the venerable "puckel" image.
+
+We forked this container to add some customizations. In the long run we may move away from this container.
+
+Our customizations include:
+
+- Builtin support for automatic Git-Sync, installed as a Airflow job
+
+Everything below is the original README
+------
+
+
 # docker-airflow
 [![CircleCI branch](https://img.shields.io/circleci/project/puckel/docker-airflow/master.svg?maxAge=2592000)](https://circleci.com/gh/puckel/docker-airflow/tree/master)
 [![Docker Build Status](https://img.shields.io/docker/build/puckel/docker-airflow.svg)]()
