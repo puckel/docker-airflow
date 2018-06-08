@@ -4,9 +4,18 @@ This is WeWork's fork of the venerable "puckel" image.
 
 We forked this container to add some customizations. In the long run we may move away from this container.
 
-Our customizations include:
+Customizations include:
 
 - Builtin support for automatic Git-Sync, installed as a Airflow job
+- Git sync uses a read-only RSA key to authenticate with Github
+- The RSA key is read through the environment
+- Hard-coded Airflow configs as env vars, which supercede the config files and picked up by the Airflow cli.
+
+You can grab the RSA key from the Data Engineering vault in 1Password, under "Airflow Github RSA Flat File." The key needs to be flat for use as an env var. 
+
+You can export it via:
+
+	export AIRFLOW_GITHUB_RSA=$(cat ~/.ssh/airflow_rsa.flat)
 
 Everything below is the original README
 ------
