@@ -18,9 +18,10 @@ services:
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
+            - AIRFLOW_GITHUB_RSA=$AIRFLOW_RSA
         volumes:
             - ./dags:/usr/local/airflow/dags/system_dags
-            - ~/.ssh/airflow_rsa:/usr/local/airflow/.ssh/id_rsa
+            # - ~/.ssh/airflow_rsa:/usr/local/airflow/.ssh/id_rsa
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
