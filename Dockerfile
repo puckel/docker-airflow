@@ -46,7 +46,12 @@ RUN set -ex \
         default-libmysqlclient-dev \
         apt-utils \
         curl \
+        vim \
+        net-tools \
+        dnsutils \
+        procps \
         rsync \
+        openssl \
         netcat \
         locales \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
@@ -74,6 +79,7 @@ RUN set -ex \
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY dags ${AIRFLOW_HOME}/
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
