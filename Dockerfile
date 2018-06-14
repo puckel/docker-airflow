@@ -46,7 +46,12 @@ RUN set -ex \
         default-libmysqlclient-dev \
         apt-utils \
         curl \
+        vim \
+        net-tools \
+        dnsutils \
+        procps \
         rsync \
+        openssl \
         netcat \
         locales \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
