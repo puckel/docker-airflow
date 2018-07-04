@@ -3,9 +3,9 @@
 AIRFLOW_HOME="/usr/local/airflow"
 CMD="airflow"
 TRY_LOOP="10"
-POSTGRES_HOST="postgres"
+POSTGRES_HOST="airflow"
 POSTGRES_PORT="5432"
-RABBITMQ_HOST="rabbitmq"
+RABBITMQ_HOST="airflow"
 RABBITMQ_CREDS="airflow:airflow"
 : ${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")}
 # FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")
