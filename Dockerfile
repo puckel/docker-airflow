@@ -99,7 +99,7 @@ RUN pip3 install --upgrade pip \
     && pip3 install pyasn1 \
     && pip3 install psycopg2 \
     && pip3 install pandas==0.18.1 \
-    && pip3 install celery==4.1.0 \
+    && pip3 install celery==4.1.1 \
     && pip3 install kubernetes \
     && pip3 install https://github.com/docker/docker-py/archive/1.10.6.zip \
     && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \

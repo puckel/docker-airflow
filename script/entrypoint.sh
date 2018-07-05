@@ -3,9 +3,9 @@
 AIRFLOW_HOME="/usr/local/airflow"
 CMD="airflow"
 TRY_LOOP="10"
-POSTGRES_HOST="postgres"
+POSTGRES_HOST="${POSTGRES_HOST:-postgres}"
 POSTGRES_PORT="5432"
-RABBITMQ_HOST="rabbitmq"
+RABBITMQ_HOST="${RABBITMQ_HOST:-rabbitmq}"
 RABBITMQ_CREDS="airflow:airflow"
 : ${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")}
 # FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")
@@ -73,7 +73,7 @@ else
     exec $CMD version
   fi
   sed -i "s/executor = CeleryExecutor/executor = SequentialExecutor/" "$AIRFLOW_HOME"/airflow.cfg
-  sed -i "s#sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@postgres/airflow#sql_alchemy_conn = sqlite:////usr/local/airflow/airflow.db#" "$AIRFLOW_HOME"/airflow.cfg
+  sed -i "s#sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@${POSTGRES_HOST}/airflow#sql_alchemy_conn = sqlite:////usr/local/airflow/airflow.db#" "$AIRFLOW_HOME"/airflow.cfg
   echo "Initialize database..."
   $CMD initdb
   exec $CMD webserver
