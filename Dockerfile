@@ -24,6 +24,7 @@ ENV LC_MESSAGES en_US.UTF-8
 
 RUN set -ex \
     && buildDeps=' \
+        freetds-dev \
         python3-dev \
         libkrb5-dev \
         libsasl2-dev \
@@ -39,6 +40,7 @@ RUN set -ex \
     && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
+        freetds-bin \
         python3-pip \
         python3-requests \
         mysql-client \
