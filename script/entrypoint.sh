@@ -13,7 +13,7 @@ if [ "$DB_TYPE" = "mysql" ];then
 : "${MYSQL_USER:="airflow"}"
 : "${MYSQL_PASSWORD:="airflow"}"
 : "${MYSQL_DB:="airflow"}"
-else.
+else
 : "${POSTGRES_HOST:="postgres"}"
 : "${POSTGRES_PORT:="5432"}"
 : "${POSTGRES_USER:="airflow"}"
