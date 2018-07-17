@@ -4,7 +4,7 @@
 # BUILD: docker build --rm -t puckel/docker-airflow .
 # SOURCE: https://github.com/puckel/docker-airflow
 
-FROM python:3.6-slim
+FROM python:2.7-slim
 LABEL maintainer="Puckel_"
 
 # Never prompts the user for choices on installation/configuration of packages
@@ -24,7 +24,8 @@ ENV LC_MESSAGES en_US.UTF-8
 
 RUN set -ex \
     && buildDeps=' \
-        python3-dev \
+        python-pip \
+        python-dev \
         libkrb5-dev \
         libsasl2-dev \
         libssl-dev \
@@ -39,10 +40,8 @@ RUN set -ex \
     && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
-        python3-pip \
-        python3-requests \
-        mysql-client \
-        mysql-server \
+        python-pip \
+        python-requests \
         default-libmysqlclient-dev \
         apt-utils \
         curl \
@@ -59,7 +58,7 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql]==$AIRFLOW_VERSION \
+    && pip install apache-airflow[crypto,celery,postgres]==$AIRFLOW_VERSION \
     && pip install celery[redis]==4.1.1 \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \

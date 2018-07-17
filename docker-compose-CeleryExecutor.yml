@@ -14,23 +14,24 @@ services:
         #     - PGDATA=/var/lib/postgresql/data/pgdata
         # volumes:
         #     - ./pgdata:/var/lib/postgresql/data/pgdata
+        #${NAME}
 
     webserver:
-        image: puckel/docker-airflow:1.9.0-4
+        image: puckel/docker-airflow:latest
         restart: always
         depends_on:
             - postgres
             - redis
         environment:
             - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - FERNET_KEY=${DOCKER_AIRFLOW_FERNET}
             - EXECUTOR=Celery
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - ${DOCKER_AIRFLOW_DAGS}:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
@@ -43,7 +44,7 @@ services:
             retries: 3
 
     flower:
-        image: puckel/docker-airflow:1.9.0-4
+        image: puckel/docker-airflow:latest
         restart: always
         depends_on:
             - redis
@@ -55,17 +56,17 @@ services:
         command: flower
 
     scheduler:
-        image: puckel/docker-airflow:1.9.0-4
+        image: puckel/docker-airflow:latest
         restart: always
         depends_on:
             - webserver
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - ${DOCKER_AIRFLOW_DAGS}:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
             - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - FERNET_KEY=${DOCKER_AIRFLOW_FERNET}
             - EXECUTOR=Celery
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
@@ -74,16 +75,16 @@ services:
         command: scheduler
 
     worker:
-        image: puckel/docker-airflow:1.9.0-4
+        image: puckel/docker-airflow:latest
         restart: always
         depends_on:
             - scheduler
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - ${DOCKER_AIRFLOW_DAGS}:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - FERNET_KEY=${DOCKER_AIRFLOW_FERNET}
             - EXECUTOR=Celery
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
