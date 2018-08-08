@@ -95,10 +95,10 @@ workflows:
     jobs:
       - tag_and_push:
           context: ecr-access
-          filters:
-            branches:
-              only:
-                - /deploy.*/
+          # filters:
+          #   branches:
+          #     only:
+          #       - /deploy.*/
       - deploy-dev:
           context: kube-deploy-dev
           filters:
