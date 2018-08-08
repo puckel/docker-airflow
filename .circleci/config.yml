@@ -20,8 +20,8 @@
           entrypoint: /bin/sh
           environment:
             KUBECTL_TOKEN: $KUBECTL_TOKEN
-            ENV: dev
-            SERVICE: data
+            ENV: data
+            SERVICE: airflow
       steps:
         - attach_workspace:
             at: .
