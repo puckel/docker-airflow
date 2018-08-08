@@ -1,141 +1,141 @@
+version: 2
+jobs:
+  tag_and_push:
+    docker:
+      - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/build:latest
+    steps:
+      - checkout
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .git
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image, Tag, and push to ECR
+          command: bash /buildAndPush.sh
+
+  deploy-dev:
+    docker:
+      - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/kubectl:latest
+        entrypoint: /bin/sh
+        environment:
+          KUBECTL_TOKEN: $KUBECTL_TOKEN
+          ENV: data
+          SERVICE: airflow
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Deploy Recommendations
+          environment:
+            RESOURCE_TYPE: cronjob
+            RESOURCE_NAME: data-recs
+            COMPONENT: python
+          command: bash /cicd/deploy.sh
+
+      - run:
+          name: Update Recommendations Metadata
+          environment:
+            RESOURCE_TYPE: cronjob
+            RESOURCE_NAME: data-recs
+            COMPONENT: python
+          command: bash /cicd/updateMeta.sh
+
+  deploy-prod:
+    docker:
+      - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/kubectl:latest
+        entrypoint: /bin/sh
+        environment:
+          KUBECTL_TOKEN: $KUBECTL_TOKEN
+          ENV: prod
+          SERVICE: data
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+
+  deploy-content:
+    docker:
+      - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/kubectl:latest
+        entrypoint: /bin/sh
+        environment:
+          KUBECTL_TOKEN: $KUBECTL_TOKEN
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+
+  deploy-qa:
+    docker:
+      - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/kubectl:latest
+        entrypoint: /bin/sh
+        environment:
+          KUBECTL_TOKEN: $KUBECTL_TOKEN
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+
+
+  deploy-staging:
+    docker:
+      - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/kubectl:latest
+        entrypoint: /bin/sh
+        environment:
+          KUBECTL_TOKEN: $KUBECTL_TOKEN
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+
+
+workflows:
   version: 2
-  jobs:
-    tag_and_push:
-      docker:
-        - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/build:latest
-      steps:
-        - checkout
-        - persist_to_workspace:
-            root: .
-            paths:
-              - .git
-        - setup_remote_docker
-        - run:
-            name: Build Docker Image, Tag, and push to ECR
-            command: bash /buildAndPush.sh
-
-    deploy-dev:
-      docker:
-        - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/kubectl:latest
-          entrypoint: /bin/sh
-          environment:
-            KUBECTL_TOKEN: $KUBECTL_TOKEN
-            ENV: data
-            SERVICE: airflow
-      steps:
-        - attach_workspace:
-            at: .
-        - run:
-            name: Deploy Recommendations
-            environment:
-              RESOURCE_TYPE: cronjob
-              RESOURCE_NAME: data-recs
-              COMPONENT: python
-            command: bash /cicd/deploy.sh
-
-        - run:
-            name: Update Recommendations Metadata
-            environment:
-              RESOURCE_TYPE: cronjob
-              RESOURCE_NAME: data-recs
-              COMPONENT: python
-            command: bash /cicd/updateMeta.sh
-
-    deploy-prod:
-      docker:
-        - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/kubectl:latest
-          entrypoint: /bin/sh
-          environment:
-            KUBECTL_TOKEN: $KUBECTL_TOKEN
-            ENV: prod
-            SERVICE: data
-      steps:
-        - attach_workspace:
-            at: .
-        - run:
-
-    deploy-content:
-      docker:
-        - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/kubectl:latest
-          entrypoint: /bin/sh
-          environment:
-            KUBECTL_TOKEN: $KUBECTL_TOKEN
-      steps:
-        - attach_workspace:
-            at: .
-        - run:
-
-    deploy-qa:
-      docker:
-        - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/kubectl:latest
-          entrypoint: /bin/sh
-          environment:
-            KUBECTL_TOKEN: $KUBECTL_TOKEN
-      steps:
-        - attach_workspace:
-            at: .
-        - run:
-
-
-    deploy-staging:
-      docker:
-        - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/kubectl:latest
-          entrypoint: /bin/sh
-          environment:
-            KUBECTL_TOKEN: $KUBECTL_TOKEN
-      steps:
-        - attach_workspace:
-            at: .
-        - run:
-
-
-  workflows:
-    version: 2
-    test_and_push:
-      jobs:
-        - tag_and_push:
-            context: ecr-access
-            filters:
-              branches:
-                only:
-                  - /deploy.*/
-        - deploy-dev:
-            context: kube-deploy-dev
-            filters:
-              branches:
-                only:
-                  - /deploy.dev.*/
-            requires:
-              - tag_and_push
-        - deploy-prod:
-            context: kube-deploy-prod
-            filters:
-              branches:
-                only:
-                  - /deploy.prod.*/
-            requires:
-              - tag_and_push
-        - deploy-qa:
-            context: kube-deploy-qa
-            filters:
-              branches:
-                only:
-                  - /deploy.qa.*/
-            requires:
-              - tag_and_push
-        - deploy-staging:
-            context: kube-deploy-staging
-            filters:
-              branches:
-                only:
-                  - /deploy.staging.*/
-            requires:
-              - tag_and_push
-        - deploy-content:
-            context: kube-deploy-content
-            filters:
-              branches:
-                only:
-                  - /deploy.content.*/
-            requires:
-              - tag_and_push
+  test_and_push:
+    jobs:
+      - tag_and_push:
+          context: ecr-access
+          filters:
+            branches:
+              only:
+                - /deploy.*/
+      - deploy-dev:
+          context: kube-deploy-dev
+          filters:
+            branches:
+              only:
+                - /deploy.dev.*/
+          requires:
+            - tag_and_push
+      - deploy-prod:
+          context: kube-deploy-prod
+          filters:
+            branches:
+              only:
+                - /deploy.prod.*/
+          requires:
+            - tag_and_push
+      - deploy-qa:
+          context: kube-deploy-qa
+          filters:
+            branches:
+              only:
+                - /deploy.qa.*/
+          requires:
+            - tag_and_push
+      - deploy-staging:
+          context: kube-deploy-staging
+          filters:
+            branches:
+              only:
+                - /deploy.staging.*/
+          requires:
+            - tag_and_push
+      - deploy-content:
+          context: kube-deploy-content
+          filters:
+            branches:
+              only:
+                - /deploy.content.*/
+          requires:
+            - tag_and_push
