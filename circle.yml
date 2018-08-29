@@ -12,4 +12,4 @@ test:
   pre:
     - sleep 5
   override:
-    - docker run puckel/docker-airflow version |grep '1.9.0'
+    - docker run puckel/docker-airflow version |grep '1.10.0'
