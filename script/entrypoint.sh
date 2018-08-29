@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 TRY_LOOP="20"
+: "${EXPLICIT_CONN_STRING:=""}"
 
 : "${REDIS_HOST:="redis"}"
 : "${REDIS_PORT:="6379"}"
@@ -56,15 +57,39 @@ wait_for_port() {
   done
 }
 
-if [ "$AIRFLOW__CORE__EXECUTOR" != "SequentialExecutor" ]; then
-  AIRFLOW__CORE__SQL_ALCHEMY_CONN="postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
-  AIRFLOW__CELERY__CELERY_RESULT_BACKEND="db+postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
-  wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
-fi
+# splits a connection string and sends the needed details to wait_for_port
+check_conn_string_availability() {
+  local connection_string="$1"
+    ARR_CONNECTION_STRING=($(echo $connection_string | tr -s  "://@" "\n"))
+    BACKEND=${ARR_CONNECTION_STRING[0]}
+    PORT=${ARR_CONNECTION_STRING[-2]}
+    HOST=${ARR_CONNECTION_STRING[-3]}
+    wait_for_port "$BACKEND" "$HOST" "$PORT"
+}
 
-if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
-  AIRFLOW__CELERY__BROKER_URL="redis://$REDIS_PREFIX$REDIS_HOST:$REDIS_PORT/1"
-  wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
+if [ $EXPLICIT_CONN_STRING = "True" ]; then 
+  if [ -n "$AIRFLOW__CORE__SQL_ALCHEMY_CONN" ] && [ "$AIRFLOW__CORE__EXECUTOR" != "SequentialExecutor" ]; then 
+      check_conn_string_availability $AIRFLOW__CORE__SQL_ALCHEMY_CONN
+  fi
+
+  if [ -n "$AIRFLOW__CELERY__CELERY_RESULT_BACKEND" ] && [ "$AIRFLOW__CORE__EXECUTOR" != "SequentialExecutor" ]; then 
+      check_conn_string_availability $AIRFLOW__CELERY__CELERY_RESULT_BACKEND
+  fi
+
+  if  [ -n "$AIRFLOW__CELERY__BROKER_URL" ] && [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then 
+      check_conn_string_availability $AIRFLOW__CELERY__BROKER_URL
+  fi
+else
+  if [ "$AIRFLOW__CORE__EXECUTOR" != "SequentialExecutor" ]; then
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN="postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
+    AIRFLOW__CELERY__CELERY_RESULT_BACKEND="db+postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB"
+    wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
+  fi
+
+  if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
+    AIRFLOW__CELERY__BROKER_URL="redis://$REDIS_PREFIX$REDIS_HOST:$REDIS_PORT/1"
+    wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
+  fi
 fi
 
 case "$1" in
