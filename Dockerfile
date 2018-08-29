@@ -1,4 +1,4 @@
-# VERSION 1.9.0-4
+# VERSION 1.10.0
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow .
@@ -12,8 +12,9 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=1.9.0
+ARG AIRFLOW_VERSION=1.10.0
 ARG AIRFLOW_HOME=/usr/local/airflow
+ENV SLUGIFY_USES_TEXT_UNIDECODE=yes
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
