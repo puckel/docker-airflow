@@ -57,6 +57,7 @@ RUN set -ex \
     && pip install -U pip setuptools wheel \
     && pip install boto3 \
     && pip install Cython \
+    && pip install psycopg2 \
     && pip install pytz \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
