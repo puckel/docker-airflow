@@ -13,6 +13,11 @@ MAINTAINER Puckel_
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
+# Install security updates
+RUN apt-get update -yqq \
+    && apt-get install -yqq unattended-upgrades \
+    && unattended-upgrade -v
+
 # Airflow
 ARG AIRFLOW_VERSION=1.9.0
 ENV AIRFLOW_HOME /usr/local/airflow
