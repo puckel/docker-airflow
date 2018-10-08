@@ -26,6 +26,7 @@ ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 
+# I had issues with older versions of psycopg2, just a warning
 RUN set -ex \
     && buildDeps=' \
         freetds-dev \
@@ -61,6 +62,8 @@ RUN set -ex \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install kubernetes \
+    && pip install cryptography \
+    && pip install psycopg2-binary==2.7.4  \
     && pip install apache-airflow[all]==$AIRFLOW_VERSION \
     && pip install airflow-plugins \
     && pip install 'redis>=2.10.5,<3' \
