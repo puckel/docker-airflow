@@ -1,7 +1,7 @@
 ##############################################################
 # This script currently only works on OSX
 #
-# OSX instructions
+# OSX instructions:
 # Install docker and enable kubernetes:
 #
 # https://docs.docker.com/docker-for-mac/install/
@@ -33,20 +33,17 @@ setup () {
   # Install Helm
   brew list kubernetes-helm || brew install kubernetes-helm
 
-  # Check helm is running on the cluster 
-  if [ $(kubectl -n kube-system get po | grep tiller | awk '$2 == "1/1" { print $2 }') != "1/1" ]
-  then
-    
-    # Install Tiller on the cluster
-    helm init
+  # Install Tiller on the cluster
+  helm init
+  echo "Waiting for tiller to come up (30 seconds)"
+  sleep 30
 
-    # Wait for Tiller to launch
-    while [ $(kubectl -n kube-system get po | grep tiller | awk '$2 == "1/1" { print $2 }') != "1/1" ]
-    do 
-  	  echo "Tiller not up yet"
-      sleep 1
-    done
-  fi
+  # Wait for Tiller to launch
+  while [ $(kubectl -n kube-system get po | grep tiller | awk '$2 == "1/1" { print $2 }') != "1/1" ]
+  do 
+    echo "Tiller not up yet"
+    sleep 10
+  done
 }
 
 ##############################################################
@@ -60,6 +57,9 @@ install_airflow () {
 
   # Install via helm
   helm install --namespace "default" --name "airflow" .
+  
+  # Wait a few seconds
+  sleep 5
 
   # Make sure all services are up (All airflow services return 1 before moving on)
   is_done="FALSE"
@@ -70,12 +70,12 @@ install_airflow () {
     while read -r line; do
       if [ "$line" != "1/1" ]
       then
-        echo "Services are not up yet"
+        echo "Services are not up yet (waiting 10 seconds)"
         is_done="FALSE"
         break
       fi
     done <<< "$airflow_pods_list"
-    sleep 1
+    sleep 10
   done
   
   ##############################################################
@@ -116,12 +116,17 @@ install_airflow () {
   # Forward the port to the host
   nohup kubectl port-forward ${AIRFLOW_POD} ${AIRFLOW_PORT}:${AIRFLOW_PORT} &
 
+  echo "Airflow is now up and running on: http://localhost:8080/"
 }
 
 ##############################################################
 # Function to remove airflow from kubernetes cluster
 ##############################################################
 uninstall_airflow() {
+
+  # Remove port forwarding
+  PORT_FORWARD_PROCESS=`ps -ef | grep "kubectl port-forward airflow" | grep -v "grep" | awk '{ print $2 }'`
+  kill ${PORT_FORWARD_PROCESS}
 
   # Uninstall airflow via helm
   helm delete --purge airflow
@@ -142,18 +147,13 @@ setup
 install_airflow
 #uninstall_airflow
 
+##############################################################
+# Extras
+##############################################################
 
-##############################################################
 # Enable Kubernetes web GUI
-##############################################################
 #kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
 #kubectl proxy
 
-
-# Enter the container
-#kubectl exec -it airflow-scheduler-6dc78647cd-mk2bc -- /bin/bash
-
-
-
-
-
+# Example of how to enter a running container
+# kubectl exec -it <POD_NAME> -- /bin/bash
