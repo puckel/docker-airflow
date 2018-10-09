@@ -1,0 +1,38 @@
+airflow:
+  image:
+    ## Test with stibbons31/docker-airflow-dev to allow mounting to other that root path
+    repository: stibbons31/docker-airflow-dev
+    tag: 2.0dev
+    pull_policy: IfNotPresent
+  service:
+    type: NodePort
+  web_replicas: 1
+  config:
+    AIRFLOW__CORE__LOGGING_LEVEL: DEBUG
+    AIRFLOW__CORE__LOAD_EXAMPLES: True
+
+workers:
+  serviceAccountName: "default"
+  replicas: 1
+  celery:
+    instances: 1
+
+ingress:
+  enabled: true
+  web:
+    path: "/airflow"
+    host: "minikube"
+    annotations:
+      traefik.frontend.rule.type: PathPrefix
+      kubernetes.io/ingress.class: traefik
+  flower:
+    path: "/airflow/flower"
+    host: "minikube"
+    annotations:
+      traefik.frontend.rule.type: PathPrefixStrip
+      kubernetes.io/ingress.class: traefik
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
