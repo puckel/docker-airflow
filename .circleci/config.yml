@@ -4,6 +4,7 @@ jobs:
   build:
     docker:
       - image: docker:18.06.1-ce-git
+    working_directory: ~/
     steps:
       - run:
           name: Dependencies
