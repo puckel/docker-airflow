@@ -81,7 +81,12 @@ RUN chown -R airflow: ${AIRFLOW_HOME}
 
 EXPOSE 8080 5555 8793
 
+USER root
+RUN groupadd --gid 999 docker \
+    && usermod -aG docker airflow
 USER airflow
+RUN pip install --user docker
+
 WORKDIR ${AIRFLOW_HOME}
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["webserver"] # set default arg for entrypoint
