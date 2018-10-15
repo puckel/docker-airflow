@@ -116,7 +116,6 @@ RUN pip3 install --upgrade pip \
     && pip3 install flask-oauthlib \
     && pip3 install "oauth2client>=2.0.2,<2.1.0" \
     && pip3 install pandas-gbq \
-    && pip3 install "pytest==3.8.2" \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \
