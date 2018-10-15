@@ -7,7 +7,7 @@ steps:
   waitFor: ['-']
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ["build", "-t", "gcr.io/$PROJECT_ID/docker-airflow:test", "."]
+  args: ["build", "-t", "gcr.io/$PROJECT_ID/docker-airflow-test:latest", "."]
   dir: airflow_test/
   waitFor:
     - common
