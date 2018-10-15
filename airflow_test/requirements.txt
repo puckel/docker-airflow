@@ -1,1 +1,5 @@
 pytest==3.8.2
+# for test_airflow_utils which invokes a fire file to test it
+# TODO: find a way to test without this or invoke in test how it
+# actually gets invoked in production code (via Docker)
+git+git://github.com/google/python-fire.git@v0.1.1
