@@ -24,3 +24,6 @@ sftp-config.json
 
 # PyCharm junk
 .idea
+=======
+# Python
+__pycache__

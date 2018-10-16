@@ -1,12 +1,11 @@
-# VERSION 1.7.1.3-5
+# VERSION 1.10.0-2
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow .
 # SOURCE: https://github.com/puckel/docker-airflow
 
-FROM ubuntu:16.04
-
-MAINTAINER Puckel_
+FROM python:3.6-slim
+LABEL maintainer="Puckel_"
 
 # Never prompts the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
@@ -19,7 +18,7 @@ RUN apt-get update -yqq \
 
 # Airflow
 ARG AIRFLOW_VERSION=1.10.0
-ENV AIRFLOW_HOME /usr/local/airflow
+ARG AIRFLOW_HOME=/usr/local/airflow
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
@@ -34,90 +33,47 @@ ENV SLUGIFY_USES_TEXT_UNIDECODE=yes
 
 RUN set -ex \
     && buildDeps=' \
-        python-dev \
+        python3-dev \
         libkrb5-dev \
         libsasl2-dev \
         libssl-dev \
         libffi-dev \
-        build-essential \
         libblas-dev \
         liblapack-dev \
+        libpq-dev \
+        git \
     ' \
-    && echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sources.list.d/backports.list \
     && apt-get update -yqq \
-    && apt-get install -y --no-install-recommends software-properties-common python-software-properties \
-    && apt-get install -yqq --no-install-recommends --allow-unauthenticated \
+    && apt-get upgrade -yqq \
+    && apt-get install -yqq --no-install-recommends \
         $buildDeps \
+        build-essential \
+        python3-pip \
+        python3-requests \
+        mysql-client \
+        mysql-server \
+        default-libmysqlclient-dev \
         apt-utils \
         curl \
+        rsync \
         netcat \
         locales \
-        sudo \
-        software-properties-common \
-        apt-transport-https \
-        ca-certificates \
-        vim \
-        wget \
-        unzip \
-    && apt-get install -yqq --allow-unauthenticated  -t jessie-backports python-requests libpq-dev \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
-    # && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
-    && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow && echo "airflow:airflow" | chpasswd && sudo adduser airflow sudo \
-    && sudo echo 'airflow  ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
-    && curl -fsSL https://yum.dockerproject.org/gpg | sudo apt-key add - \
-    && apt-key fingerprint 58118E89F3A912897C070ADBF76221572C52609D \
-    && sudo add-apt-repository \
-       "deb https://apt.dockerproject.org/repo/ \
-       ubuntu-xenial \
-       main" \
-    && sudo apt-get update \
-    && sudo apt-get -y --allow-unauthenticated install docker-engine nvidia-modprobe \
-    && wget -P /tmp https://github.com/NVIDIA/nvidia-docker/releases/download/v1.0.1/nvidia-docker_1.0.1-1_amd64.deb \
-    && sudo dpkg -i /tmp/nvidia-docker*.deb
-
-RUN add-apt-repository ppa:jonathonf/python-3.6 && apt-get update
-RUN apt-get install -yqq python3.6 python3.6-dev
-
-RUN rm /usr/bin/python3 && ln -s /usr/bin/python3.6 /usr/bin/python3
-
-RUN echo 'alias python=python3.6' >> ~/.bashrc
-RUN echo 'alias python3=python3.6' >> ~/.bashrc
-RUN echo 'alias pip=pip3.6' >> ~/.bashrc
-RUN echo 'alias pip3=pip3.6' >> ~/.bashrc
-
-RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
-    python3.6 get-pip.py && \
-    rm get-pip.py
-
-RUN pip3 install --upgrade pip \
-    && pip3 install setuptools \
-    && pip3 install packaging \
-    && pip3 install appdirs \
-    && pip3 install six==1.10 \
-    && pip3 install wheel \
-    && pip3 install Cython \
-    && pip3 install pytz==2015.7 \
-    && pip3 install cryptography \
-    && pip3 install pyOpenSSL \
-    && pip3 install ndg-httpsclient \
-    && pip3 install pyasn1 \
-    && pip3 install psycopg2 \
-    && pip3 install pandas==0.18.1 \
-    && pip3 install celery==4.1.1 \
-    && pip3 install kubernetes \
-    && pip3 install https://github.com/docker/docker-py/archive/1.10.6.zip \
-    && pip3 install apache-airflow[celery,postgres,hive,hdfs,jdbc]==$AIRFLOW_VERSION \
-    && pip3 install httplib2 \
-    && pip3 install "google-api-python-client>=1.5.0,<1.6.0" \
-    && pip3 install "PyOpenSSL" \
-    # flask-oauthlib required for airflow to use oauth
-    # https://github.com/apache/incubator-airflow/blob/master/airflow/contrib/auth/backends/google_auth.py#L31
-    && pip3 install flask-oauthlib \
-    && pip3 install "oauth2client>=2.0.2,<2.1.0" \
-    && pip3 install pandas-gbq \
-    && apt-get remove --purge -yqq $buildDeps libpq-dev \
+    && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
+    && pip install -U pip setuptools wheel \
+    && pip install Cython \
+    && pip install pytz \
+    && pip install pyOpenSSL \
+    && pip install pandas==0.18.1 \
+    && pip install kubernetes \
+    && pip install ndg-httpsclient \
+    && pip install pyasn1 \
+    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql]==$AIRFLOW_VERSION \
+    && pip install 'celery[redis]>=4.1.1,<4.2.0' \
+    && apt-get purge --auto-remove -yqq $buildDeps \
+    && apt-get autoremove -yqq --purge \
     && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
@@ -136,3 +92,4 @@ EXPOSE 8080 5555 8793
 USER airflow
 WORKDIR ${AIRFLOW_HOME}
 ENTRYPOINT ["/entrypoint.sh"]
+CMD ["webserver"] # set default arg for entrypoint
