@@ -4,8 +4,7 @@
 # BUILD: docker build --rm -t puckel/docker-airflow .
 # SOURCE: https://github.com/puckel/docker-airflow
 
-#FROM ubuntu:16.04
-FROM nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04
+FROM ubuntu:16.04
 
 MAINTAINER Puckel_
 
@@ -19,7 +18,7 @@ RUN apt-get update -yqq \
     && unattended-upgrade -v
 
 # Airflow
-ARG AIRFLOW_VERSION=1.9.0
+ARG AIRFLOW_VERSION=1.10.0
 ENV AIRFLOW_HOME /usr/local/airflow
 
 # Define en_US.
@@ -30,6 +29,8 @@ ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 ENV LC_ALL  en_US.UTF-8
 ENV PYTHONPATH=:/usr/local/airflow/dags:/usr/local/airflow/config
+# To prevent Airflow from installing a GPL
+ENV SLUGIFY_USES_TEXT_UNIDECODE=yes
 
 RUN set -ex \
     && buildDeps=' \
