@@ -11,10 +11,14 @@ LABEL maintainer="Puckel_"
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
+# Install security updates
+RUN apt-get update -yqq \
+    && apt-get install -yqq unattended-upgrades \
+    && unattended-upgrade -v
+
 # Airflow
 ARG AIRFLOW_VERSION=1.10.0
 ARG AIRFLOW_HOME=/usr/local/airflow
-ENV AIRFLOW_GPL_UNIDECODE yes
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
@@ -22,6 +26,10 @@ ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
+ENV LC_ALL  en_US.UTF-8
+ENV PYTHONPATH=:/usr/local/airflow/dags:/usr/local/airflow/config
+# To prevent Airflow from installing a GPL
+ENV SLUGIFY_USES_TEXT_UNIDECODE=yes
 
 RUN set -ex \
     && buildDeps=' \
@@ -58,6 +66,8 @@ RUN set -ex \
     && pip install Cython \
     && pip install pytz \
     && pip install pyOpenSSL \
+    && pip install pandas==0.18.1 \
+    && pip install kubernetes \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql]==$AIRFLOW_VERSION \
@@ -74,7 +84,6 @@ RUN set -ex \
         /usr/share/doc-base
 
 COPY script/entrypoint.sh /entrypoint.sh
-COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
