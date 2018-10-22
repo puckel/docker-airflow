@@ -1,5 +1,4 @@
 # docker-airflow
-[![CircleCI branch](https://img.shields.io/circleci/project/puckel/docker-airflow/master.svg?maxAge=2592000)](https://circleci.com/gh/puckel/docker-airflow/tree/master)
 [![Docker Build Status](https://img.shields.io/docker/build/puckel/docker-airflow.svg)]()
 
 [![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/puckel/docker-airflow/)
