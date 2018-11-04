@@ -33,8 +33,6 @@ RUN set -ex \
         libsasl2-dev \
         libssl-dev \
         libffi-dev \
-        libblas-dev \
-        liblapack-dev \
         libpq-dev \
         git \
     ' \
