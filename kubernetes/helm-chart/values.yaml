@@ -26,8 +26,8 @@ airflow:
   image:
     ##
     ## docker-airflow image
-    #repository: dafrenchyman/docker-airflow
-    repository: appfolio/docker-airflow
+    repository: dafrenchyman/docker-airflow
+    #repository: appfolio/docker-airflow
     ##
     ## image tag
     tag: latest
