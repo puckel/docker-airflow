@@ -38,20 +38,21 @@ spec:
               name: "{{ template "airflow.fullname" . }}-env"
           env:
             - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "airflow.fullname" . }}
-                  key: postgresUser
+              value: {{ .Values.postgresql.postgresUser }}
+              #valueFrom:
+              #  secretKeyRef:
+              #    name: {{ template "airflow.postgresql.fullname" . }}
+              #    key: postgres-password
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "airflow.fullname" . }}
-                  key: postgresPassword
+                  name: {{ template "airflow.postgresql.name" . }}
+                  key: postgres-password
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "airflow.fullname" . }}
-                  key: redisPassword
+                  name: {{ template "airflow.redis.name" . }}
+                  key: redis-password
           ports:
             - name: flower
               containerPort: 5555

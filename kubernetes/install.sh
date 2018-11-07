@@ -10,8 +10,14 @@
 # - Top right go Docker -> "Preferences..." -> "Kubernetes"
 #   - Check mark "enable kubernetes", "Show system containers"
 #   - Select "kubernetes" instead of swarm
+#
+# Make sure python is install along with cryptography
+#
+# pip3 install cryptography
+#
 ##############################################################
 
+NAMESPACE="default"
 
 ##############################################################
 # Check everything is up and running
@@ -33,30 +39,48 @@ setup () {
   # Install Helm
   brew list kubernetes-helm || brew install kubernetes-helm
 
+  ##########################################
   # Install Tiller on the cluster
-  helm init
+  ##########################################
+  
+  # add a service account within a namespace to segregate tiller
+  kubectl --namespace kube-system create sa tiller
+  
+  # create a cluster role binding for tiller
+  kubectl create clusterrolebinding tiller \
+    --clusterrole cluster-admin \
+    --serviceaccount=kube-system:tiller 
+  kubectl --namespace kube-system create sa tiller
+  
+  helm init --service-account tiller
   echo "Waiting for tiller to come up (30 seconds)"
   sleep 30
 
   # Wait for Tiller to launch
-  while [ $(kubectl -n kube-system get po | grep tiller | awk '$2 == "1/1" { print $2 }') != "1/1" ]
-  do 
-    echo "Tiller not up yet"
-    sleep 10
-  done
+  #while [ $(kubectl -n kube-system get po | grep tiller | awk '$2 == "1/1" { print $2 }') != "1/1" ]
+  #do 
+  #  echo "Tiller not up yet"
+  #  sleep 10
+  #done
 }
 
 ##############################################################
 # Function to install airflow via helm
 ##############################################################
 install_airflow () {
- cd helm-chart
+  cd helm-chart
 
   # Build necessary dependencies
   helm dep build
 
+  # Generate a fernet key
+  FERNET_KEY=`python3 -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"`
+
+  # Setup namespace
+  kubectl create namespace ${NAMESPACE}
+  
   # Install via helm
-  helm install --namespace "default" --name "airflow" .
+  helm install --namespace "${NAMESPACE}" --name "airflow" --set airflow.fernet_key="$FERNET_KEY" .
   
   # Wait a few seconds
   sleep 5
@@ -93,7 +117,15 @@ install_airflow () {
   # Copy this config file to the cluster
   export AIRFLOW_WORKER_POD=`kubectl get pods | grep airflow-worker | cut -f1 -d' '`
   kubectl cp custom_kube_config ${AIRFLOW_WORKER_POD}:/usr/local/airflow/.kube/config
-
+  
+  ##############################################################
+  # Create Secrets on the cluster
+  ##############################################################
+  
+  # Google credential secrets as file
+  kubectl create secret generic invoice-processing-env --from-env-file=./secrets.env 
+  kubectl create secret generic invoice-processing-file --from-file=./secrets.json
+  
   ##############################################################
   # Test connecting to cluster
   ##############################################################
@@ -151,7 +183,10 @@ install_airflow
 # Extras
 ##############################################################
 
+#
 # Enable Kubernetes web GUI
+# Info: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+#
 #kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
 #kubectl proxy
 

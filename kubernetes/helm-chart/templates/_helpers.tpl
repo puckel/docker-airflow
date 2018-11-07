@@ -30,7 +30,11 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{/*
+{{- define "airflow.postgresql.name" -}}
+{{- printf "%s-postgresql" .Chart.Name -}}
+{{- end -}}
+
+{{/*s
 Create a default fully qualified redis cluster name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
@@ -38,6 +42,11 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- $name := default "redis" .Values.redis.nameOverride -}}
 {{- printf "%s-%s-master" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{- define "airflow.redis.name" -}}
+{{- printf "%s-redis" .Chart.Name -}}
+{{- end -}}
+
 
 {{/*
 Create a random string if the supplied key does not exist

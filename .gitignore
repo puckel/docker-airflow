@@ -24,3 +24,7 @@ sftp-config.json
 
 # Python
 __pycache__
+secrets.env
+secrets.json
+kubernetes/helm-chart/charts/postgresql
+kubernetes/helm-chart/charts/redis

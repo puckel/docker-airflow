@@ -58,21 +58,31 @@ spec:
           - configMapRef:
               name: "{{ template "airflow.fullname" . }}-env"
           env:
-            - name: POSTGRES_USER
+            - name: AIRFLOWWEB_USER
+              value: {{ .Values.airflow.web.user }}
+            - name: AIRFLOWWEB_EMAIL
+              value: {{ .Values.airflow.web.email }}
+            - name: AIRFLOWWEB_PASSWORD
               valueFrom:
-                secretKeyRef:
+              secretKeyRef:
                   name: {{ template "airflow.fullname" . }}
-                  key: postgresUser
+                  key: airflowweb-password
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.postgresUser }}
+              #valueFrom:
+              #  secretKeyRef:
+              #    name: {{ template "airflow.fullname" . }}
+              #    key: postgresUser
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "airflow.fullname" . }}
-                  key: postgresPassword
+                  name: {{ template "airflow.postgresql.name" . }}
+                  key: postgres-password
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "airflow.fullname" . }}
-                  key: redisPassword
+                  name: {{ template "airflow.redis.name" . }}
+                  key: redis-password
           volumeMounts:
           {{- if .Values.persistence.enabled }}
             - name: dags-data

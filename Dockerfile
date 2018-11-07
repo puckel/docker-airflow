@@ -1,12 +1,12 @@
 # VERSION 1.10.2
 # AUTHOR: Matthieu "Puckel_" Roisil
-# modified 
+# MODIFIED BY: Julien "Dafrenchyman" Pierret 
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow .
 # SOURCE: https://github.com/puckel/docker-airflow
 
 FROM python:3.6-slim
-LABEL maintainer="Puckel_"
+LABEL maintainer="Dafrenchyman"
 
 # Never prompts the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
@@ -51,6 +51,8 @@ RUN set -ex \
         rsync \
         netcat \
         locales \
+        vim \
+        nano \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
@@ -82,6 +84,7 @@ RUN set -ex \
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY script/setupAirflowPass.py ${AIRFLOW_HOME}/setupAirflowPass.py
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 

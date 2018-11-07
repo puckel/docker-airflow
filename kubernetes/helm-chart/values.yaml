@@ -26,7 +26,8 @@ airflow:
   image:
     ##
     ## docker-airflow image
-    repository: dafrenchyman/docker-airflow
+    #repository: dafrenchyman/docker-airflow
+    repository: appfolio/docker-airflow
     ##
     ## image tag
     tag: latest
@@ -46,7 +47,7 @@ airflow:
   ##
   ## If set to a value != -1, you will see your scheduler regularly restart. This is its normal
   ## behavior under these conditions.
-  scheduler_num_runs: "-1"
+  scheduler_num_runs: "100"
   ##
   ## Set scheduler_do_pickle to toggle whether to have the scheduler
   ## attempt to pickle the DAG object to send over to the workers,
@@ -67,13 +68,26 @@ airflow:
   ## Example:
   ##   config:
   ##     AIRFLOW__CORE__EXPOSE_CONFIG: "True"
+  ##     dags_are_paused_at_creation = True
+  ## AIRFLOW__<section>__<key>
   ##     HTTP_PROXY: "http://proxy.mycompany.com:123"
-  config: {}
+  config: 
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: True
+    # SequentialExecutor, LocalExecutor, CeleryExecutor, DaskExecutor
+    #AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: False
+    AIRFLOW__WEBSERVER__AUTHENTICATE: True
+    AIRFLOW__WEBSERVER__AUTH_BACKEND: airflow.contrib.auth.backends.password_auth
+  ## config: {}
   ##
   ## Configure pod disruption budget for the scheduler
   pod_disruption_budget:
     maxUnavailable: 1
-
+  ## Web server password setup
+  web:
+    username: airflow
+    email: ai.of.the.tiger@appfolio.com
+    password: airflow123
 ##
 ## Workers configuration
 workers:
@@ -276,7 +290,7 @@ postgresql:
   ##
   ## PostgreSQL Password for the new user.
   ## If not set, a random 10 characters password will be used.
-  postgresPassword: airflow
+  #postgresPassword: airflow
   ##
   ## PostgreSQL Database to create.
   postgresDatabase: airflow
@@ -304,7 +318,7 @@ redis:
   enabled: true
   ##
   ## Redis password
-  password: airflow
+  #password: airflow
   ##
   ## Master configuration
   master:
