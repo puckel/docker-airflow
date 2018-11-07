@@ -24,7 +24,6 @@ export \
   AIRFLOW__CORE__LOAD_EXAMPLES \
   AIRFLOW__CORE__SQL_ALCHEMY_CONN \
 
-
 # Load DAGs exemples (default: Yes)
 if [[ -z "$AIRFLOW__CORE__LOAD_EXAMPLES" && "${LOAD_EX:=n}" == n ]]
 then
@@ -66,6 +65,9 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
   AIRFLOW__CELERY__BROKER_URL="redis://$REDIS_PREFIX$REDIS_HOST:$REDIS_PORT/1"
   wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
 fi
+
+# Setup Airflow Web UI Pass
+python3 ./setupAirflowPass.py --username ${AIRFLOWWEB_USER} --email ${AIRFLOWWEB_EMAIL} --password ${AIRFLOWWEB_PASSWORD}
 
 case "$1" in
   webserver)

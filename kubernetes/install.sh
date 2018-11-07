@@ -50,7 +50,6 @@ setup () {
   kubectl create clusterrolebinding tiller \
     --clusterrole cluster-admin \
     --serviceaccount=kube-system:tiller 
-  kubectl --namespace kube-system create sa tiller
   
   helm init --service-account tiller
   echo "Waiting for tiller to come up (30 seconds)"

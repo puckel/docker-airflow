@@ -59,12 +59,12 @@ spec:
               name: "{{ template "airflow.fullname" . }}-env"
           env:
             - name: AIRFLOWWEB_USER
-              value: {{ .Values.airflow.web.user }}
+              value: {{ .Values.airflow.web.username }}
             - name: AIRFLOWWEB_EMAIL
               value: {{ .Values.airflow.web.email }}
             - name: AIRFLOWWEB_PASSWORD
               valueFrom:
-              secretKeyRef:
+                secretKeyRef:
                   name: {{ template "airflow.fullname" . }}
                   key: airflowweb-password
             - name: POSTGRES_USER
