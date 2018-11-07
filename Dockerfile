@@ -46,7 +46,6 @@ RUN set -ex \
         build-essential \
         python3-pip \
         python3-requests \
-        mysqlclient \
         default-libmysqlclient-dev \
         apt-utils \
         curl \
@@ -62,6 +61,7 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
+    && pip install mysqlclient \
     && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && pip install 'celery[redis]>=4.1.1,<4.2.0' \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
