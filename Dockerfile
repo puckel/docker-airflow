@@ -36,10 +36,16 @@ RUN set -ex \
         libblas-dev \
         liblapack-dev \
         libpq-dev \
+        nodejs \
         git \
     ' \
     && apt-get update -yqq \
     && apt-get upgrade -yqq \
+    && apt-get install -yqq --no-install-recommends \
+        curl \
+        gnupg \
+    && curl -sL https://deb.nodesource.com/setup_10.x | bash \
+    && apt-get update -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
         freetds-bin \
@@ -50,7 +56,6 @@ RUN set -ex \
         mysql-server \
         default-libmysqlclient-dev \
         apt-utils \
-        curl \
         rsync \
         netcat \
         locales \
@@ -66,7 +71,13 @@ RUN set -ex \
     && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && pip install 'celery[redis]>=4.1.1,<4.2.0' \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
+    && (cd /usr/local/lib/python3.6/site-packages/airflow/www_rbac \
+        && npm install \
+        && npm run build) \
     && apt-get purge --auto-remove -yqq $buildDeps \
+    && apt-get purge --auto-remove -yqq \
+        curl \
+        gnupg \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
     && rm -rf \
