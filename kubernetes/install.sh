@@ -78,6 +78,13 @@ install_airflow () {
   # Setup namespace
   kubectl create namespace ${NAMESPACE}
   
+  # add a service account within a namespace for airflow
+  # This will allow the worker nodes to spawn pods
+  kubectl --namespace ${NAMESPACE} create sa airflow
+  kubectl create clusterrolebinding airflow \
+    --clusterrole cluster-admin \
+    --serviceaccount=${NAMESPACE}:airflow
+
   # Install via helm
   helm install --namespace "${NAMESPACE}" --name "airflow" --set airflow.fernet_key="$FERNET_KEY" .
   
@@ -171,6 +178,11 @@ uninstall_airflow() {
     echo "Purging: ${i}"
     kubectl delete pods $i --grace-period=0 --force
   done
+  
+  kubectl delete clusterrolebinding airflow 
+  kubectl delete serviceaccount airflow --namespace=${NAMESPACE}
+  
+  
 }
 
 

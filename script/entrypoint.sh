@@ -66,9 +66,6 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
   wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
 fi
 
-# Setup Airflow Web UI Pass
-python3 ./setupAirflowPass.py --username ${AIRFLOWWEB_USER} --email ${AIRFLOWWEB_EMAIL} --password ${AIRFLOWWEB_PASSWORD}
-
 case "$1" in
   webserver)
     airflow initdb
@@ -76,6 +73,8 @@ case "$1" in
       # With the "Local" executor it should all run in one container.
       airflow scheduler &
     fi
+    # Setup Airflow Web UI Pass
+    python3 ./setupAirflowPass.py --username ${AIRFLOWWEB_USER} --email ${AIRFLOWWEB_EMAIL} --password ${AIRFLOWWEB_PASSWORD}
     exec airflow webserver
     ;;
   worker|scheduler)

@@ -38,6 +38,7 @@ spec:
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       serviceAccountName: {{ .Values.workers.serviceAccountName }}
+      #automountServiceAccountToken: true
       {{- if .Values.dags.init_container.enabled }}
       initContainers:
         - name: git-clone

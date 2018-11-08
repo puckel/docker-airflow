@@ -93,7 +93,7 @@ airflow:
 workers:
   ##
   ## Service account name
-  serviceAccountName: "default"
+  serviceAccountName: "airflow"
   ##
   ## Number of workers pod to launch
   replicas: 1
