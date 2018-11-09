@@ -46,13 +46,11 @@ setup () {
   # add a service account within a namespace to segregate tiller
   kubectl --namespace kube-system create sa tiller
   
-  # Create a cluster role binding for tiller
-  # This will let tiller (helm) install packages
+  # create a cluster role binding for tiller
   kubectl create clusterrolebinding tiller \
     --clusterrole cluster-admin \
     --serviceaccount=kube-system:tiller 
   
-  # Install helm on the cluster
   helm init --service-account tiller
   echo "Waiting for tiller to come up (30 seconds)"
   sleep 30
@@ -74,7 +72,7 @@ install_airflow () {
   # Build necessary dependencies
   helm dep build
 
-  # Generate a fernet key on the fly
+  # Generate a fernet key
   FERNET_KEY=`python3 -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"`
 
   # Setup namespace
@@ -87,7 +85,7 @@ install_airflow () {
     --clusterrole cluster-admin \
     --serviceaccount=${NAMESPACE}:airflow
 
-  # Install airflow via our helm script. We are overwriting the default empty fernet_key with the one we generated
+  # Install via helm
   helm install --namespace "${NAMESPACE}" --name "airflow" --set airflow.fernet_key="$FERNET_KEY" .
   
   # Wait a few seconds
@@ -111,22 +109,25 @@ install_airflow () {
   done
   
   ##############################################################
-  # Copy your kubernetes config to worker pod
-  # Otherwise worker pod won't know how to spin up a pod
+  # Copy kubernetes config to worker pod
   ##############################################################
 
   # Get a copy of the kubernetes config
   cp ~/.kube/config ./custom_kube_config
 
   # Replace "localhost" with the actual IP address of the service on the cluster
-  # I don't think this is helpful when running in google cloud kubernetes
   KUBERNETES_IP=`kubectl get services | grep kubernetes | awk '$1 == "kubernetes" { print $3 }'`
   KUBERNETES_PORT=`kubectl get services | grep kubernetes | awk '$1 == "kubernetes" { print $5 }' | cut -f1 -d'/'`
   sed -i -e "s/localhost:6443/$KUBERNETES_IP:$KUBERNETES_PORT/g" custom_kube_config
 
-  # Copy this config file to the cluster
-  export AIRFLOW_WORKER_POD=`kubectl get pods | grep airflow-worker | cut -f1 -d' '`
-  kubectl cp custom_kube_config ${AIRFLOW_WORKER_POD}:/usr/local/airflow/.kube/config
+  # Copy this config file to the cluster worker pods
+  export AIRFLOW_WORKER_PODS=`kubectl get pods | grep airflow-worker | cut -f1 -d' '`
+  export AIRFLOW_WORKER_PODS=($AIRFLOW_WORKER_PODS)
+  for AIRFLOW_WORKER_POD in "${AIRFLOW_WORKER_PODS[@]}"
+  do
+    echo "Copying kube config to worker pod: ${AIRFLOW_WORKER_POD}"
+    #kubectl cp custom_kube_config ${AIRFLOW_WORKER_POD}:/usr/local/airflow/.kube/config
+  done
   
   ##############################################################
   # Create Secrets on the cluster
