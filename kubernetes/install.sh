@@ -46,11 +46,13 @@ setup () {
   # add a service account within a namespace to segregate tiller
   kubectl --namespace kube-system create sa tiller
   
-  # create a cluster role binding for tiller
+  # Create a cluster role binding for tiller
+  # This will let tiller (helm) install packages
   kubectl create clusterrolebinding tiller \
     --clusterrole cluster-admin \
     --serviceaccount=kube-system:tiller 
   
+  # Install helm on the cluster
   helm init --service-account tiller
   echo "Waiting for tiller to come up (30 seconds)"
   sleep 30
@@ -72,7 +74,7 @@ install_airflow () {
   # Build necessary dependencies
   helm dep build
 
-  # Generate a fernet key
+  # Generate a fernet key on the fly
   FERNET_KEY=`python3 -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"`
 
   # Setup namespace
@@ -85,7 +87,7 @@ install_airflow () {
     --clusterrole cluster-admin \
     --serviceaccount=${NAMESPACE}:airflow
 
-  # Install via helm
+  # Install airflow via our helm script. We are overwriting the default empty fernet_key with the one we generated
   helm install --namespace "${NAMESPACE}" --name "airflow" --set airflow.fernet_key="$FERNET_KEY" .
   
   # Wait a few seconds
@@ -109,13 +111,15 @@ install_airflow () {
   done
   
   ##############################################################
-  # Copy kubernetes config to worker pod
+  # Copy your kubernetes config to worker pod
+  # Otherwise worker pod won't know how to spin up a pod
   ##############################################################
 
   # Get a copy of the kubernetes config
   cp ~/.kube/config ./custom_kube_config
 
   # Replace "localhost" with the actual IP address of the service on the cluster
+  # I don't think this is helpful when running in google cloud kubernetes
   KUBERNETES_IP=`kubectl get services | grep kubernetes | awk '$1 == "kubernetes" { print $3 }'`
   KUBERNETES_PORT=`kubectl get services | grep kubernetes | awk '$1 == "kubernetes" { print $5 }' | cut -f1 -d'/'`
   sed -i -e "s/localhost:6443/$KUBERNETES_IP:$KUBERNETES_PORT/g" custom_kube_config
@@ -181,8 +185,6 @@ uninstall_airflow() {
   
   kubectl delete clusterrolebinding airflow 
   kubectl delete serviceaccount airflow --namespace=${NAMESPACE}
-  
-  
 }
 
 
