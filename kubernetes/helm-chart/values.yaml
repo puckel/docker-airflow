@@ -96,7 +96,7 @@ workers:
   serviceAccountName: "airflow"
   ##
   ## Number of workers pod to launch
-  replicas: 1
+  replicas: 3
   ##
   ## Custom resource configuration
   resources: {}
