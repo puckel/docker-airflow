@@ -47,7 +47,7 @@ airflow:
   ##
   ## If set to a value != -1, you will see your scheduler regularly restart. This is its normal
   ## behavior under these conditions.
-  scheduler_num_runs: "100"
+  scheduler_num_runs: "5"
   ##
   ## Set scheduler_do_pickle to toggle whether to have the scheduler
   ## attempt to pickle the DAG object to send over to the workers,

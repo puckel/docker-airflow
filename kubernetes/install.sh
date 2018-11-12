@@ -123,11 +123,11 @@ install_airflow () {
   # Copy this config file to the cluster worker pods
   export AIRFLOW_WORKER_PODS=`kubectl get pods | grep airflow-worker | cut -f1 -d' '`
   export AIRFLOW_WORKER_PODS=($AIRFLOW_WORKER_PODS)
-  for AIRFLOW_WORKER_POD in "${AIRFLOW_WORKER_PODS[@]}"
-  do
-    echo "Copying kube config to worker pod: ${AIRFLOW_WORKER_POD}"
-    #kubectl cp custom_kube_config ${AIRFLOW_WORKER_POD}:/usr/local/airflow/.kube/config
-  done
+  #for AIRFLOW_WORKER_POD in "${AIRFLOW_WORKER_PODS[@]}"
+  #do
+  #  echo "Copying kube config to worker pod: ${AIRFLOW_WORKER_POD}"
+  #  kubectl cp custom_kube_config ${AIRFLOW_WORKER_POD}:/usr/local/airflow/.kube/config
+  #done
   
   ##############################################################
   # Create Secrets on the cluster
