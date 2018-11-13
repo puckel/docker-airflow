@@ -1,3 +1,4 @@
+#!/bin/bash
 ##############################################################
 # This script currently only works on OSX
 #
