@@ -74,6 +74,7 @@ case "$1" in
       airflow scheduler &
     fi
     # Setup Airflow Web UI Pass
+    sleep 10
     python3 ./setupAirflowPass.py --username ${AIRFLOWWEB_USER} --email ${AIRFLOWWEB_EMAIL} --password ${AIRFLOWWEB_PASSWORD}
     exec airflow webserver
     ;;
