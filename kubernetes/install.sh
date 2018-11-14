@@ -112,23 +112,33 @@ install_airflow () {
   ##############################################################
   # Copy kubernetes config to worker pod
   ##############################################################
+  
+  # This section may no longer be needed anymore. It looks like
+  # we can use the kubernetes operator and when we state it
+  # already is in the cluster, it already gets access 
+  # through the service account we've setup. kubectl needs
+  # to be setup on the pod that needs to access the cluster
+  # resources though.
+  
+  COPY_KUBE_CONF="FALSE"
+  if [ "$COPY_KUBE_CONF" == "TRUE" ]; then
+    # Get a copy of the kubernetes config
+    cp ~/.kube/config ./custom_kube_config
 
-  # Get a copy of the kubernetes config
-  cp ~/.kube/config ./custom_kube_config
+    # Replace "localhost" with the actual IP address of the service on the cluster
+    KUBERNETES_IP=`kubectl get services | grep kubernetes | awk '$1 == "kubernetes" { print $3 }'`
+    KUBERNETES_PORT=`kubectl get services | grep kubernetes | awk '$1 == "kubernetes" { print $5 }' | cut -f1 -d'/'`
+    sed -i -e "s/localhost:6443/$KUBERNETES_IP:$KUBERNETES_PORT/g" custom_kube_config
 
-  # Replace "localhost" with the actual IP address of the service on the cluster
-  KUBERNETES_IP=`kubectl get services | grep kubernetes | awk '$1 == "kubernetes" { print $3 }'`
-  KUBERNETES_PORT=`kubectl get services | grep kubernetes | awk '$1 == "kubernetes" { print $5 }' | cut -f1 -d'/'`
-  sed -i -e "s/localhost:6443/$KUBERNETES_IP:$KUBERNETES_PORT/g" custom_kube_config
-
-  # Copy this config file to the cluster worker pods
-  export AIRFLOW_WORKER_PODS=`kubectl get pods | grep airflow-worker | cut -f1 -d' '`
-  export AIRFLOW_WORKER_PODS=($AIRFLOW_WORKER_PODS)
-  #for AIRFLOW_WORKER_POD in "${AIRFLOW_WORKER_PODS[@]}"
-  #do
-  #  echo "Copying kube config to worker pod: ${AIRFLOW_WORKER_POD}"
-  #  kubectl cp custom_kube_config ${AIRFLOW_WORKER_POD}:/usr/local/airflow/.kube/config
-  #done
+    # Copy this config file to the cluster worker pods
+    export AIRFLOW_WORKER_PODS=`kubectl get pods | grep airflow-worker | cut -f1 -d' '`
+    export AIRFLOW_WORKER_PODS=($AIRFLOW_WORKER_PODS)
+    for AIRFLOW_WORKER_POD in "${AIRFLOW_WORKER_PODS[@]}"
+    do
+      echo "Copying kube config to worker pod: ${AIRFLOW_WORKER_POD}"
+      kubectl cp custom_kube_config ${AIRFLOW_WORKER_POD}:/usr/local/airflow/.kube/config
+    done
+  fi
   
   ##############################################################
   # Create Secrets on the cluster
@@ -136,7 +146,7 @@ install_airflow () {
   
   # Google credential secrets as file
   kubectl create secret generic invoice-processing-env --from-env-file=./secrets.env 
-  kubectl create secret generic invoice-processing-file --from-file=./secrets.json
+  kubectl create secret generic invoice-processing-google-app-cred --from-file=./google_app_creds.json
   
   ##############################################################
   # Test connecting to cluster

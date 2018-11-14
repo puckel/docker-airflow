@@ -28,3 +28,5 @@ secrets.env
 secrets.json
 kubernetes/helm-chart/charts/postgresql
 kubernetes/helm-chart/charts/redis
+secrets_old.json
+google_app_creds.json
