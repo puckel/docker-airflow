@@ -28,7 +28,7 @@ uninstall_airflow() {
   # Delete secrets
   kubectl delete secret invoice-processing-env
   kubectl delete secret invoice-processing-google-app-cred
-  
+  kubectl delete secret gcr-json-key
 }
 
 

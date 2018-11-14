@@ -148,6 +148,16 @@ install_airflow () {
   kubectl create secret generic invoice-processing-env --from-env-file=./secrets.env 
   kubectl create secret generic invoice-processing-google-app-cred --from-file=./google_app_creds.json
   
+  # Google credential secrets for pod ImagePullSecrets
+  kubectl create secret docker-registry gcr-json-key \
+    --docker-server=http://gcr.io \
+    --docker-username=_json_key \
+    --docker-password="$(cat helm-chart/google_app_creds.json)" \
+    --docker-email=any@validemail.com
+
+  # Attach ImagePullSecrets to pod serviceaccount
+  kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
+
   ##############################################################
   # Test connecting to cluster
   ##############################################################
