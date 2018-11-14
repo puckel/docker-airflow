@@ -6,7 +6,12 @@ uninstall_airflow() {
 
   # Remove port forwarding
   PORT_FORWARD_PROCESS=`ps -ef | grep "kubectl port-forward airflow" | grep -v "grep" | awk '{ print $2 }'`
-  kill ${PORT_FORWARD_PROCESS}
+  if [ -z "$PORT_FORWARD_PROCESS" ]; then
+    echo "No port-forward process running"
+  else
+    echo "Killing process ${PORT_FORWARD_PROCESS} to end port-forwarding"
+    kill ${PORT_FORWARD_PROCESS}
+  fi
 
   # Uninstall airflow via helm
   helm delete --purge airflow
