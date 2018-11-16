@@ -152,12 +152,12 @@ install_airflow () {
   kubectl create secret docker-registry gcr-json-key \
     --docker-server=http://gcr.io \
     --docker-username=_json_key \
-    --docker-password="$(cat helm-chart/google_app_creds.json)" \
+    --docker-password="$(cat google_app_creds.json)" \
     --docker-email=any@validemail.com
 
   # Attach ImagePullSecrets to pod serviceaccount
   kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "gcr-json-key"}]}'
-
+  
   ##############################################################
   # Test connecting to cluster
   ##############################################################
