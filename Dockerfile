@@ -27,6 +27,8 @@ ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 
 # I had issues with older versions of psycopg2, just a warning
+# && pip install 'celery[redis]>=4.1.1,<4.2.0' \
+
 RUN set -ex \
     && buildDeps=' \
         freetds-dev \
