@@ -28,7 +28,6 @@ ENV LC_MESSAGES en_US.UTF-8
 RUN set -ex \
     && buildDeps=' \
         freetds-dev \
-        python3-dev \
         libkrb5-dev \
         libsasl2-dev \
         libssl-dev \
@@ -42,8 +41,6 @@ RUN set -ex \
         $buildDeps \
         freetds-bin \
         build-essential \
-        python3-pip \
-        python3-requests \
         default-libmysqlclient-dev \
         apt-utils \
         curl \
@@ -55,6 +52,7 @@ RUN set -ex \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
     && pip install -U pip setuptools wheel \
+    && pip install requests \
     && pip install pytz \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
