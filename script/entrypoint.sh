@@ -82,6 +82,9 @@ case "$1" in
     exec airflow "$@"
     ;;
   flower)
+    # Flower relies on having the `log` table, and thus also needs to sleep for
+    # to allow the database to be initialized.
+    sleep 10
     exec airflow "$@"
     ;;
   version)
