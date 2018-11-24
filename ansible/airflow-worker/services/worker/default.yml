@@ -1,0 +1,21 @@
+---
+
+aws_profile_env: "default"
+docker_tag_env: "latest" # for prod this should be a specific version number not "latest"
+ecs_service_desired_count_env: 0
+# set to false in prod
+ecr_create_env: true
+
+memory_reservation_env: "3800"
+
+redis_host_env: "redis.of625w.0001.apse2.cache.amazonaws.com"
+
+postgres_host_env: "airflow.cejta7k9fkpo.ap-southeast-2.rds.amazonaws.com"
+postgres_user_env: "airflow"
+postgres_password_env: "airflow123"
+postgres_db_env: "airflow"
+
+airflow__core__remote_conn_id_env: "s3_default"
+airflow__core__remote_base_log_folder_env: "s3://gpongracz-airflow/logs"
+
+webserver_hostname_env: "ec2-52-62-57-25.ap-southeast-2.compute.amazonaws.com"

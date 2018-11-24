@@ -6,9 +6,12 @@ services:
             - POSTGRES_USER=airflow
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
+            - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            - AWS_DEFAULT_REGION=ap-southeast-2
 
     webserver:
-        image: gpongracz/puckel-aws-docker-airflow:latest
+        image: gpongracz/puckel-airflow:latest
         restart: always
         depends_on:
             - postgres

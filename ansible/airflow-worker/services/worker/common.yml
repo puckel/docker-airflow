@@ -1,0 +1,74 @@
+---
+
+aws_region: "ap-southeast-2"
+aws_profile: "{{ aws_profile_env }}"
+
+# ECR role specific
+ecr_create: "{{ ecr_create_env | default(false) }}"
+ecr_repository_name: "{{ service_name }}"
+ecr_additional_aws_account_list: []
+
+# ECS role specific
+ecs_service_desired_count: "{{ ecs_service_desired_count_env }}"
+ecs_cluster_name: "{{ cluster_name }}"
+ecs_service_name: "{{ service_name }}"
+ecs_taskdefinition_containers:
+  - name: "{{ ecs_service_name }}"
+    essential: true
+    image:  gpongracz/puckel-aws-docker-airflow
+    memoryReservation: "{{ memory_reservation_env }}"
+    environment:
+      - name: LOAD_EX
+        value: "n"
+      - name: FERNET_KEY
+        value: "46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho="
+      - name: EXECUTOR
+        value: "Celery"
+      - name: POSTGRES_USER
+        value: "{{ postgres_user_env }}"
+      - name: POSTGRES_PASSWORD
+        value: "{{ postgres_password_env }}"
+      - name: POSTGRES_HOST
+        value: "{{ postgres_host_env }}"
+      - name: POSTGRES_PORT
+        value: "5432"
+      - name: POSTGRES_DB
+        value: "{{ postgres_db_env }}"
+      - name: REDIS_HOST
+        value: "{{ redis_host_env }}"
+      - name: REDIS_PORT
+        value: "6379"
+      - name: AIRFLOW__CORE__REMOTE_CONN_ID
+        value: "{{ airflow__core__remote_conn_id_env }}"
+      - name: AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER
+        value: "{{ airflow__core__remote_base_log_folder_env }}"
+      - name: WEBSERVER_HOSTNAME
+        value: "{{ webserver_hostname_env }}"
+
+
+    mountPoints:
+      - containerPath: /usr/local/airflow/dags
+        sourceVolume: "airflow_dags"
+      - containerPath: /usr/local/airflow/logs
+        sourceVolume: "airflow_logs"
+
+    command:
+      - worker
+
+#    healthcheck:
+#      test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+#      interval: 30s
+#      timeout: 30s
+#      retries: 3
+
+ecs_deployment_configuration:
+  minimum_healthy_percent: 0
+  maximum_percent: 200
+
+ecs_taskdefinition_volumes:
+- name: "airflow_dags"
+  host:
+      sourcePath: "/efs/airflow_dags"
+- name: "airflow_logs"
+  host:
+      sourcePath: "/efs/airflow_logs"

@@ -1,2 +1,4 @@
-COMPONENT_NAME=puckel-aws-docker-airflow
+COMPONENT_NAME=puckel-airflow
+AWS_ECR_ACCOUNT_ID=795947944754
+AWS_REGION=ap-southeast-2
 DOCKER_USER_ID=gpongracz

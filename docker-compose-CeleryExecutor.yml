@@ -16,7 +16,7 @@ services:
         #     - ./pgdata:/var/lib/postgresql/data/pgdata
 
     webserver:
-        image: gpongracz/puckel-aws-docker-airflow:latest
+        image: gpongracz/puckel-airflow:latest
         restart: always
         depends_on:
             - postgres
@@ -25,12 +25,18 @@ services:
             - LOAD_EX=n
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            - AWS_DEFAULT_REGION=ap-southeast-2
+            - AIRFLOW__CORE__REMOTE_LOG_CONN_ID=s3_default
+            - AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER=s3://gpongracz-airflow
             # - REDIS_PASSWORD=redispass
         volumes:
             - ./dags:/usr/local/airflow/dags
+            - ~/.aws:/home/airflow/.aws
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
@@ -43,7 +49,7 @@ services:
             retries: 3
 
     flower:
-        image: gpongracz/puckel-aws-docker-airflow:latest
+        image: gpongracz/puckel-airflow:latest
         restart: always
         depends_on:
             - redis
@@ -55,38 +61,50 @@ services:
         command: flower
 
     scheduler:
-        image: gpongracz/puckel-aws-docker-airflow:latest
+        image: gpongracz/puckel-airflow:latest
         restart: always
         depends_on:
             - webserver
         volumes:
             - ./dags:/usr/local/airflow/dags
+            - ~/.aws:/home/airflow/.aws
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
-            - LOAD_EX=n
+            - LOAD_EX=y
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            - AWS_DEFAULT_REGION=ap-southeast-2
+            - AIRFLOW__CORE__REMOTE_LOG_CONN_ID=s3_default
+            - AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER=s3://gpongracz-airflow
             # - REDIS_PASSWORD=redispass
         command: scheduler
 
     worker:
-        image: gpongracz/puckel-aws-docker-airflow:latest
+        image: gpongracz/puckel-airflow:latest
         restart: always
         depends_on:
             - scheduler
         volumes:
             - ./dags:/usr/local/airflow/dags
+            - ~/.aws:/home/airflow/.aws
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            - AWS_DEFAULT_REGION=ap-southeast-2
+            - AIRFLOW__CORE__REMOTE_LOG_CONN_ID=s3_default
+            - AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER=s3://gpongracz-airflow
             # - REDIS_PASSWORD=redispass
         command: worker
