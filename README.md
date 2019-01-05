@@ -56,6 +56,15 @@ NB : If you want to have DAGs example loaded (default=False), you've to set the 
 
     docker run -d -p 8080:8080 -e LOAD_EX=y puckel/docker-airflow
 
+If you want to control database actions on boot, you've to set the following environment variable with one of `init`,`update`,`none`:
+
+`DB_RUN_ACTION=init`
+
+    docker run -d -p 8080:8080 -e DB_RUN_ACTION=update puckel/docker-airflow
+
+This will run one of `airflow initdb`, `airflow updatedb`, or perform no database action when the webserver starts.
+
+
 If you want to use Ad hoc query, make sure you've configured connections:
 Go to Admin -> Connections and Edit "postgres_default" set this values (equivalent to values in airflow.cfg/docker-compose*.yml) :
 - Host : postgres
