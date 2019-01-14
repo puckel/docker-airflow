@@ -1,4 +1,7 @@
 #!/bin/bash
+
+NAMESPACE="default"
+
 ##############################################################
 # Function to remove airflow from kubernetes cluster
 ##############################################################
