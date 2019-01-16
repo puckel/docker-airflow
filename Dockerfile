@@ -1,65 +1,37 @@
-# VERSION 1.10.1
-# AUTHOR: Matthieu "Puckel_" Roisil
-# DESCRIPTION: Basic Airflow container
-# BUILD: docker build --rm -t puckel/docker-airflow .
-# SOURCE: https://github.com/puckel/docker-airflow
-
 FROM python:3.6-slim
-LABEL maintainer="Puckel_"
-
-# Never prompts the user for choices on installation/configuration of packages
-ENV DEBIAN_FRONTEND noninteractive
-ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=1.10.1
-ARG AIRFLOW_HOME=/usr/local/airflow
-ARG AIRFLOW_DEPS=""
-ARG PYTHON_DEPS=""
+ARG AIRFLOW_VERSION=d35439a82b11848d25596c44563ae2ac2a1fd134
+ENV AIRFLOW_HOME /usr/local/airflow
+ENV SLUGIFY_USES_TEXT_UNIDECODE yes
 ENV AIRFLOW_GPL_UNIDECODE yes
-
-# Define en_US.
-ENV LANGUAGE en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
-ENV LC_CTYPE en_US.UTF-8
-ENV LC_MESSAGES en_US.UTF-8
+ENV AIRFLOW__CORE__EXECUTOR KubernetesExecutor
 
 RUN set -ex \
     && buildDeps=' \
-        freetds-dev \
-        libkrb5-dev \
+        python3-dev \
         libsasl2-dev \
         libssl-dev \
         libffi-dev \
+        build-essential \
+        libblas-dev \
+        liblapack-dev \
         libpq-dev \
-        git \
     ' \
     && apt-get update -yqq \
     && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
-        freetds-bin \
-        build-essential \
+        python3-requests \
         default-libmysqlclient-dev \
-        apt-utils \
         curl \
         rsync \
-        netcat \
-        locales \
-    && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
-    && locale-gen \
-    && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
-    && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
-    && pip install -U pip setuptools wheel \
-    && pip install pytz \
-    && pip install pyOpenSSL \
-    && pip install kubernetes \
-    && pip install ndg-httpsclient \
-    && pip install pyasn1 \
-    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
-    && pip install 'redis>=2.10.5,<3' \
-    && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
+        netcat-openbsd \
+        git \
+#        libstdc++6 \
+    && pip install -U pip setuptools wheel cython\
+    && pip install kubernetes cryptography psycopg2 flask_oauthlib scp pyarrow pandas tqdm \
+    && pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VERSION#egg=apache-airflow[crypto,postgres,jdbc,mysql,s3,slack,password,ssh,gcp_api,pymongo,redis] \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
@@ -70,6 +42,9 @@ RUN set -ex \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
+
+RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
+WORKDIR ${AIRFLOW_HOME}
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
