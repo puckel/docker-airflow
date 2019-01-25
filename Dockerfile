@@ -1,7 +1,7 @@
 FROM python:3.6-slim
 
 # Airflow
-ARG AIRFLOW_VERSION=d35439a82b11848d25596c44563ae2ac2a1fd134
+ARG AIRFLOW_VERSION=1.10.2
 ENV AIRFLOW_HOME /usr/local/airflow
 ENV SLUGIFY_USES_TEXT_UNIDECODE yes
 ENV AIRFLOW_GPL_UNIDECODE yes
@@ -47,8 +47,6 @@ RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
 WORKDIR ${AIRFLOW_HOME}
 
 COPY script/entrypoint.sh /entrypoint.sh
-COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
-COPY dags ${AIRFLOW_HOME}/dags
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
