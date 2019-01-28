@@ -6,6 +6,7 @@ ENV AIRFLOW_HOME /usr/local/airflow
 ENV SLUGIFY_USES_TEXT_UNIDECODE yes
 ENV AIRFLOW_GPL_UNIDECODE yes
 ENV AIRFLOW__CORE__EXECUTOR KubernetesExecutor
+ENV PYTHONPATH /usr/local/airflow
 
 RUN set -ex \
     && buildDeps=' \
