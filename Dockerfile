@@ -14,7 +14,7 @@ ENV TERM linux
 # Airflow
 ARG AIRFLOW_VERSION=1.10.2
 ARG AIRFLOW_HOME=/usr/local/airflow
-ARG AIRFLOW_DEPS=""
+ARG AIRFLOW_DEPS="kubernetes"
 ARG PYTHON_DEPS=""
 ENV AIRFLOW_GPL_UNIDECODE yes
 
@@ -33,7 +33,6 @@ RUN set -ex \
         libssl-dev \
         libffi-dev \
         libpq-dev \
-        git \
     ' \
     && apt-get update -yqq \
     && apt-get upgrade -yqq \
@@ -47,6 +46,7 @@ RUN set -ex \
         rsync \
         netcat \
         locales \
+        git \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
