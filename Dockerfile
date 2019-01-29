@@ -18,8 +18,8 @@ RUN set -ex \
         libblas-dev \
         liblapack-dev \
         libpq-dev \
-    '
-RUN apt-get update -yqq \
+    ' \
+    && apt-get update -yqq \
     && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
@@ -28,11 +28,11 @@ RUN apt-get update -yqq \
         curl \
         rsync \
         netcat-openbsd \
-        git
-#        libstdc++6
-RUN pip install -U pip setuptools wheel cython\
-    && pip install kubernetes cryptography psycopg2 flask_oauthlib scp pyarrow pandas tqdm great_expectations\
-    && pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VERSION#egg=apache-airflow[crypto,postgres,jdbc,mysql,s3,slack,password,ssh,gcp_api,pymongo,redis] \
+        git \
+#        libstdc++6 \
+    && pip install -U pip setuptools wheel cython\
+    && pip install kubernetes cryptography psycopg2 scp pyarrow pandas tqdm great_expectations\
+    && pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VERSION#egg=apache-airflow[crypto,postgres,jdbc,mysql,s3,slack,password,ssh,redis] \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
