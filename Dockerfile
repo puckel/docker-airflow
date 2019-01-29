@@ -31,7 +31,7 @@ RUN set -ex \
         git \
 #        libstdc++6 \
     && pip install -U pip setuptools wheel cython\
-    && pip install kubernetes cryptography psycopg2 flask_oauthlib scp pyarrow pandas tqdm \
+    && pip install kubernetes cryptography psycopg2 flask_oauthlib scp pyarrow pandas tqdm great_expectations\
     && pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VERSION#egg=apache-airflow[crypto,postgres,jdbc,mysql,s3,slack,password,ssh,gcp_api,pymongo,redis] \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
