@@ -45,7 +45,7 @@ RUN rm /tmp/get-pip.py
 RUN pip install --upgrade pip
 
 # Since we install vanilla Airflow, we also want to have support for Postgres and Kubernetes
-RUN pip install -U setuptools
+RUN pip install -U pip setuptools wheel cython
 RUN pip install kubernetes
 RUN pip install cryptography
 RUN pip install psycopg2-binary==2.7.4  # I had issues with older versions of psycopg2, just a warning
@@ -53,7 +53,12 @@ RUN pip install scp
 RUN pip install pandas==0.23.4
 RUN pip install great_expectations==0.4.5
 RUN pip install boto3==1.9.4
-RUN pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VERSION#egg=apache-airflow[crypto,postgres,jdbc,mysql,s3,slack,password,ssh,redis]
+RUN pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VERSION#egg=apache-airflow[crypto,postgres,jdbc,s3,slack,password,ssh,redis]
+
+RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
+WORKDIR ${AIRFLOW_HOME}
+
+COPY script/entrypoint.sh /entrypoint.sh
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
