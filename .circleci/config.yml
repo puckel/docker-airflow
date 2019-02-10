@@ -1,4 +1,4 @@
-version: 2
+version: 1
 
 jobs:
   build_and_test:
@@ -12,13 +12,13 @@ jobs:
       - run: 
           name: Build docker image
           command: |
-            docker build -t puckel/docker-airflow .
+            docker build -t enrica/docker-airflow .
       - run: 
           name: Test docker image
           command: |
-            docker run puckel/docker-airflow version |grep '1.10.2'
+            docker run enrica/docker-airflow version |grep '1.10.2'
 workflows:
-  version: 2
+  version: 1
   build_and_test:
     jobs:
       - build_and_test
