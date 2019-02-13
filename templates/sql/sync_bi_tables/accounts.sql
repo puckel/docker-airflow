@@ -483,7 +483,6 @@ select u.acnt_id,
     days_since_meditation_type.days_since_timer,
     days_since_meditation_type.days_since_manual,
     devices_recent.last_ip,
-    u.groups,
     subs.details_id as current_subs_details_id,
     prev_subs.details_id as previous_subs_details_id,
     cu.college_id,
@@ -504,7 +503,6 @@ from (
             created_at,
             updated_at,
             facebook_user_id,
-            groups,
             email_status,
             probability_male
         from appdb.users
@@ -522,7 +520,6 @@ from (
             first_seen as created_at,
             null as updated_at,
             null as facebook_user_id,
-            '{0-default}' as groups,
             0 as email_status,
             .5 as probability_male
         from {{ params.schema }}.device_acnts_stage

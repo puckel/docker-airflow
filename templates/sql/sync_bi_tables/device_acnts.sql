@@ -48,7 +48,6 @@ with devs as (--additional info about a persons device
                 end as store_country_is_known,
             d.first_store_country_code as store_country_code, --relatively stable knowledge about persons country code
             d.cc as recent_cc, --based on most recent IP; changes!
-            languages,
             split_part(d.locale, '_', 2) as language_setting,
             d.accept_language,
             d.locale,
@@ -71,7 +70,7 @@ with devs as (--additional info about a persons device
 ),
 devs_order as (
    select *,
-        coalesce(languages, language_setting) as language_estimated,
+        language_setting as language_estimated,
         row_number() over (partition by acnt_id order by last_seen desc) order_appeared_reversed,
         row_number() over (partition by acnt_id order by first_seen asc) order_appeared
     from devs

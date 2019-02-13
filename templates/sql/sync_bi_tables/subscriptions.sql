@@ -1,5 +1,5 @@
 /*
-Two current problems in DB (besides schema being very differnet across subs tables haha)
+Two current problems in DB (besides schema being very different across subs tables)
 
 
 1) for iOS, same details id applied to multiple acnt_ids (user_ids or device_id)
@@ -25,14 +25,17 @@ Two current problems in DB (besides schema being very differnet across subs tabl
         -now only 1 one acnt id per transaction
 
 2) is_nonreturning_auto_renewal_on users
-     ios and nonreturned subs is a temporary fix to address ios-receipts issue.
-    if someone purchases yearly after free trial, should have a new row in the DB.
+    ios and nonreturned subs is a temporary fix to address ios-receipts issue.
+    If someone purchases a yearly sub after free trial, should have a new row in the DB.
     But some only have one row even though:
       1. their free trial has expired
       2. they had autorenewal on
       3. they are not in a billing retry period.
-    We think these people have purchased, but haven't returned to the app
-      (which would trigger a new line in our DB)
+    but likely they have not returned to the app to get their subs updated.
+    We used to think these people have purchased, and before we started pinging Apple
+    more frequently for their status, that may have been the case.
+    But that is no longer the case as of 2019-02-07 so we switched to just record these people
+    in bi.ios_is_nonreturning_autorenewal_subs but no longer add an inferred purchase for them in bi.subscriptions
 
 3) need cc (country code) in order to get prices
 4) try to incorporate itunes and google play revenue information
@@ -238,50 +241,6 @@ with subs_all AS (--meat of the query; union all the subscriptions and combine s
                 false as is_nonreturning_auto_renewal
             FROM appdb.ios_subscriptions
             where plan != 'com.wb.LEGOStarWars.ARCADE' -- a weird sub that occurs once
-        )
-        UNION ALL
-        (--IOS FREE TRIAL:  iOS users who converted from free-trial but who haven't returned to use the app yet
-            SELECT SUBSTRING(details_id::text, 2, 20) AS subscription_id,
-                details_id::text AS purchase_id,
-                original_transaction_id as transaction_base_id,
-                product_id AS plan,
-                NULL AS gift_type,
-                expires as purchased,
-                dateadd(year, 1, purchased) + '7 days'::interval as expires,
-                CASE
-                    WHEN expires > '2100-01-01' THEN '2100-01-01'
-                    ELSE date_trunc('day', expires)
-                    END AS expires_date,
-                auto_renewing,
-                NULL AS auto_renewal_canceled_at,
-                NULL AS coupon,
-                'ios' AS s_table,
-                false as is_trial_period,
-                true as start_w_trial_period,
-                is_in_billing_retry_period,
-                --single transaction
-                NULL as product_price,
-                NULL as product_price_after_taxes,
-                NULL as first_fee,
-                NULL as product_proceeds_first_transaction,
-                --total transactions
-                1 as n_transactions_raw,
-                --refund info
-                false as refund_requested,
-                0 as n_transactions_refunded,
-                NULL as total_refunded,
-                NULL as refund_requested_at,
-                NULL as refund_reason,
-                --total final $$$
-                1 as n_transactions_paid,
-                NULL as total_paid, --$$ spent are not counted if prod was refunded
-                NULL as total_proceeds,
-
-                NULL as campaign_name,
-                created_at,
-                updated_at,
-                true as is_nonreturning_auto_renewal
-            FROM {{ params.schema }}.ios_is_nonreturning_autorenewal_subs_stage
         )
         UNION ALL
         (--android subs - NOT free trial products
@@ -983,6 +942,4 @@ select subscription_id,--basically device_id but made unique for subs table (e.g
     current_timestamp as table_created_at
 from subs_with_total_revenue s
 left join first_purchase fs
-on fs.acnt_id = s.acnt_id
-
-;
+on fs.acnt_id = s.acnt_id;

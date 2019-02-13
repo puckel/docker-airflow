@@ -16,7 +16,7 @@ program id
 
 DROP TABLE IF EXISTS {{ params.schema }}.guide_variants_info_stage;
 
-CREATE TABLE {{ params.schema }}.guide_variants_info_stage 
+CREATE TABLE {{ params.schema }}.guide_variants_info_stage
 distkey (guide_variant_id)
 AS
 with gv as (
@@ -55,7 +55,6 @@ narrators as (
 program_variants as (
     SELECT id AS program_variant_id,
             program_id,
-            narrator_id AS program_narrator_id,
             created_at AS program_created_at,
             updated_at AS program_updated_at,
             free AS program_free,

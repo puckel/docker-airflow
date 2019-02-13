@@ -9,7 +9,7 @@ maybe add - acnt's session_number - row_number() over (partition BY acnt_id ORDE
 */
 DROP TABLE IF EXISTS {{ params.schema }}.sessions_all_stage;
 
-CREATE TABLE {{ params.schema }}.sessions_all_stage 
+CREATE TABLE {{ params.schema }}.sessions_all_stage
 distkey (acnt_id)
 interleaved sortkey (logged_at,
                      session_type,
@@ -70,7 +70,6 @@ SELECT sess.id AS session_id,
        sp.rating_created_at,
        sp.rating,
        sp.comment AS rating_comment,
-       sp.choices AS rating_choices,
        sp.question AS rating_question,
        gv.guide_created_at,
        CASE
@@ -170,8 +169,7 @@ left join
           created_at AS rating_created_at,
           question,
           rating,
-          comment,
-          choices
+          comment
    FROM appdb.session_polls
    ) sp
   ON sp.session_id = sess.id

@@ -29,7 +29,7 @@ FIRST_TABLES = ['daily_calm_titles', 'guide_variants_info', 'ab_test_enrollments
 SECOND_TABLES = ['ios_is_nonreturning_autorenewal_subs',  'sessions_all']
 THIRD_TABLES = ['subscriptions']
 FOURTH_TABLES = ['accounts', 'appsflyer_conversions']
-FIFTH_TABLES = ['integrated_ratings']
+FIFTH_TABLES = ['integrated_ratings', 'facebook_conversions_summary']
 EXPECTATION_TESTS = ['device_acnts_cc_lower', 'subscriptions_prices_not_null', 'subscriptions_proceeds_not_null',
                      'subscriptions_prod_price_paid', 'subscriptions_prod_price_free',
                      'subscriptions_paid_trans_more_than_zero', 'subscriptions_n_more_than_one',
