@@ -58,6 +58,14 @@ RUN pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VER
 RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
 WORKDIR ${AIRFLOW_HOME}
 
+COPY dags/ ${AIRFLOW_HOME}/dags/
+COPY operators/ ${AIRFLOW_HOME}/operators/
+COPY templates/ ${AIRFLOW_HOME}/templates/
+COPY test/ ${AIRFLOW_HOME}/test/
+COPY config/ ${AIRFLOW_HOME}/config/
+COPY calm_logger/ ${AIRFLOW_HOME}/calm_logger/
+
+
 COPY script/entrypoint.sh /entrypoint.sh
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
