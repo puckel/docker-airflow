@@ -49,7 +49,7 @@ class GreatExpectationsSqlContextOperator(BaseOperator):
         self.sql_conn = sql_conn
         self.sql = sql
         dags_folder = os.environ.get('AIRFLOW__CORE__DAGS_FOLDER')
-        self.validation_config = f'{dags_folder}/lib/ge_validations/{validation_config}'
+        self.validation_config = f'test/ge_validations/{validation_config}'
         self.data_set_name = data_set
 
     def execute(self):

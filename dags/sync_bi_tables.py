@@ -16,8 +16,8 @@ from airflow import DAG
 from datetime import datetime, timedelta
 import os
 from airflow.operators import PostgresOperator
-from lib.templates import DIR as template_dir
-from lib.operators.great_expectations_operator import GreatExpectationsSqlContextOperator
+from templates import DIR as template_dir
+from operators.great_expectations_operator import GreatExpectationsSqlContextOperator
 from calm_logger.logging_helper import setup_logging
 
 
