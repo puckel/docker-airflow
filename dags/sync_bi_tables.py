@@ -49,7 +49,7 @@ GE_SQL_CONN = os.environ.get('AIRFLOW_CONN_SQLALCHEMY_REDSHIFT')
 default_args = {
     'owner': 'data',
     'depends_on_past': False,
-    'start_date': datetime(2019, 1, 23),
+    'start_date': datetime(2019, 2, 13),
     'email': ['airflow@example.com'],
     'email_on_failure': False,
     'email_on_retry': False,
@@ -61,7 +61,8 @@ bi_tables_dag = DAG(
     'sync_bi_tables',
     default_args=default_args,
     schedule_interval='34 * * * *',
-    template_searchpath=TEMPLATE_SEARCHPATH)
+    template_searchpath=TEMPLATE_SEARCHPATH,
+    max_active_runs=1)
 
 
 # returns an instance of the PostgresOperator
