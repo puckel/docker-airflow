@@ -52,7 +52,7 @@ class GreatExpectationsSqlContextOperator(BaseOperator):
         self.validation_config = f'test/ge_validations/{validation_config}'
         self.data_set_name = data_set
 
-    def execute(self):
+    def execute(self, context):
         logger.info(f'running validations on {self.data_set_name}')
         try:
             self.data_context = self.get_data_context()

@@ -1,6 +1,6 @@
 import pytest
 import os
-from lib.operators.great_expectations_operator import GreatExpectationsSqlContextOperator
+from operators.great_expectations_operator import GreatExpectationsSqlContextOperator
 from airflow import DAG
 from datetime import datetime
 from airflow.exceptions import AirflowException
