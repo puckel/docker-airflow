@@ -18,12 +18,14 @@ import os
 from airflow.operators import PostgresOperator
 from templates import DIR as template_dir
 from operators.great_expectations_operator import GreatExpectationsSqlContextOperator
+from operators.redshift_unload_operator import RedshiftUnloadOperator
 from calm_logger.logging_helper import setup_logging
 
 
 logger = setup_logging(__name__)
 
 TEMPLATE_SEARCHPATH = f'{template_dir}/sql'
+POSTGRESS_CONN_ID = 'redshift'
 FIRST_TABLES = ['daily_calm_titles', 'guide_variants_info', 'ab_test_enrollments_flat',
                 'device_acnts', 'ios_subscriptions_w_acnts']
 SECOND_TABLES = ['ios_is_nonreturning_autorenewal_subs',  'sessions_all']
@@ -34,7 +36,7 @@ EXPECTATION_TESTS = ['device_acnts_cc_lower', 'subscriptions_prices_not_null', '
                      'subscriptions_prod_price_paid', 'subscriptions_prod_price_free',
                      'subscriptions_paid_trans_more_than_zero', 'subscriptions_n_more_than_one',
                      'subscriptions_n_paid_more_than_zero', 'subscriptions_refunded_more_than_zero']
-
+ALL_TABLES = FIRST_TABLES + SECOND_TABLES + THIRD_TABLES + FOURTH_TABLES + FIFTH_TABLES
 REDSHIFT_CONN_ID = 'redshift'
 REDSHIFT_DB = 'stitch'
 STAGING_SCHEMA = 'dev'
@@ -67,7 +69,7 @@ def create_postgres_operator(table_name, task_id, sql, params):
     return PostgresOperator(
         dag=bi_tables_dag,
         task_id=task_id,
-        postgres_conn_id='redshift',
+        postgres_conn_id=POSTGRESS_CONN_ID,
         sql=sql,
         db=REDSHIFT_DB,
         params=params
@@ -116,12 +118,23 @@ for test in EXPECTATION_TESTS:
     run_expectation_tasks.append(run_expectation)
     run_expectation.set_upstream(fifth_stage_table_tasks)
 
-# rename tables to the non-staging version
-for table in FIRST_TABLES + SECOND_TABLES + THIRD_TABLES + FOURTH_TABLES + FIFTH_TABLES:
+# unload all tables to s3 and rename staging tables to the non-staging version
+for table in ALL_TABLES:
     params = {
         'schema': STAGING_SCHEMA,
         'table_name': table,
         'stage_name': f'{table}_stage'
     }
-    task = create_postgres_operator(table, f'replace_{table}_with_stage', REPLACE_SQL, params)
-    task.set_upstream(run_expectation_tasks)
+    unload_task = RedshiftUnloadOperator(
+        task_id=f'write_{table}_to_s3',
+        dag=bi_tables_dag,
+        custom_unload_options={
+            'query': f'select * from {STAGING_SCHEMA}.{table}',
+            'bucket': 'calm-redshift-dev'
+        },
+        postgres_conn_id=POSTGRESS_CONN_ID,
+        db=REDSHIFT_DB
+    )
+    unload_task.set_upstream(run_expectation_tasks)
+    replace_task = create_postgres_operator(table, f'replace_{table}_with_stage', REPLACE_SQL, params)
+    replace_task.set_upstream(unload_task)
