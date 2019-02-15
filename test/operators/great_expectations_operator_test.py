@@ -18,7 +18,7 @@ def set_env():
 def mocked_success_dataset(mocker):
     validate_stub = mocker.Mock(return_value={'success': True})
 
-    mocker.patch('lib.operators.great_expectations_operator.GreatExpectationsSqlContextOperator.get_data_set',
+    mocker.patch('operators.great_expectations_operator.GreatExpectationsSqlContextOperator.get_data_set',
                  return_value={'validate': validate_stub})
 
     return validate_stub
@@ -28,7 +28,7 @@ def mocked_success_dataset(mocker):
 def mocked_failed_dataset(mocker):
     validate_stub = mocker.Mock(return_value={'success': False})
 
-    mocker.patch('lib.operators.great_expectations_operator.GreatExpectationsSqlContextOperator.get_data_set',
+    mocker.patch('operators.great_expectations_operator.GreatExpectationsSqlContextOperator.get_data_set',
                  return_value={'validate': validate_stub})
 
 
@@ -36,7 +36,7 @@ def mocked_failed_dataset(mocker):
 def mocked_get_data_context(mocker):
     dataset_stub = mocker.stub(name='dataset_stub')
 
-    mocker.patch('lib.operators.great_expectations_operator.GreatExpectationsSqlContextOperator.get_data_context',
+    mocker.patch('operators.great_expectations_operator.GreatExpectationsSqlContextOperator.get_data_context',
                  return_value={'get_dataset': dataset_stub})
 
     return dataset_stub
@@ -51,22 +51,25 @@ def ge_operator(set_env):
 
 
 def test_init(ge_operator, mocked_get_data_context):
-    assert ge_operator.validation_config == '/dags_folder/lib/ge_validations/test.json'
+    assert ge_operator.validation_config == 'test/ge_validations/test.json'
     mocked_get_data_context.assert_called
 
 
 def test_execute(ge_operator, mocked_get_data_context, mocked_success_dataset):
-    ge_operator.execute()
+    context = {}
+    ge_operator.execute(context)
     mocked_success_dataset.assert_called()
 
 
 def test_operator_fail(ge_operator, mocked_get_data_context, mocked_failed_dataset):
+    context = {}
     with pytest.raises(AirflowException):
-        ge_operator.execute()
+        ge_operator.execute(context)
 
 
 def test_operator_success(ge_operator, mocked_get_data_context, mocked_success_dataset):
+    context = {}
     try:
-        ge_operator.execute()
+        ge_operator.execute(context)
     except AirflowException:
         pytest.fail("Task failed even though the success message came back")
