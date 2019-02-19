@@ -24,22 +24,22 @@ class RedshiftUnloadOperator(PostgresOperator):
 
     def execute(self, context):
         # ENV = os.getenv('CALM-ENV')
+        print( f'CONTEXT! {context}')
         bucket = self.custom_opts.get('bucket') or f'calm-redshift-dev'
-        key = self.custom_opts.get('key') or f'unloads/{context.dag}/{context.task_id}/{context.execution_date}'
+        key = self.custom_opts.get('key') or f"unloads/{context.get('dag_id')}/{context.get('task_id')}/{context.get('execution_date')}"
         self.custom_opts.update({ 's3_location': f's3://{bucket}/{key}/' })
         self.opts.update(self.custom_opts)
 
         self.sql = f"""
             UNLOAD(
-                '{self.opts.query}'
+                '{self.opts.get('query')}'
             )
-            to '{self.opts.s3_location}'
-            credentials 'aws_access_key_id={self.opts.aws_access_key_id};aws_secret_access_key={self.opts.aws_secret_access_key}'
-            DELIMITER AS '{self.opts.delimiter}'
-            PARALLEL {self.opts.parallel}
-            {'HEADER' if self.opts.header else ''}
-            {'gzip' if self.opts.gzip else ''}
-            {'manifest' if self.opts.manifest else ''};
+            to '{self.opts.get('s3_location')}'
+            credentials 'aws_access_key_id={self.opts.get('aws_access_key_id')};aws_secret_access_key={self.opts.get('aws_secret_access_key')}'
+            DELIMITER AS '{self.opts.get('delimiter')}'
+            PARALLEL {self.opts.get('parallel')}
+            {'HEADER' if self.opts.get('header') else ''}
+            {'gzip' if self.opts.get('gzip') else ''}
+            {'manifest' if self.opts.get('manifest') else ''};
         """
-
-        super(RedshiftUnloadOperator).execute(context)
+        super(RedshiftUnloadOperator, self).execute(context)
