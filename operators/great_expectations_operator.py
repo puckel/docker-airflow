@@ -32,7 +32,6 @@ from airflow.exceptions import AirflowException
 from airflow.utils.decorators import apply_defaults
 from calm_logger.logging_helper import setup_logging
 
-import os
 import great_expectations as ge
 
 
@@ -48,7 +47,6 @@ class GreatExpectationsSqlContextOperator(BaseOperator):
         super(GreatExpectationsSqlContextOperator, self).__init__(*args, **kwargs)
         self.sql_conn = sql_conn
         self.sql = sql
-        dags_folder = os.environ.get('AIRFLOW__CORE__DAGS_FOLDER')
         self.validation_config = f'test/ge_validations/{validation_config}'
         self.data_set_name = data_set
 

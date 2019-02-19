@@ -1,5 +1,4 @@
 from airflow.operators import PostgresOperator
-from airflow.exceptions import AirflowException
 import os
 
 
@@ -21,21 +20,23 @@ class RedshiftUnloadOperator(PostgresOperator):
 
         self.custom_opts = custom_unload_options
 
-
     def execute(self, context):
         # ENV = os.getenv('CALM-ENV')
-        print( f'CONTEXT! {context}')
+        print(f'CONTEXT! {context}')
         bucket = self.custom_opts.get('bucket') or f'calm-redshift-dev'
-        key = self.custom_opts.get('key') or f"unloads/{context.get('dag_id')}/{context.get('task_id')}/{context.get('execution_date')}"
-        self.custom_opts.update({ 's3_location': f's3://{bucket}/{key}/' })
+        default_key = f"unloads/{context.get('dag_id')}/{context.get('task_id')}/{context.get('execution_date')}"
+        key = self.custom_opts.get('key') or default_key
+        self.custom_opts.update({'s3_location': f's3://{bucket}/{key}/'})
         self.opts.update(self.custom_opts)
+        aws_key = self.opts.get('aws_access_key_id')
+        aws_sec = self.opts.get('aws_secret_access_key')
 
         self.sql = f"""
             UNLOAD(
                 '{self.opts.get('query')}'
             )
             to '{self.opts.get('s3_location')}'
-            credentials 'aws_access_key_id={self.opts.get('aws_access_key_id')};aws_secret_access_key={self.opts.get('aws_secret_access_key')}'
+            credentials 'aws_access_key_id={aws_key};aws_secret_access_key={aws_sec}'
             DELIMITER AS '{self.opts.get('delimiter')}'
             PARALLEL {self.opts.get('parallel')}
             {'HEADER' if self.opts.get('header') else ''}

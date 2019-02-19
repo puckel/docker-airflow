@@ -4,8 +4,6 @@ from operators.great_expectations_operator import GreatExpectationsSqlContextOpe
 from airflow import DAG
 from datetime import datetime
 from airflow.exceptions import AirflowException
-import great_expectations as ge
-
 
 pytest_plugins = ["pytest_mock"]
 
@@ -16,6 +14,7 @@ class FakeDataSet():
 
     def validate(self, expectations_config=None):
         pass
+
 
 class FakeDataContext():
     def __init__(self, context_name, sql_conn):
@@ -38,9 +37,10 @@ def ge_operator(mocker, set_env):
                                                        sql=None, validation_config='test.json', dag=dag,
                                                        task_id='test_task')
         dataset = FakeDataSet('test_data_set', 'sql')
-        mocker.patch.object(dataset, 'validate', new=mocker.Mock(return_value={'success': result=='success'}))
+        mocker.patch.object(dataset, 'validate', new=mocker.Mock(return_value={'success': result == 'success'}))
 
-        mocker.patch.object(operator, 'get_data_context', new=mocker.Mock(return_value=FakeDataContext('test_data_set', 'sql')))
+        mocker.patch.object(operator, 'get_data_context',
+                            new=mocker.Mock(return_value=FakeDataContext('test_data_set', 'sql')))
         mocker.patch.object(operator, 'get_data_set', new=mocker.Mock(return_value=dataset))
         return operator
 
@@ -58,6 +58,7 @@ def test_execute_success(ge_operator):
     operator.get_data_context.assert_called()
     operator.get_data_set.assert_called()
     operator.data_set.validate.assert_called()
+
 
 def test_execute_fail(ge_operator):
     context = {}
