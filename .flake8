@@ -1,0 +1,4 @@
+[flake8]
+exclude = .git,.gitignore,README.md,.circleci,templates,airflow
+max_complexity = 10
+max_line_length = 120
