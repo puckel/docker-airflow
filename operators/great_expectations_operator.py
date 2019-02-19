@@ -68,7 +68,7 @@ class GreatExpectationsSqlContextOperator(BaseOperator):
         return self.data_context.get_dataset(self.data_set_name, self.sql)
 
     def validate(self):
-        validation = self.data_set.get('validate')(expectations_config=self.validation_config)
+        validation = self.data_set.validate(expectations_config=self.validation_config)
         if not validation.get('success'):
             logger.error(f'test failed: {validation.get("results")}')
             raise AirflowException(f'test failed results: {validation}')

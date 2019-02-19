@@ -4,9 +4,25 @@ from operators.great_expectations_operator import GreatExpectationsSqlContextOpe
 from airflow import DAG
 from datetime import datetime
 from airflow.exceptions import AirflowException
+import great_expectations as ge
 
 
 pytest_plugins = ["pytest_mock"]
+
+
+class FakeDataSet():
+    def __init__(self, data_set, sql_string):
+        pass
+
+    def validate(self, expectations_config=None):
+        pass
+
+class FakeDataContext():
+    def __init__(self, context_name, sql_conn):
+        pass
+
+    def get_dataset(self, name, sql):
+        return FakeDataSet(name, sql)
 
 
 @pytest.fixture
@@ -15,61 +31,36 @@ def set_env():
 
 
 @pytest.fixture
-def mocked_success_dataset(mocker):
-    validate_stub = mocker.Mock(return_value={'success': True})
+def ge_operator(mocker, set_env):
+    def _ge_operator(result='success'):
+        dag = DAG(dag_id='test_dag', start_date=datetime(2019, 1, 1))
+        operator = GreatExpectationsSqlContextOperator(sql_conn='sql_conn', data_set='test_data_set',
+                                                       sql=None, validation_config='test.json', dag=dag,
+                                                       task_id='test_task')
+        dataset = FakeDataSet('test_data_set', 'sql')
+        mocker.patch.object(dataset, 'validate', new=mocker.Mock(return_value={'success': result=='success'}))
 
-    mocker.patch('operators.great_expectations_operator.GreatExpectationsSqlContextOperator.get_data_set',
-                 return_value={'validate': validate_stub})
+        mocker.patch.object(operator, 'get_data_context', new=mocker.Mock(return_value=FakeDataContext('test_data_set', 'sql')))
+        mocker.patch.object(operator, 'get_data_set', new=mocker.Mock(return_value=dataset))
+        return operator
 
-    return validate_stub
-
-
-@pytest.fixture
-def mocked_failed_dataset(mocker):
-    validate_stub = mocker.Mock(return_value={'success': False})
-
-    mocker.patch('operators.great_expectations_operator.GreatExpectationsSqlContextOperator.get_data_set',
-                 return_value={'validate': validate_stub})
-
-
-@pytest.fixture
-def mocked_get_data_context(mocker):
-    dataset_stub = mocker.stub(name='dataset_stub')
-
-    mocker.patch('operators.great_expectations_operator.GreatExpectationsSqlContextOperator.get_data_context',
-                 return_value={'get_dataset': dataset_stub})
-
-    return dataset_stub
+    return _ge_operator
 
 
-@pytest.fixture
-def ge_operator(set_env):
-    dag = DAG(dag_id='test_dag', start_date=datetime(2019, 1, 1))
-    return GreatExpectationsSqlContextOperator(sql_conn='sql_conn', data_set='test_data_set',
-                                               sql=None, validation_config='test.json', dag=dag,
-                                               task_id='test_task')
+def test_init(ge_operator):
+    assert ge_operator().validation_config == 'test/ge_validations/test.json'
 
 
-def test_init(ge_operator, mocked_get_data_context):
-    assert ge_operator.validation_config == 'test/ge_validations/test.json'
-    mocked_get_data_context.assert_called
-
-
-def test_execute(ge_operator, mocked_get_data_context, mocked_success_dataset):
+def test_execute_success(ge_operator):
     context = {}
-    ge_operator.execute(context)
-    mocked_success_dataset.assert_called()
+    operator = ge_operator()
+    operator.execute(context)
+    operator.get_data_context.assert_called()
+    operator.get_data_set.assert_called()
+    operator.data_set.validate.assert_called()
 
-
-def test_operator_fail(ge_operator, mocked_get_data_context, mocked_failed_dataset):
+def test_execute_fail(ge_operator):
     context = {}
+    operator = ge_operator(result='failed')
     with pytest.raises(AirflowException):
-        ge_operator.execute(context)
-
-
-def test_operator_success(ge_operator, mocked_get_data_context, mocked_success_dataset):
-    context = {}
-    try:
-        ge_operator.execute(context)
-    except AirflowException:
-        pytest.fail("Task failed even though the success message came back")
+        operator.execute(context)
