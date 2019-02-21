@@ -22,4 +22,4 @@ pytz==2018.5
 kubernetes==8.0.1
 great_expectations==0.4.5
 pytest==4.2.0
-pytest_mock=1.10.1
+pytest_mock==1.10.1

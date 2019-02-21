@@ -7,6 +7,7 @@ ENV AIRFLOW_GPL_UNIDECODE yes
 ENV AIRFLOW__CORE__EXECUTOR KubernetesExecutor
 ENV PYTHONPATH /usr/local/airflow
 
+
 RUN add-apt-repository ppa:jonathonf/python-3.6
 
 
@@ -53,6 +54,9 @@ RUN pip install scp
 RUN pip install pandas==0.23.4
 RUN pip install great_expectations==0.4.5
 RUN pip install boto3==1.9.4
+RUN pip install pytest==4.2.0
+RUN pip install pytest_mock==1.10.1
+RUN pip install flake8==3.6.0
 RUN pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VERSION#egg=apache-airflow[crypto,postgres,jdbc,s3,slack,password,ssh,redis]
 RUN pip install gevent==1.4.0
 
@@ -65,6 +69,7 @@ COPY templates/ ${AIRFLOW_HOME}/templates/
 COPY test/ ${AIRFLOW_HOME}/test/
 COPY config/ ${AIRFLOW_HOME}/config/
 COPY calm_logger/ ${AIRFLOW_HOME}/calm_logger/
+COPY .flake8 ${AIRFLOW_HOME}/.flake8
 
 
 COPY script/entrypoint.sh /entrypoint.sh
