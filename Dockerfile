@@ -54,6 +54,7 @@ RUN pip install pandas==0.23.4
 RUN pip install great_expectations==0.4.5
 RUN pip install boto3==1.9.4
 RUN pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VERSION#egg=apache-airflow[crypto,postgres,jdbc,s3,slack,password,ssh,redis]
+RUN pip install gevent==1.4.0
 
 RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
 WORKDIR ${AIRFLOW_HOME}
