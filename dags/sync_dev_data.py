@@ -6,10 +6,7 @@ Sync DEV Data
 from airflow import DAG
 from datetime import datetime, timedelta
 import os
-from airflow.operators import PostgresOperator
 from templates import DIR as template_dir
-from operators.great_expectations_operator import GreatExpectationsSqlContextOperator
-from operators.redshift_unload_operator import RedshiftUnloadOperator
 from calm_logger.logging_helper import setup_logging
 
 
@@ -44,16 +41,21 @@ sync_dev_data = DAG(
 
 # schemas and tables to sync
 # ----------------------------
-# bi
-# appdb
+# appdb.*
 # appsflyer
 # data.id_map
 # data.idfa_map
-# enrichment
-# fb
-# financial
-# helper
-# zendesk
+# enrichment.country_info
+# fb.ad_insights
+# financial.country_proceed_and_tax_rates
+# financial.currency_exchange_rates
+# financial.itunes_prod_price_by_cc_by_month
+# financial.itunes_prod_recent_price_by_cc
+# financial.plan_price_estimates
+# sendgrid.*
+# stripe.*
+# helper.*
+# zendesk.*
 
 
 # task flow
