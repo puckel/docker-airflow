@@ -35,7 +35,7 @@ jobs:
       - image: 864879987165.dkr.ecr.us-east-1.amazonaws.com/calm/docker-airflow:latest
     working_directory: /usr/local/airflow
     environment:
-      CI_BUILD: true
+      CI_BUILD: "true"
     steps:
       - setup_remote_docker:
           docker_layer_caching: true
