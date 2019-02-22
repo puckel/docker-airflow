@@ -71,6 +71,7 @@ COPY config/ ${AIRFLOW_HOME}/config/
 COPY calm_logger/ ${AIRFLOW_HOME}/calm_logger/
 COPY .flake8 ${AIRFLOW_HOME}/.flake8
 
+RUN python3.6 setup.py install
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 
