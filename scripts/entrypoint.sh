@@ -24,7 +24,11 @@ export \
   AIRFLOW__CORE__LOAD_EXAMPLES \
   AIRFLOW__CORE__SQL_ALCHEMY_CONN \
 
-
+if [ "$CI_BUILD" = "true" ]; then
+  export AIRFLOW__CORE__EXECUTOR="LocalExecutor"
+else
+  export AIRFLOW__CORE__EXECUTOR="KubernetesExecutor"
+fi
 # Load DAGs exemples (default: Yes)
 if [[ -z "$AIRFLOW__CORE__LOAD_EXAMPLES" && "${LOAD_EX:=n}" == n ]]
 then

@@ -1,0 +1,28 @@
+---
+version: 1
+disable_existing_loggers: False
+formatters:
+    detailed:
+        class: logging.Formatter
+        format: '[%(asctime)s]: [%(name)s]: [%(levelname)s]: %(message)s'
+    json:
+        class: pythonjsonlogger.jsonlogger.JsonFormatter
+        format: '%(asctime)s %(name)s %(levelname)s %(message)s'
+handlers:
+    console:
+        class: logging.StreamHandler
+        level: INFO
+        formatter: detailed
+        stream: ext://sys.stdout
+    file:
+        class: logging.handlers.RotatingFileHandler
+        filename: logfile.log
+        level: DEBUG
+        formatter: json
+
+root:
+    level: INFO
+    handlers:
+        - console
+        - file
+...

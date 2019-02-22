@@ -1,6 +1,5 @@
-FROM python:3.6-slim
+FROM phusion/baseimage:latest
 
-# Airflow
 ARG AIRFLOW_VERSION=1.10.2
 ENV AIRFLOW_HOME /usr/local/airflow
 ENV SLUGIFY_USES_TEXT_UNIDECODE yes
@@ -8,46 +7,72 @@ ENV AIRFLOW_GPL_UNIDECODE yes
 ENV AIRFLOW__CORE__EXECUTOR KubernetesExecutor
 ENV PYTHONPATH /usr/local/airflow
 
-RUN set -ex \
-    && buildDeps=' \
-        python3-dev \
-        libsasl2-dev \
-        libssl-dev \
-        libffi-dev \
-        build-essential \
-        libblas-dev \
-        liblapack-dev \
-        libpq-dev \
-    ' \
-    && apt-get update -yqq \
-    && apt-get upgrade -yqq \
-    && apt-get install -yqq --no-install-recommends \
-        $buildDeps \
-        python3-requests \
-        default-libmysqlclient-dev \
+
+RUN add-apt-repository ppa:jonathonf/python-3.6
+
+
+RUN apt-get update && apt-get install --yes \
+	    build-essential \
+	    g++ \
+	    python3.6 \
+	    python3.6-dev \
+    && ln -s /usr/bin/python3.6 /usr/bin/python
+
+
+
+# install deps
+RUN apt-get update -y && apt-get install -y \
+        wget \
+        python3.6 \
+        python3.6-dev \
+        python-pip \
+        libczmq-dev \
+        libcurlpp-dev \
         curl \
-        rsync \
-        netcat-openbsd \
+        libssl-dev \
         git \
-#        libstdc++6 \
-    && pip install -U pip setuptools wheel cython\
-    && pip install kubernetes cryptography psycopg2 scp pyarrow pandas tqdm great_expectations\
-    && pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VERSION#egg=apache-airflow[crypto,postgres,jdbc,mysql,s3,slack,password,ssh,redis] \
-    && apt-get purge --auto-remove -yqq $buildDeps \
-    && apt-get autoremove -yqq --purge \
-    && apt-get clean \
-    && rm -rf \
-        /var/lib/apt/lists/* \
-        /tmp/* \
-        /var/tmp/* \
-        /usr/share/man \
-        /usr/share/doc \
-        /usr/share/doc-base
+        inetutils-telnet \
+        bind9utils \
+        zip \
+        unzip \
+    && apt-get clean
+
+RUN curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
+
+RUN python3.6 /tmp/get-pip.py
+
+RUN rm /tmp/get-pip.py
+
+RUN pip install --upgrade pip
+
+# Since we install vanilla Airflow, we also want to have support for Postgres and Kubernetes
+RUN pip install -U pip setuptools wheel cython
+RUN pip install kubernetes
+RUN pip install cryptography
+RUN pip install psycopg2-binary==2.7.4  # I had issues with older versions of psycopg2, just a warning
+RUN pip install scp
+RUN pip install pandas==0.23.4
+RUN pip install great_expectations==0.4.5
+RUN pip install boto3==1.9.4
+RUN pip install pytest==4.2.0
+RUN pip install pytest_mock==1.10.1
+RUN pip install flake8==3.6.0
+RUN pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VERSION#egg=apache-airflow[crypto,postgres,jdbc,s3,slack,password,ssh,redis]
+RUN pip install gevent==1.4.0
 
 RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
 WORKDIR ${AIRFLOW_HOME}
 
-COPY script/entrypoint.sh /entrypoint.sh
+COPY dags/ ${AIRFLOW_HOME}/dags/
+COPY operators/ ${AIRFLOW_HOME}/operators/
+COPY templates/ ${AIRFLOW_HOME}/templates/
+COPY test/ ${AIRFLOW_HOME}/test/
+COPY config/ ${AIRFLOW_HOME}/config/
+COPY calm_logger/ ${AIRFLOW_HOME}/calm_logger/
+COPY .flake8 ${AIRFLOW_HOME}/.flake8
+
+
+COPY scripts/entrypoint.sh /entrypoint.sh
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
