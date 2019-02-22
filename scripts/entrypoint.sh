@@ -24,7 +24,7 @@ export \
   AIRFLOW__CORE__LOAD_EXAMPLES \
   AIRFLOW__CORE__SQL_ALCHEMY_CONN \
 
-if [ "$CI_BUILD" = "true" ] then
+if [ "$CI_BUILD" = "true" ]; then
   export AIRFLOW__CORE__EXECUTOR="LocalExecutor"
 else
   export AIRFLOW__CORE__EXECUTOR="KubernetesExecutor"
