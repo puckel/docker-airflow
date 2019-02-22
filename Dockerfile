@@ -72,7 +72,7 @@ COPY calm_logger/ ${AIRFLOW_HOME}/calm_logger/
 COPY .flake8 ${AIRFLOW_HOME}/.flake8
 
 
-COPY script/entrypoint.sh /entrypoint.sh
+COPY scripts/entrypoint.sh /entrypoint.sh
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
