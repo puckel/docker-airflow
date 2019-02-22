@@ -61,17 +61,10 @@ RUN pip install git+https://github.com/apache/incubator-airflow.git@$AIRFLOW_VER
 RUN pip install gevent==1.4.0
 
 RUN useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow
+COPY . ${AIRFLOW_HOME}
 WORKDIR ${AIRFLOW_HOME}
 
-COPY dags/ ${AIRFLOW_HOME}/dags/
-COPY operators/ ${AIRFLOW_HOME}/operators/
-COPY templates/ ${AIRFLOW_HOME}/templates/
-COPY test/ ${AIRFLOW_HOME}/test/
-COPY config/ ${AIRFLOW_HOME}/config/
-COPY calm_logger/ ${AIRFLOW_HOME}/calm_logger/
-COPY .flake8 ${AIRFLOW_HOME}/.flake8
-
-RUN python3.6 setup.py install
+RUN python3.6 ${AIRFLOW_HOME}/setup.py install
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 
