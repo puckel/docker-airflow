@@ -1,17 +1,23 @@
 version: '2.1'
 services:
-    postgres:
-        image: postgres:9.6
+    mysql:
+        image: mysql:5.7
+        command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --explicit_defaults_for_timestamp
         environment:
-            - POSTGRES_USER=airflow
-            - POSTGRES_PASSWORD=airflow
-            - POSTGRES_DB=airflow
+            - MYSQL_ROOT_PASSWORD=password
+            - MYSQL_USER=airflow
+            - MYSQL_PASSWORD=airflow
+            - MYSQL_DATABASE=airflow
+        ports:
+            - "3306:3306"
+        volumes:
+            - mysql-data:/var/lib/mysql
 
     webserver:
-        image: puckel/docker-airflow:1.10.2
+        image: kysnm/docker-airflow:1.10.2
         restart: always
         depends_on:
-            - postgres
+            - mysql
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
@@ -27,3 +33,7 @@ services:
             interval: 30s
             timeout: 30s
             retries: 3
+
+volumes:
+    mysql-data:
+        driver: local

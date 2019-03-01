@@ -13,7 +13,7 @@ This repository contains **Dockerfile** of [apache-airflow](https://github.com/a
 
 ## Informations
 
-* Based on Python (3.6-slim) official Image [python:3.6-slim](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
+* Based on Python (3.6-slim) official Image [python:3.6-slim](https://hub.docker.com/_/python/) and uses the official [MySQL](https://hub.docker.com/_/mysql/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
 * Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/apache-airflow)
@@ -60,8 +60,8 @@ NB : If you want to have DAGs example loaded (default=False), you've to set the 
     docker run -d -p 8080:8080 -e LOAD_EX=y kysnm/docker-airflow
 
 If you want to use Ad hoc query, make sure you've configured connections:
-Go to Admin -> Connections and Edit "postgres_default" set this values (equivalent to values in airflow.cfg/docker-compose*.yml) :
-- Host : postgres
+Go to Admin -> Connections and Edit "mysql_default" set this values (equivalent to values in airflow.cfg/docker-compose*.yml) :
+- Host : mysql
 - Schema : airflow
 - Login : airflow
 - Password : airflow
@@ -78,7 +78,7 @@ The general rule is the environment variable should be named `AIRFLOW__<section>
 
 Check out the [Airflow documentation](http://airflow.readthedocs.io/en/latest/howto/set-config.html#setting-configuration-options) for more details
 
-You can also define connections via environment variables by prefixing them with `AIRFLOW_CONN_` - for example `AIRFLOW_CONN_POSTGRES_MASTER=postgres://user:password@localhost:5432/master` for a connection called "postgres_master". The value is parsed as a URI. This will work for hooks etc, but won't show up in the "Ad-hoc Query" section unless an (empty) connection is also created in the DB
+You can also define connections via environment variables by prefixing them with `AIRFLOW_CONN_` - for example `AIRFLOW_CONN_MYSQL_MASTER=mysql://user:password@localhost:5432/master` for a connection called "mysql_master". The value is parsed as a URI. This will work for hooks etc, but won't show up in the "Ad-hoc Query" section unless an (empty) connection is also created in the DB
 
 ## Custom Airflow plugins
 
