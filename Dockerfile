@@ -73,7 +73,8 @@ RUN set -ex \
     && pip install psycopg2-binary==2.7.4  \
     && pip install apache-airflow[all]==$AIRFLOW_VERSION \
     && pip install airflow-plugins \
-    && pip install redis \
+    && pip install 'celery[redis]>=4.1.1,<4.2.0' \
+    && pip install 'redis>=2.10.5,<3' \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
