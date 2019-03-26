@@ -26,6 +26,8 @@ airflow:
   image:
     ##
     ## docker-airflow image
+    #repository: frenchy-airflow
+    #repository: puckel/docker-airflow
     repository: dafrenchyman/docker-airflow
     #repository: appfolio/docker-airflow
     ##
@@ -71,7 +73,7 @@ airflow:
   ##     dags_are_paused_at_creation = True
   ## AIRFLOW__<section>__<key>
   ##     HTTP_PROXY: "http://proxy.mycompany.com:123"
-  config: 
+  config:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: True
     # SequentialExecutor, LocalExecutor, CeleryExecutor, DaskExecutor
     #AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -96,7 +98,7 @@ workers:
   serviceAccountName: "airflow"
   ##
   ## Number of workers pod to launch
-  replicas: 3
+  replicas: 10
   ##
   ## Custom resource configuration
   resources: {}

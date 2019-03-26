@@ -32,3 +32,8 @@ If you want to shut down airflow, just check out the functions being run at the 
 
 There's also a really handy "Factory Reset" option in docker that I've been using all the time to just nuke everything and start over.
 
+```bash
+docker build -t docker-airflow .
+docker tag docker-airflow dafrenchyman/docker-airflow:latest
+docker push dafrenchyman/docker-airflow:latest
+```
