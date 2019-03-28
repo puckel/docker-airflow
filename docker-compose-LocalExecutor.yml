@@ -15,6 +15,7 @@ services:
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
+            - AIRFLOW__WEBUI__PORT=8080
         volumes:
             - ./dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins
