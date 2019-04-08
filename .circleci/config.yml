@@ -1,5 +1,11 @@
 version: 2
 
+orbs:
+    slack: circleci/slack@2.0.0
+    aws-ecr: circleci/aws-ecr@3.1.0
+    aws-ecs: circleci/aws-ecs@0.0.7
+    aws-cli: circleci/aws-cli@0.1.4
+
 jobs:
   build_and_test:
     docker:
