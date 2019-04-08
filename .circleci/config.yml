@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 orbs:
     slack: circleci/slack@2.0.0
@@ -23,6 +23,15 @@ jobs:
           name: Test docker image
           command: |
             docker run singuli/docker-airflow version | grep '1.10.2'
+  deploy_to_ecr:
+    docker:
+      - image: docker:18.06.1-ce-git
+    working_directory: ~/CircleCI/docker-airflow
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true    
+    steps:
       - aws-ecr/build-and-push-image:
           aws-access-key-id: DEV_AWS_ACCESS_KEY
           aws-secret-access-key: DEV_AWS_SECRET_KEY
@@ -35,3 +44,9 @@ workflows:
   build_and_test:
     jobs:
       - build_and_test
+      - deploy_to_ecr:
+          requires:
+            - build_and_test
+          filters:
+            branches:
+              only: master
