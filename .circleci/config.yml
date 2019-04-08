@@ -31,7 +31,6 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true    
-    steps:
       - aws-ecr/build-and-push-image:
           aws-access-key-id: DEV_AWS_ACCESS_KEY
           aws-secret-access-key: DEV_AWS_SECRET_KEY
