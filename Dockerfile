@@ -60,6 +60,7 @@ RUN set -ex \
     && pip install 'redis>=2.10.5,<3' \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
+    && apt-get install libpq5 \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
     && rm -rf \
