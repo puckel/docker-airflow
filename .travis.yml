@@ -1,0 +1,9 @@
+language: generic
+services:
+  - docker
+install:
+  - curl -o $HOME/bin/docker-helper https://raw.githubusercontent.com/chanzuckerberg/infra-tools/6402865/docker-helper
+  - chmod +x $HOME/bin/docker-helper
+script:
+  - docker-helper build chanzuckerberg/docker-airflow . $TRAVIS_BRANCH ${TRAVIS_COMMIT::8} $TRAVIS_BUILD_NUMBER
+  - docker-helper push chanzuckerberg/docker-airflow
