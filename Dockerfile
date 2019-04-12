@@ -1,4 +1,4 @@
-# VERSION 1.10.2
+# VERSION 1.10.3
 # AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm -t puckel/docker-airflow .
@@ -16,7 +16,7 @@ ARG AIRFLOW_VERSION=1.10.3
 ARG AIRFLOW_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
-ENV AIRFLOW_GPL_UNIDECODE yes
+# ENV AIRFLOW_GPL_UNIDECODE yes
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
