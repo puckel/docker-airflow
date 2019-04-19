@@ -24,3 +24,5 @@ sftp-config.json
 
 # Python
 __pycache__
+
+.idea/
