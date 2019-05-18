@@ -19,7 +19,7 @@ This repository contains **Dockerfile** of [apache-airflow](https://github.com/a
 
 Pull the image from the Docker repository.
 
-    docker pull puckel/docker-airflow
+    docker pull pforan/docker-airflow-pforan 
 
 ## Build
 
@@ -32,7 +32,7 @@ or combined
 
     docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t puckel/docker-airflow .
 
-Don't forget to update the airflow images in the docker-compose files to puckel/docker-airflow:latest.
+Don't forget to update the airflow images in the docker-compose files to pforan/docker-airflow-pforan:latest.
 
 ## Usage
 
@@ -111,7 +111,7 @@ This can be used to scale to a multi node setup using docker swarm.
 
 If you want to run other airflow sub-commands, such as `list_dags` or `clear` you can do so like this:
 
-    docker run --rm -ti puckel/docker-airflow airflow list_dags
+    docker run --rm -ti pforan/docker-airflow-pforan airflow list_dags
 
 or with your docker-compose set up like this:
 
@@ -119,8 +119,8 @@ or with your docker-compose set up like this:
 
 You can also use this to run a bash shell or any other command in the same environment that airflow would be run in:
 
-    docker run --rm -ti puckel/docker-airflow bash
-    docker run --rm -ti puckel/docker-airflow ipython
+    docker run --rm -ti pforan/docker-airflow-pforan bash
+    docker run --rm -ti pforan/docker-airflow-pforan ipython
 
 # Wanna help?
 
