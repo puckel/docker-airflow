@@ -25,12 +25,12 @@ Pull the image from the Docker repository.
 
 Optionally install [Extra Airflow Packages](https://airflow.incubator.apache.org/installation.html#extra-package) and/or python dependencies at build time :
 
-    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" -t puckel/docker-airflow .
-    docker build --rm --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t puckel/docker-airflow .
+    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" -t pforan/docker-airflow-pforan .
+    docker build --rm --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t pforan/docker-airflow-pforan .
 
 or combined
 
-    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t puckel/docker-airflow .
+    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t pforan/docker-airflow-pforan .
 
 Don't forget to update the airflow images in the docker-compose files to pforan/docker-airflow-pforan:latest.
 
@@ -38,7 +38,7 @@ Don't forget to update the airflow images in the docker-compose files to pforan/
 
 By default, docker-airflow runs Airflow with **SequentialExecutor** :
 
-    docker run -d -p 8080:8080 puckel/docker-airflow webserver
+    docker run -d -p 8080:8080 pforan/docker-airflow-pforan webserver
 
 If you want to run another executor, use the other docker-compose.yml files provided in this repository.
 
@@ -54,7 +54,7 @@ NB : If you want to have DAGs example loaded (default=False), you've to set the 
 
 `LOAD_EX=n`
 
-    docker run -d -p 8080:8080 -e LOAD_EX=y puckel/docker-airflow
+    docker run -d -p 8080:8080 -e LOAD_EX=y pforan/docker-airflow-pforan
 
 If you want to use Ad hoc query, make sure you've configured connections:
 Go to Admin -> Connections and Edit "postgres_default" set this values (equivalent to values in airflow.cfg/docker-compose*.yml) :
@@ -65,7 +65,7 @@ Go to Admin -> Connections and Edit "postgres_default" set this values (equivale
 
 For encrypted connection passwords (in Local or Celery Executor), you must have the same fernet_key. By default docker-airflow generates the fernet_key at startup, you have to set an environment variable in the docker-compose (ie: docker-compose-LocalExecutor.yml) file to set the same key accross containers. To generate a fernet_key :
 
-    docker run puckel/docker-airflow python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"
+    docker run pforan/docker-airflow-pforan python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"
 
 ## Configurating Airflow
 
