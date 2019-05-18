@@ -1,4 +1,4 @@
-# docker-airflow
+# docker-airflow-pforan
 [![CircleCI](https://circleci.com/gh/pforan/docker-airflow-pforan/tree/master.svg?style=svg)](https://circleci.com/gh/paulforan/docker-airflow-pforan/tree/master)
 [![Docker Build Status](https://img.shields.io/docker/build/pforan/docker-airflow-pforan.svg)]()
 
