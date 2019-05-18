@@ -1,5 +1,5 @@
 # docker-airflow
-[![CircleCI](https://circleci.com/gh/paulforan/docker-airflow-pforan/tree/master.svg?style=svg)](https://circleci.com/gh/paulforan/docker-airflow-pforan/tree/master)
+[![CircleCI](https://circleci.com/gh/pforan/docker-airflow-pforan/tree/master.svg?style=svg)](https://circleci.com/gh/paulforan/docker-airflow-pforan/tree/master)
 [![Docker Build Status](https://img.shields.io/docker/build/paulforan/docker-airflow-pforan.svg)]()
 
 [![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/paulforan/docker-airflow-pforan/)
