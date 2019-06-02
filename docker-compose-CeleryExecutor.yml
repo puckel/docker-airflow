@@ -31,8 +31,8 @@ services:
             # - REDIS_PASSWORD=redispass
         volumes:
             - ./dags:/usr/local/airflow/dags
-            # Uncomment to include custom plugins
-            # - ./plugins:/usr/local/airflow/plugins
+            # Uncomment to include custom plugins 
+            # - ./plugins:/usr/local/airflow/plugins 
         ports:
             - "8080:8080"
         command: webserver
