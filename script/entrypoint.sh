@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/envbash
 
 TRY_LOOP="20"
 
