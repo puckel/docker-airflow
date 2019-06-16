@@ -4,7 +4,7 @@
 # BUILD: docker build --rm -t puckel/docker-airflow .
 # SOURCE: https://github.com/puckel/docker-airflow
 
-FROM python:3.6-slim
+FROM python:3.7-slim
 LABEL maintainer="Puckel_"
 
 # Never prompts the user for choices on installation/configuration of packages
