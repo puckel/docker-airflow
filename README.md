@@ -1,5 +1,5 @@
 # docker-airflow
-[![CircleCI branch](https://img.shields.io/circleci/project/puckel/docker-airflow/master.svg?maxAge=2592000)](https://circleci.com/gh/puckel/docker-airflow/tree/master)
+[![CircleCI](https://circleci.com/gh/puckel/docker-airflow/tree/master.svg?style=svg)](https://circleci.com/gh/puckel/docker-airflow/tree/master)
 [![Docker Build Status](https://img.shields.io/docker/build/puckel/docker-airflow.svg)]()
 
 [![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/puckel/docker-airflow/)
@@ -23,9 +23,14 @@ Pull the image from the Docker repository.
 
 ## Build
 
-For example, if you need to install [Extra Packages](https://airflow.incubator.apache.org/installation.html#extra-package), edit the Dockerfile and then build it.
+Optionally install [Extra Airflow Packages](https://airflow.incubator.apache.org/installation.html#extra-package) and/or python dependencies at build time :
 
-    docker build --rm -t puckel/docker-airflow .
+    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" -t puckel/docker-airflow .
+    docker build --rm --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t puckel/docker-airflow .
+
+or combined
+
+    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t puckel/docker-airflow .
 
 Don't forget to update the airflow images in the docker-compose files to puckel/docker-airflow:latest.
 
