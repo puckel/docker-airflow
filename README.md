@@ -36,7 +36,7 @@ Don't forget to update the airflow images in the docker-compose files to puckel/
 
 ## Test
 
-The dockerfile copies over your `/test` directory to `$AIRFLOW_HOME`.
+The Dockerfile copies over your `/test` directory to `$AIRFLOW_HOME`.
 This helps run your tests in a similar environment to production.
 
 In this example, we use the `docker-compose-LocalExecutor.yml` to start the 
