@@ -34,6 +34,22 @@ or combined
 
 Don't forget to update the airflow images in the docker-compose files to puckel/docker-airflow:latest.
 
+## Test
+
+The dockerfile copies over your `/test` directory to `$AIRFLOW_HOME`.
+This helps run your tests in a similar environment to production.
+
+In this example, we use the `docker-compose-LocalExecutor.yml` to start the 
+webserver and scheduler in the same container, and Postgres in another. 
+
+Therefore you can easily have tests that interact with the database.
+
+	docker-compose -f docker-compose-LocalExecutor.yml run --rm webserver \
+	python -m unittest discover -v -s test
+	
+	----------------------------------------------------------------------
+	Ran 3 tests in 0.090s
+
 ## Usage
 
 By default, docker-airflow runs Airflow with **SequentialExecutor** :
