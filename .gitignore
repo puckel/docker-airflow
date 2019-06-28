@@ -24,6 +24,4 @@ sftp-config.json
 
 # Python
 __pycache__
-.tox
-.idea/
-venv/
+
