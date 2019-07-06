@@ -7,7 +7,7 @@ class TestDags(unittest.TestCase):
     """
     Generic tests that all DAGs in the repository should be able to pass.
     """
-    AIRFLOW_ALERT_EMAIL = 'alerts@airflow.com'
+    AIRFLOW_ALERT_EMAIL = 'airflow@airflow.com'
     LOAD_SECOND_THRESHOLD = 2
 
     def setUp(self):
