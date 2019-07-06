@@ -17,7 +17,7 @@ jobs:
           name: Test docker image
           command: |
             docker run r-kells/docker-airflow version |grep '1.10.3'
-            docker run --rm r-kells/docker-airflow:latest \
+            docker run r-kells/docker-airflow:latest \
             python -m unittest discover -v -s test/
 workflows:
   version: 2
