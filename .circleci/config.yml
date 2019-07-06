@@ -17,7 +17,7 @@ jobs:
           name: Test docker image
           command: |
             docker run puckel/docker-airflow version |grep '1.10.3'
-            docker run puckel/docker-airflow:latest \
+            docker run puckel/docker-airflow \
             python -m unittest discover -v -s test/
 workflows:
   version: 2

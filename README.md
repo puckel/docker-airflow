@@ -44,12 +44,16 @@ webserver and scheduler in the same container, and Postgres in another.
 
 Therefore you can easily have tests that interact with the database.
 
+If you want to run tests that interact with the database:
+
 	docker-compose -f docker-compose-LocalExecutor.yml run --rm webserver \
 	python -m unittest discover -v -s test
-	
-	----------------------------------------------------------------------
-	Ran 3 tests in 0.090s
 
+If you want to run tests without a database:
+    
+    docker run puckel/docker-airflow \
+    python -m unittest discover -v -s test/
+    
 ## Usage
 
 By default, docker-airflow runs Airflow with **SequentialExecutor** :
