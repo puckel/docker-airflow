@@ -9,14 +9,18 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-      - run: 
+      - run:
           name: Build docker image
           command: |
             docker build -t puckel/docker-airflow .
-      - run: 
+      - run:
+          name: Test Python version
+          command: |
+            docker run puckel/docker-airflow python -V | grep '3.7'
+      - run:
           name: Test docker image
           command: |
-            docker run puckel/docker-airflow version |grep '1.10.3'
+            docker run puckel/docker-airflow version |grep '1.10.4'
 workflows:
   version: 2
   build_and_test:
