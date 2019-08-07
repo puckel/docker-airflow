@@ -93,6 +93,12 @@ In order to incorporate plugins into your docker container
 - Mount this file as a volume `-v $(pwd)/requirements.txt:/requirements.txt` (or add it as a volume in docker-compose file)
 - The entrypoint.sh script execute the pip install command (with --user option)
 
+## Import Airflow variables
+
+- Create a file "variables.json" containing your desired Airflow variables in the format of `{"key": "value"}` (or export from Airflow Web GUI)
+- Mount this file as a volume `-v $(pwd)/variables.json:/variables.json` (or add it as a volume in docker-compose file)
+- The entrypoint.sh script will execute `airflow variables --import /variables.json` when Airflow is up and running
+
 ## UI Links
 
 - Airflow: [localhost:8080](http://localhost:8080/)

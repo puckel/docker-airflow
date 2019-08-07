@@ -76,6 +76,9 @@ case "$1" in
       # With the "Local" executor it should all run in one container.
       airflow scheduler &
     fi
+    if [ -e "/variables.json" ]; then
+      airflow variables --import /variables.json
+    fi
     exec airflow webserver
     ;;
   worker|scheduler)
