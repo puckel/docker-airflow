@@ -25,6 +25,7 @@ ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 
+
 RUN set -ex \
     && buildDeps=' \
         freetds-dev \
@@ -49,6 +50,8 @@ RUN set -ex \
         netcat \
         locales \
         vim \
+        wget \
+        unzip \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
@@ -59,13 +62,13 @@ RUN set -ex \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install boto3 \
-    && pip install apache-airflow[crypto,celery,postgres,hive,kubernetes,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
+    && pip install apache-airflow[crypto,celery,postgres,hive,kubernetes,jdbc,mysql,oracle,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && pip install 'redis==3.2.1' \
     && pip install cx-Oracle==7.2.1 \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
-    && apt-get clean \
+    && apt-get clean \ 
     && rm -rf \
         /var/lib/apt/lists/* \
         /tmp/* \
@@ -73,7 +76,23 @@ RUN set -ex \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
+    
 
+# Install Oracle Instantclient
+RUN mkdir /opt/oracle \
+    && cd /opt/oracle \
+    && wget https://github.com/epoweripione/oracle-instantclient-18/raw/master/instantclient-basic-linux.x64-19.3.0.0.0dbru.zip \
+    && wget https://github.com/epoweripione/oracle-instantclient-18/raw/master/instantclient-sdk-linux.x64-19.3.0.0.0dbru.zip \
+    && unzip /opt/oracle/instantclient-basic-linux.x64-19.3.0.0.0dbru.zip -d /opt/oracle \
+    && unzip /opt/oracle/instantclient-sdk-linux.x64-19.3.0.0.0dbru.zip -d /opt/oracle \
+    #&& ln -s /opt/oracle/instantclient_19_3/libclntsh.so.19.1 /opt/oracle/instantclient_19_3/libclntsh.so \
+    #&& ln -s /opt/oracle/instantclient_19_3/libclntshcore.so.19.1 /opt/oracle/instantclient_19_3/libclntshcore.so \
+    #&& ln -s /opt/oracle/instantclient_19_3/libocci.so.19.1 /opt/oracle/instantclient_19_3/libocci.so \
+    && rm -rf /opt/oracle/*.zip
+RUN apt-get update \
+    && apt-get install libaio1
+ENV LD_LIBRARY_PATH=/opt/oracle/instantclient_19_3 
+    
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
