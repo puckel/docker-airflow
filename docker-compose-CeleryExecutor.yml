@@ -16,7 +16,7 @@ services:
         #     - ./pgdata:/var/lib/postgresql/data/pgdata
 
     webserver:
-        image: puckel/docker-airflow:1.10.4
+        image: ryan/airflow:1.10.4
         restart: always
         depends_on:
             - postgres
@@ -34,7 +34,7 @@ services:
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
-            - "8080:8080"
+            - 8089:8080
         command: webserver
         healthcheck:
             test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
@@ -43,7 +43,7 @@ services:
             retries: 3
 
     flower:
-        image: puckel/docker-airflow:1.10.4
+        image: ryan/airflow:1.10.4
         restart: always
         depends_on:
             - redis
@@ -55,7 +55,7 @@ services:
         command: flower
 
     scheduler:
-        image: puckel/docker-airflow:1.10.4
+        image: ryan/airflow:1.10.4
         restart: always
         depends_on:
             - webserver
@@ -74,7 +74,7 @@ services:
         command: scheduler
 
     worker:
-        image: puckel/docker-airflow:1.10.4
+        image: ryan/airflow:1.10.4
         restart: always
         depends_on:
             - scheduler

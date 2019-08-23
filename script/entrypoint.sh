@@ -35,7 +35,7 @@ fi
 
 # Install custom python package if requirements.txt is present
 if [ -e "/requirements.txt" ]; then
-    $(command -v pip) install --user -r /requirements.txt
+    $(command -v pip) install -i  https://pypi.tuna.tsinghua.edu.cn/simple  --user -r /requirements.txt 
 fi
 
 if [ -n "$REDIS_PASSWORD" ]; then
@@ -69,7 +69,7 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
   wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
 fi
 
-# write airflow env to profile
+# 将环境变量写入profile
 filename="/etc/profile.d/airflow.sh"
 cat>"${filename}"<<EOF
 export \
@@ -82,11 +82,13 @@ export \
   AIRFLOW__CORE__SQL_ALCHEMY_CONN=$AIRFLOW__CORE__SQL_ALCHEMY_CONN
 EOF
 
+
+
 case "$1" in
   webserver)
     airflow initdb
-    if [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ] || [ "$AIRFLOW__CORE__EXECUTOR" = "SequentialExecutor" ]; then
-      # With the "Local" and "Sequential" executors it should all run in one container.
+    if [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ]; then
+      # With the "Local" executor it should all run in one container.
       airflow scheduler &
     fi
     exec airflow webserver
