@@ -69,6 +69,19 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
   wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
 fi
 
+# write airflow env to profile
+filename="/etc/profile.d/airflow.sh"
+cat>"${filename}"<<EOF
+export \
+  AIRFLOW_HOME=$AIRFLOW_HOME \
+  AIRFLOW__CELERY__BROKER_URL=$AIRFLOW__CELERY__BROKER_URL \
+  AIRFLOW__CELERY__RESULT_BACKEND=$AIRFLOW__CELERY__RESULT_BACKEND \
+  AIRFLOW__CORE__EXECUTOR=$AIRFLOW__CORE__EXECUTOR \
+  AIRFLOW__CORE__FERNET_KEY=$AIRFLOW__CORE__FERNET_KEY \
+  AIRFLOW__CORE__LOAD_EXAMPLES=$AIRFLOW__CORE__LOAD_EXAMPLES \
+  AIRFLOW__CORE__SQL_ALCHEMY_CONN=$AIRFLOW__CORE__SQL_ALCHEMY_CONN
+EOF
+
 case "$1" in
   webserver)
     airflow initdb
