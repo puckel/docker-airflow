@@ -3,7 +3,7 @@
 本项目fork自puckel/docker-airflow， 做了如下修改
 
 - 将airflow环境变量写入 profile
-- 设置时区为中国uutc+8
+- 设置时区为中国utc+8
 - 修复airflow bug， 服务端日志查看乱码问题
 - 使用阿里云的debian source
 - 使用中科大的pip source
