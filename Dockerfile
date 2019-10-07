@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=1.10.4
+ARG AIRFLOW_VERSION=1.10.5
 ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
@@ -27,22 +27,29 @@ ENV LC_MESSAGES en_US.UTF-8
 
 RUN set -ex \
     && buildDeps=' \
-        freetds-dev \
         libkrb5-dev \
         libsasl2-dev \
         libssl-dev \
         libffi-dev \
         libpq-dev \
-        git \
+        autoconf \
+        automake \
+        make \
+        gcc \
+        perl \
+        libtool-bin \
+        gettext \
+        pkg-config \
+        libltdl-dev \
     ' \
     && apt-get update -yqq \
     && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
-        freetds-bin \
         build-essential \
         default-libmysqlclient-dev \
         apt-utils \
+        git \
         curl \
         rsync \
         netcat \
@@ -51,12 +58,22 @@ RUN set -ex \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
+    && git clone https://github.com/FreeTDS/freetds.git \
+    && cd freetds/ \
+    && sh ./autogen.sh \
+    && ./configure --with-openssl=/usr/include/openssl --enable-msdblib \
+    && make \
+    && make install \
+    && rm -rf freetds/ \
     && pip install -U pip setuptools wheel \
+    && export PYMSSQL_BUILD_WITH_BUNDLED_FREETDS=0 \
+    && pip install Cython \
+    && pip install --no-binary pymssql pymssql \
     && pip install pytz \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
+    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh,mssql${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     && pip install 'redis==3.2' \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
@@ -71,6 +88,8 @@ RUN set -ex \
         /usr/share/doc-base
 
 COPY script/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
