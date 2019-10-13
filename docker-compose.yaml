@@ -1,0 +1,63 @@
+version: '2.1'
+services:
+    redis:
+        image: redis:5.0.5
+
+    postgres:
+        image: postgres:9.6
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+            - PGDATA=/var/lib/postgresql/data/pgdata
+        volumes:
+            - ${LOCAL_PGDATA}:/var/lib/postgresql/data/pgdata
+
+    webserver:
+        image: puckel/docker-airflow:1.10.2
+        restart: always
+        depends_on:
+            - postgres
+            - redis
+        environment:
+            - LOAD_EX=n
+            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow            
+        volumes:
+            - ${LOCAL_DAGS_FOLDER}:/usr/local/airflow/dags
+        ports:
+            - "8080:8080"
+        command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
+
+    scheduler:
+        image: puckel/docker-airflow:1.10.2
+        restart: always
+        depends_on:
+            - webserver
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow               
+        volumes:
+            - ${LOCAL_DAGS_FOLDER}:/usr/local/airflow/dags
+        command: scheduler
+
+    worker:
+        image: puckel/docker-airflow:1.10.2
+        restart: always
+        depends_on:
+            - scheduler
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow               
+        volumes:
+            - ${LOCAL_DAGS_FOLDER}:/usr/local/airflow/dags
+        command: worker
