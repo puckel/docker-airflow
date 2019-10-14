@@ -1,0 +1,13 @@
+apache-airflow==1.10.2
+pandas_gbq==0.10.0
+psycopg2-binary==2.8.3
+celery==4.3.0
+redis==3.2.1
+google-cloud-bigtable==0.34.0
+Click==7.0
+httplib2==0.13.1
+google_auth_httplib2==0.0.3
+google-api-python-client==1.7.11
+google-cloud-storage==1.19.1
+psycopg2==2.8.3
+cryptography==2.7

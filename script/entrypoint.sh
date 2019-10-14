@@ -33,17 +33,6 @@ then
   AIRFLOW__CORE__LOAD_EXAMPLES=False
 fi
 
-# Install custom python package if requirements.txt is present
-if [ -e "/requirements.txt" ]; then
-    $(command -v pip) install --user -r /requirements.txt
-fi
-
-if [ -n "$REDIS_PASSWORD" ]; then
-    REDIS_PREFIX=:${REDIS_PASSWORD}@
-else
-    REDIS_PREFIX=
-fi
-
 wait_for_port() {
   local name="$1" host="$2" port="$3"
   local j=0
