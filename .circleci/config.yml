@@ -20,7 +20,7 @@ jobs:
       - run:
           name: Test docker image
           command: |
-            docker run duyetdev/airflow version |grep '1.10.4'
+            docker run duyetdev/airflow version | grep '1.10.5'
 workflows:
   version: 2
   build_and_test:
