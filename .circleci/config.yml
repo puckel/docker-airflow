@@ -8,5 +8,3 @@ workflows:
           context: fitbod-internal
           image: docker-airflow
           registry-url: us.gcr.io
-          google-compute-zone: us-east4b
-          google-project-id: fitbod-internal-255419
