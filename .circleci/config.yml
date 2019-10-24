@@ -7,4 +7,4 @@ workflows:
       - gcp-gcr/build-and-push-image:
           context: fitbod-internal
           image: docker-airflow
-          registry-url: us.gcr.io
+          registry-url: gcr.io
