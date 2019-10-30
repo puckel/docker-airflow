@@ -1,4 +1,9 @@
 # This is the class you derive to create a plugin
+import json
+import uuid
+import subprocess
+import os
+
 from airflow.plugins_manager import AirflowPlugin
 
 from flask import Blueprint
@@ -13,6 +18,7 @@ from airflow.sensors.base_sensor_operator import BaseSensorOperator
 from airflow.executors.base_executor import BaseExecutor
 from airflow.utils.decorators import apply_defaults
 from flask_appbuilder import BaseView as AppBuilderBaseView
+from airflow.exceptions import AirflowException
 
 
 class RDMS2RDMSOperator(BaseOperator):
@@ -143,7 +149,7 @@ class RDBMS2RDBMSHook(BaseHook):
                 "connection": [
                     {
                         "querySql": [
-                            self.query_sql
+                            self.src_query_sql
                         ],
                         "jdbcUrl": [
                             self.src_jdbc_url
@@ -170,7 +176,9 @@ class RDBMS2RDBMSHook(BaseHook):
                 "username": conn.login.strip(),
                 "password": conn.password.strip(),
                 "column": self.tar_columns,
-                "preSql": self.tar_pre_sql,
+                "preSql": [
+                    self.tar_pre_sql
+                ],
                 "connection": [{
                     "jdbcUrl": self.tar_jdbc_url,
                     "table": [self.tar_table]
