@@ -19,6 +19,7 @@ from airflow.executors.base_executor import BaseExecutor
 from airflow.utils.decorators import apply_defaults
 from flask_appbuilder import BaseView as AppBuilderBaseView
 from airflow.exceptions import AirflowException
+from datetime import datetime as dte, timedelta
 
 
 class RDMS2RDMSOperator(BaseOperator):
@@ -36,18 +37,23 @@ class RDMS2RDMSOperator(BaseOperator):
                  *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
+
+        filter_start_date = dte.utcnow() - timedelta(days=5)
+        filter_start_date = filter_start_date.strftime("%Y-%m-%d %H:%M:%S")
         self.src_conn_id = src_conn_id
-        self.src_query_sql = src_query_sql
+        self.src_query_sql = src_query_sql + " WHERE create_date > '%s'" % filter_start_date
         self.tar_conn_id = tar_conn_id
         self.tar_table = tar_table
         self.tar_columns = tar_columns
-        self.tar_pre_sql = tar_pre_sql
+        self.tar_pre_sql = tar_pre_sql + " WHERE create_date > '%s'" % filter_start_date
 
     def execute(self, context):
         """
         Execute
         """
-        self.log.info('RDMS2RDMSOperator execute...')
+        self.log.info('src_query_sql: %s', self.src_query_sql)
+        self.log.info('tar_pre_sql: %s', self.tar_pre_sql)
+
         task_id = context['task_instance'].dag_id + "#" + context['task_instance'].task_id
 
         self.hook = RDBMS2RDBMSHook(
@@ -292,16 +298,16 @@ class S3LogLink(BaseOperatorLink):
 
 # Defining the plugin class
 class DataXPlugin(AirflowPlugin):
-    name = "datax"
+    name = "datax2"
     operators = [RDMS2RDMSOperator]
     sensors = [PluginSensorOperator]
     hooks = [RDBMS2RDBMSHook]
     executors = [PluginExecutor]
     macros = [plugin_macro]
-    admin_views = [v]
-    flask_blueprints = [bp]
-    menu_links = [ml]
-    appbuilder_views = [v_appbuilder_package]
-    appbuilder_menu_items = [appbuilder_mitem]
-    global_operator_extra_links = [S3LogLink()]
+    # admin_views = [v]
+    # flask_blueprints = [bp]
+    # menu_links = [ml]
+    # appbuilder_views = [v_appbuilder_package]
+    # appbuilder_menu_items = [appbuilder_mitem]
+    #global_operator_extra_links = [S3LogLink()]
 
