@@ -9,7 +9,7 @@ TRY_LOOP="20"
 : "${POSTGRES_HOST:="database-1.cmcl7cx394un.us-east-2.rds.amazonaws.com"}"
 : "${POSTGRES_PORT:="5432"}"
 : "${POSTGRES_USER:="postgres"}"
-: "${POSTGRES_PASSWORD:="adminadmin"}"
+: "${POSTGRES_PASSWORD:="bmwsales"}"
 : "${POSTGRES_DB:="airflow"}"
 
 # Defaults and back-compat
