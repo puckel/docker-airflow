@@ -62,4 +62,3 @@ def _build_session(conn_params):
         _session_class[conn_info] = Session
     return _session_class[conn_info]()
 
-

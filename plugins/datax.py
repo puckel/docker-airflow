@@ -222,7 +222,7 @@ class RDBMS2RDBMSHook(BaseHook):
         self.Popen(cmd)
         # 删除配置文件
         os.remove(self.json_file)
-        
+
 
 # Will show up under airflow.sensors.test_plugin.PluginSensorOperator
 class PluginSensorOperator(BaseSensorOperator):
@@ -239,58 +239,26 @@ class PluginExecutor(BaseExecutor):
 def plugin_macro():
     pass
 
-# Creating a flask admin BaseView
-class TestView(BaseView):
-    @expose('/')
-    def test(self):
-        # in this example, put your test_plugin/test.html template at airflow/plugins/templates/test_plugin/test.html
-        return self.render("test_plugin/test.html", content="Hello galaxy!")
-v = TestView(category="Test Plugin", name="Test View")
 
 # Creating a flask blueprint to integrate the templates and static folder
 bp = Blueprint(
-    "test_plugin", __name__,
-    template_folder='templates', # registers airflow/plugins/templates as a Jinja template folder
+    "datax", __name__,
+    template_folder='templates',    # registers airflow/plugins/templates as a Jinja template folder
     static_folder='static',
-    static_url_path='/static/test_plugin')
-
-ml = MenuLink(
-    category='Test Plugin',
-    name='Test Menu Link',
-    url='https://airflow.apache.org/')
-
-# Creating a flask appbuilder BaseView
-class TestAppBuilderBaseView(AppBuilderBaseView):
-    @expose("/")
-    def test(self):
-        return self.render("test_plugin/test.html", content="Hello galaxy!")
-
-v_appbuilder_view = TestAppBuilderBaseView()
-v_appbuilder_package = {"name": "Test View",
-                        "category": "Test Plugin",
-                        "view": v_appbuilder_view}
-
-# Creating a flask appbuilder Menu Item
-appbuilder_mitem = {"name": "Google",
-                    "category": "Search",
-                    "category_icon": "fa-th",
-                    "href": "https://www.google.com"}
+    static_url_path='/static/datax')
 
 
-# A global operator extra link that redirect you to
-# task logs stored in S3
-class S3LogLink(BaseOperatorLink):
-    name = 'S3'
+class DataXDAGView(BaseView):
 
-    def get_link(self, operator, dttm):
-        return 'https://s3.amazonaws.com/airflow-logs/{dag_id}/{task_id}/{execution_date}'.format(
-            dag_id=operator.dag_id,
-            task_id=operator.task_id,
-            execution_date=dttm,
-        )
+    @expose('/')
+    def dag_list(self):
+        # in this example, put your test_plugin/test.html template at airflow/plugins/templates/test_plugin/test.html
+        return self.render("datax/test.html", content="Hello galaxy!")
 
 
-# Defining the plugin class
+datax_view = DataXDAGView(category="同步任务", name="任务列表")
+
+
 class DataXPlugin(AirflowPlugin):
     name = "datax"
     operators = [RDMS2RDMSOperator]
@@ -298,10 +266,10 @@ class DataXPlugin(AirflowPlugin):
     hooks = [RDBMS2RDBMSHook]
     executors = [PluginExecutor]
     macros = [plugin_macro]
-    admin_views = [v]
+    admin_views = [datax_view]
     flask_blueprints = [bp]
-    menu_links = [ml]
-    appbuilder_views = [v_appbuilder_package]
-    appbuilder_menu_items = [appbuilder_mitem]
-    global_operator_extra_links = [S3LogLink()]
+    # menu_links = [ml]
+    # appbuilder_views = [v_appbuilder_package]
+    # appbuilder_menu_items = [appbuilder_mitem]
+    # global_operator_extra_links = []
 
