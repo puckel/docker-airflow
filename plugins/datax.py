@@ -252,7 +252,21 @@ class DataXDAGView(AppBuilderBaseView):
 
     @expose('/')
     def list(self):
-        return self.render_template("datax/list.html", content='hello lumi')
+        dags = [
+            {
+                "name": "销售数据同步",
+                "sync_type": "增量",
+                "interval": "60s",
+            },
+            {
+                "name": "同步任务2",
+                "sync_type": "全量",
+                "interval": "300s",
+            },
+        ]
+        return self.render_template("datax/list.html",
+                                    content='hello lumi',
+                                    dags=dags,)
 
 
 datax_view = DataXDAGView()
