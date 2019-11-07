@@ -7,7 +7,7 @@ import os
 from airflow.plugins_manager import AirflowPlugin
 
 from flask import Blueprint
-from flask_admin import BaseView, expose
+from flask_admin import expose
 from flask_admin.base import MenuLink
 
 # Importing base classes that we need to derive
@@ -248,15 +248,19 @@ bp = Blueprint(
     static_url_path='/static/datax')
 
 
-class DataXDAGView(BaseView):
+class DataXDAGView(AppBuilderBaseView):
 
     @expose('/')
-    def dag_list(self):
-        # in this example, put your test_plugin/test.html template at airflow/plugins/templates/test_plugin/test.html
-        return self.render("datax/test.html", content="Hello galaxy!")
+    def list(self):
+        return self.render_template("datax/list.html", content='hello lumi')
 
 
-datax_view = DataXDAGView(category="同步任务", name="任务列表")
+datax_view = DataXDAGView()
+appbuilder_views = {
+    "name": "任务列表",
+    "category": "同步任务",
+    "view": datax_view
+}
 
 
 class DataXPlugin(AirflowPlugin):
@@ -266,10 +270,10 @@ class DataXPlugin(AirflowPlugin):
     hooks = [RDBMS2RDBMSHook]
     executors = [PluginExecutor]
     macros = [plugin_macro]
-    admin_views = [datax_view]
+    # admin_views = [datax_view]
     flask_blueprints = [bp]
     # menu_links = [ml]
-    # appbuilder_views = [v_appbuilder_package]
-    # appbuilder_menu_items = [appbuilder_mitem]
+    appbuilder_views = [appbuilder_views]
+    # appbuilder_menu_items = []
     # global_operator_extra_links = []
 
