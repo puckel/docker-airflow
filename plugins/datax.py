@@ -257,16 +257,36 @@ class DataXDAGView(AppBuilderBaseView):
                 "name": "销售数据同步",
                 "sync_type": "增量",
                 "interval": "60s",
+                "state": "启用"
             },
             {
                 "name": "同步任务2",
                 "sync_type": "全量",
                 "interval": "300s",
+                "state": "禁用"
+            },
+            {
+                "name": "同步任务3",
+                "sync_type": "全量",
+                "interval": "300s",
+                "state": "禁用"
+            },
+            {
+                "name": "同步任务4",
+                "sync_type": "全量",
+                "interval": "300s",
+                "state": "禁用"
             },
         ]
+        currentPage = 1
+        pageSize = 10
+        allPages = 1
         return self.render_template("datax/list.html",
-                                    content='hello lumi',
-                                    dags=dags,)
+                                    content='任务列表',
+                                    dags=dags,
+                                    pageSize=pageSize,
+                                    allPages=allPages,
+                                    currentPage=currentPage)
 
 
 datax_view = DataXDAGView()

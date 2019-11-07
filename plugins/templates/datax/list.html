@@ -1,11 +1,103 @@
 {% extends "appbuilder/baselayout.html" %}
+{% block head_css %}
+{{ super() }}
+<link rel="stylesheet" type="text/css" href="{{ url_for('datax.static', filename='css/task_list.css') }}">
+{% endblock %}
 
 {% block content %}
-    <h1>{{content}}</h1>
+    <div class="task_list_wrapper">
+        <h3>{{content}}</h3>
+        <div class="top_operate_zone">
+            <div class="search_group">
+                <input type="text" class="search_input form-control input-md">
+                <button type="button" class="search_btn btn btn-default">搜索</button>
+            </div>
+            <button class="add_task_btn btn btn-primary">添加任务</button>
+        </div>
+        <div class="task_list_container">
+            <table id="task-list-table" class="table table-striped table-bordered table-hover dataTable no-footer" role="grid"> 
+                <thead> 
+                    <tr role="row">
+                        <th class="sorting_disabled">序号</th>
+                        <th class="sorting_disabled">任务名称</th>
+                        <th class="sorting_disabled">同步类型</th>
+                        <th class="sorting_disabled">时间间隔</th>
+                        <th class="sorting_disabled">状态</th>
+                        <th class="sorting_disabled">操作</th>
+                    </tr> 
+                </thead> 
+                <tbody>
+                    {% for dag in dags %}
+                    <tr role="row" class="odd">
+                        <td>{{loop.index + 1}}</td>
+                        <td>{{dag.name}}</td>
+                        <td>{{dag.sync_type}}</td>
+                        <td>{{dag.interval}}</td>
+                        <td>{{dag.state}}</td>
+                        <td>
+                            <a class="operate_btn" href="#">查看</a>
+                            <a class="operate_btn">编辑</a>
+                            <a class="operate_btn">禁用</a>
+                        </td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+            <div class="pagination_wrap">
+                <ul class="pagination">
+                    <li class="first-page {% if currentPage == 1 %}disabled
+                    {% endif %}"><a href="#">首页</a></li>
+                    <li class="previous-page first-page {% if currentPage == 1 %}disabled
+                    {% else %}
+                    {% endif %}"><a href="#">上一页</a></li>
+                </ul>
+                <ul class="pagination">
+                    <li class="{% if currentPage == 1 %}disabled
+                    {% endif %}"><a href="#">1</a></li>
+                    {% if currentPage > 5 %}
+                    <li><a href="#">...</a></li>
+                    {% endif %}
+                    {% if currentPage > 5 %}
+                    <li><a href="#">{{ currentPage - 3 }}</a></li>
+                    {% endif %}
+                    {% if currentPage - 2 > 1 %}
+                    <li><a href="#">{{ currentPage - 2 }}</a></li>
+                    {% endif %}
+                    {% if currentPage - 1 > 1 %}
+                    <li><a href="#">{{ currentPage - 1 }}</a></li>
+                    {% endif %}
+                    {% if currentPage != 1 and currentPage != allPages %}
+                    <li><a href="#">{{ currentPage }}</a></li>
+                    {% endif %}
+                    {% if currentPage + 1 < allPages %}
+                    <li><a href="#">{{ currentPage + 1 }}</a></li>
+                    {% endif %}
+                    {% if currentPage + 2 < allPages %}
+                    <li><a href="#">{{ currentPage + 2 }}</a></li>
+                    {% endif %}
+                    {% if allPages - currentPage == 4 %}
+                    <li><a href="#">{{ currentPage + 3 }}</a></li>
+                    {% endif %}
+                    {% if allPages - currentPage >= 5 %}
+                    <li><a href="#">...</a></li>
+                    {% endif %}
+                </ul>
+                <ul class="pagination">
+                    <li class="next-page {% if currentPage == allPages %}disabled
+                    {% endif %}"><a href="#">下一页</a></li>
+                    <li class="last-page {% if currentPage == allPages %}disabled
+                    {% endif %}"><a href="#">尾页</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
 
-    <ul>
-        {% for dag in dags %}
-        <li>{{dag.name}} {{dag.sync_type}}<li>
-        {%endfor%}
-    </ul>
+{% block tail %}
+{{ super() }}
+<script>
+  $( document ).ready(function() {
+    
+  });
+</script>
 {% endblock %}

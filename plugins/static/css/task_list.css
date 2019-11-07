@@ -1,0 +1,51 @@
+.task_list_wrapper {
+    margin: 50px 100px;
+}
+.search_group, .search_input {
+    display: inline-block;
+}
+.search_group {
+    width: 80%;
+}
+.search_btn, .add_task_btn {
+    width: 160px;
+}
+.search_btn {
+    margin-top: -3px;
+    margin-left: 20px;
+}
+.search_input {
+    width: 40%;
+}
+.top_operate_zone {
+    margin: 30px 0;
+}
+th, td {
+    text-align: center;
+    border-bottom-color: #ddd!important;
+}
+.dataTable {
+    border-collapse: collapse!important;
+}
+.dataTable.no-footer {
+    border-bottom-color: #ddd!important;
+}
+.operate_btn {
+    margin: 0 10px;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 0;
+}
+.pagination_wrap {
+    text-align: right;
+}
+a {
+    cursor: pointer;
+}
+.disabled, .disabled a{
+    background-color: #fff;
+    border-color: #ddd;
+    color: #999;
+    cursor: not-allowed;
+    pointer-events: none
+}
