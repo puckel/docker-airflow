@@ -1,0 +1,60 @@
+.check_task_wrapper {
+    margin: 50px 100px;
+}
+ul, li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+h4 {
+    margin: 50px 0 40px;
+}
+.check_task_head, .sub_task_head {
+    display: flex;
+}
+.check_task_head {
+    padding: 40px 20px 30px;
+    border-bottom: 1px solid #e5e5e5;
+    justify-content: space-between;
+}
+.label_content {
+    width: 70%;
+}
+li.li_label {
+    display: flex;
+    width: 30%;
+    align-items: center;
+}
+.label_left {
+    width: 30%;
+}
+.task_list_wrapper {
+    padding: 0 20px;
+    margin-bottom: 50px;
+}
+.task_table_wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+.task_table_wrapper > li {
+    width: 45%;
+    padding: 20px;
+}
+.source_data, .target_data {
+    border: 1px solid #e5e5e5;
+}
+.sub_task_head {
+    margin-bottom: 20px;
+    justify-content: space-between;
+}
+table {
+    width: 100%;
+}
+th, td {
+    border: 1px solid #e5e5e5;
+    text-align: center;
+    padding: 10px 0;
+}
+h5 {
+    margin-bottom: 20px;
+}

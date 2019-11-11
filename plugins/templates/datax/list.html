@@ -29,7 +29,7 @@
                 <tbody>
                     {% for dag in dags %}
                     <tr role="row" class="odd">
-                        <td>{{loop.index + 1}}</td>
+                        <td>{{loop.index}}</td>
                         <td>{{dag.name}}</td>
                         <td>{{dag.sync_type}}</td>
                         <td>{{dag.interval}}</td>

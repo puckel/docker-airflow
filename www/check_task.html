@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Airflow - check-task</title>
+    
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        
+        <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="http://cdn.datatables.net/1.10.15/css/jquery.dataTables.min.css">
+        <link href="https://cdn.bootcss.com/datatables/1.10.19/css/dataTables.bootstrap.css" rel="stylesheet">
+        <link rel="stylesheet" href="./check_task.css">
+        <!-- <link href="https://cdn.bootcss.com/bootstrap-table/1.15.4/bootstrap-table.css" rel="stylesheet"> -->
+
+        <script src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-2.1.4.min.js"></script>
+        <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+        <script src="http://cdn.datatables.net/1.10.15/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.bootcss.com/datatables/1.10.19/js/dataTables.bootstrap.js"></script>
+        <!-- <script src="https://cdn.bootcss.com/bootstrap-table/1.15.4/bootstrap-table.js"></script> -->
+
+    </head>
+    <body>
+        <div class="check_task_wrapper">
+            <ul class="check_task_head">
+                <li class="li_label">
+                    <label class="label_left">任务名称</label>
+                    <span class="label_content">AAAAAAAAA</span>
+                </li>
+                <li class="li_label">
+                    <label class="label_left">同步类型</label>
+                    <span class="label_content">全量同步</span>
+                </li>
+                <li class="li_label">
+                    <label class="label_left">时间间隔</label>
+                    <span class="label_content">60秒</span>
+                </li>
+            </ul>
+            <ul class="task_list_wrapper">
+                <li>
+                    <h4>子任务1</h4>
+                    <ul class="sub_task_head">
+                        <li class="li_label">
+                            <label class="label_left">子任务名称</label>
+                            <span class="label_content">XXXXXXXXX</span>
+                        </li>
+                        <li class="li_label">
+                            <label class="label_left">前置任务</label>
+                            <span class="label_content">YYYYYYYYY</span>
+                        </li>
+                        <li class="li_label"></li>
+                    </ul>
+                    <ul class="task_table_wrapper">
+                        <li class="source_data">
+                            <h5>源数据</h5>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>库</th>
+                                        <th>表</th>
+                                        <th>字段</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>库1</td>
+                                        <td>表1</td>
+                                        <td>字段1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>库2</td>
+                                        <td>表2</td>
+                                        <td>字段2</td>
+                                    </tr>
+                                    <tr>
+                                        <td>库3</td>
+                                        <td>表3</td>
+                                        <td>字段3</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </li>
+                        <li class="target_data">
+                            <h5>目的库</h5>
+                            <table>
+                                    <thead>
+                                        <tr>
+                                            <th>库</th>
+                                            <th>表</th>
+                                            <th>字段</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>库1</td>
+                                            <td>表1</td>
+                                            <td>字段1</td>
+                                        </tr>
+                                        <tr>
+                                            <td>库2</td>
+                                            <td>表2</td>
+                                            <td>字段2</td>
+                                        </tr>
+                                        <tr>
+                                            <td>库3</td>
+                                            <td>表3</td>
+                                            <td>字段3</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </body>
+    <script>
+        
+    </script>
+</html>

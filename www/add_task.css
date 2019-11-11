@@ -1,0 +1,91 @@
+.add_task_wrapper {
+    margin: 50px 100px;
+}
+ul, li {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.add_task_head {
+    display: flex;
+    justify-content: space-between;
+    padding: 40px 0 30px;
+    border-bottom: 1px solid #e5e5e5;
+}
+.label_content {
+    width: 70%;
+}
+li.li_label {
+    display: flex;
+    width: 30%;
+    align-items: center;
+}
+.label_left {
+    width: 30%;
+}
+.add_task_head .head_input, .bootstrap-select {
+    width: 50%!important;
+}
+.label_right {
+    margin-left: 5px;
+}
+.subtask_list_card_title {
+    display: flex;
+    justify-content: space-between;
+    padding: 30px 50px 20px 0px;
+    align-items: center;
+}
+.subtask_list_card_nav {
+    display: flex;
+    margin-bottom: 20px;
+    justify-content: space-between;
+}
+.subtask_list_card_nav .head_input, .bootstrap-select {
+    width: 50%!important;
+}
+.subtask_list_content {
+    display: flex;
+    justify-content: space-between;
+}
+.subtask_list_item {
+    width: 45%;
+}
+.subtask_list_item .nav-tabs {
+    border-bottom: none;
+}
+.subtask_list_item .tab-content {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+.sub_select_zone {
+    display: flex;
+    justify-content: space-between;
+}
+.sub_select_li {
+    width: 30%;
+}
+.sub_select_li .bootstrap-select {
+    width: 80%!important;
+}
+.filed_li {
+    margin-bottom: 15px;
+}
+.filed_li .glyphicon-remove {
+    margin-left: 5px;
+}
+.add_new_field {
+    margin: 20px 0;
+}
+.glyphicon-remove {
+    cursor: pointer;
+}
+.subtask_list_wrapper {
+    margin-bottom: 50px;
+}
+.save_sub_btn_wrap {
+    text-align: right;
+    margin: 20px 0;
+}
+.save_sub_task {
+    width: 100px;
+}

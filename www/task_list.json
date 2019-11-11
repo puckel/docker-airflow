@@ -1,0 +1,6 @@
+[
+    { "name": "111", "type": "全量同步", "interval": "60s", "state": "启用" },
+    { "name": "222", "type": "全量同步", "interval": "60s", "state": "启用" },
+    { "name": "333", "type": "全量同步", "interval": "60s", "state": "启用" },
+    { "name": "444", "type": "全量同步", "interval": "60s", "state": "启用" }
+]
