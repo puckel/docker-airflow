@@ -24,3 +24,4 @@ sftp-config.json
 
 # Python
 __pycache__
+airflow

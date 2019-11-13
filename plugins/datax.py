@@ -11,6 +11,8 @@ from flask_admin import expose
 from flask_admin.base import MenuLink
 
 # Importing base classes that we need to derive
+from sqlalchemy import Column, Integer, String, ForeignKey
+from airflow.models.base import ID_LEN, Base
 from airflow.hooks.base_hook import BaseHook
 from airflow.models import BaseOperator
 from airflow.models.baseoperator import BaseOperatorLink
@@ -19,6 +21,23 @@ from airflow.executors.base_executor import BaseExecutor
 from airflow.utils.decorators import apply_defaults
 from flask_appbuilder import BaseView as AppBuilderBaseView
 from airflow.exceptions import AirflowException
+from airflow.models import BaseOperator, Connection, DagModel, DagRun
+from airflow.utils.db import create_session, provide_session
+
+
+SYNC_TYPES = ["增量同步", "全量同步"]
+
+
+class Parent(Base):
+    __tablename__ = 'parent'
+    id = Column(Integer, primary_key=True)
+
+
+class SyncDAGModel(DagModel):
+    __tablename__ = 'sync_dag'
+    __mapper_args__ = {'polymorphic_identity': 'sync_dag'}
+    sync_dag_id = Column(String(ID_LEN), ForeignKey('dag.dag_id'), primary_key=True)
+    sync_type = Column(String(50))
 
 
 class RDMS2RDMSOperator(BaseOperator):
@@ -248,6 +267,11 @@ bp = Blueprint(
     static_url_path='/static/datax')
 
 
+@bp.route("/test")
+def test():
+    return "SUCCSLJDL"
+
+
 class DataXDAGView(AppBuilderBaseView):
 
     @expose('/')
@@ -287,6 +311,39 @@ class DataXDAGView(AppBuilderBaseView):
                                     pageSize=pageSize,
                                     allPages=allPages,
                                     currentPage=currentPage)
+
+    @expose('/create')
+    def dag_list_page(self):
+        return self.render_template("datax/add_task.html",
+                                    sync_types=SYNC_TYPES)
+
+    @expose('/api/add', methods=["POST"])
+    def api_add_dag(self):
+        """
+        {
+            "name": "xx",
+            "sync_type": "增量同步",
+            "interval": "10s",
+            "tasks": [
+                "name": "yy",
+                "pre_task": "zz",
+                "source":{
+
+                },
+                "target":{
+                }
+            ]
+        }
+        """
+        return "ADD OK"
+
+    @expose('/api/update')
+    def api_update_dag(self):
+        pass
+
+    @expose('/api/delete')
+    def api_update_dag(self):
+        pass
 
 
 datax_view = DataXDAGView()

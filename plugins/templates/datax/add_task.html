@@ -1,0 +1,216 @@
+{% extends "appbuilder/baselayout.html" %}
+
+{% block head_css %}
+{{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('datax.static', filename='css/add_task.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('datax.static', filename='select/select.css') }}">
+{% endblock %}
+
+{% block head_js %}
+{{ super() }}
+    <script src="{{ url_for('datax.static', filename='select/select.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="add_task_wrapper">
+    <h3>添加任务</h3>
+    <ul class="add_task_head">
+        <li class="li_label">
+            <label class="label_left">任务名称</label>
+            <input type="text" class="head_input form-control">
+        </li>
+        <li class="li_label">
+            <label class="label_left">同步类型</label>
+            <!-- <select id="sync_type_select" name="state" class="head_input selectpicker"></select> -->
+            <select id="sync_type_select" name="state" class="head_input selectpicker bs-select-hidden">
+                {% for v in sync_types %}
+                <option value="{{v}}">{{v}}</option>
+                {% endfor %}
+            </select>
+        </li>
+        <li class="li_label">
+            <label class="label_left">时间间隔</label>
+            <input type="text" class="label_content head_input form-control">
+            <label class="label_right">秒</label>
+        </li>
+    </ul>
+    <ul class="subtask_list_wrapper"">
+        <li class="subtask_list_card">
+            <div class="subtask_list_card_title">
+                <h4>+    子任务</h4>
+                <span class="glyphicon glyphicon-remove"></span>
+            </div>
+            <div>
+                <ul class="subtask_list_card_nav">
+                    <li class="li_label">
+                        <label class="label_left">子任务名称</label>
+                        <input type="text" class="head_input form-control">
+                    </li>
+                    <li class="li_label">
+                        <label class="label_left">前置任务</label>
+                        <select id="pre_task_select" name="state" class="head_input selectpicker"></select>
+                    </li>
+                    <li class="li_label"></li>
+                </ul>
+                <ul class="subtask_list_content">
+                    <li class="subtask_list_item">
+                        <ul class="nav nav-tabs">
+                            <li role="presentation" class="active">
+                                <a data-toggle="tab" disable_anchor="true" role="tab" aria-expanded="true" href="#select_wrapper">选择</a>
+                            </li>
+                            <li role="presentation">
+                                <a data-toggle="tab" disable_anchor="true" role="tab" aria-expanded="false" href="#input_sql_wrapper">输入SQL</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content nav nav-tabs">
+                            <div role="tabpanel" id="select_wrapper" class="tab-pane active">
+                                <ul class="sub_select_zone">
+                                    <li class="sub_select_li li_left">
+                                        <select id="source_link_method_select1" name="state" class="head_input selectpicker"></select>
+                                    </li>
+                                    <li class="sub_select_li li_center">
+                                        <select id="source_table_select1" name="state" class="head_input selectpicker"></select>
+                                    </li>
+                                    <li class="sub_select_li li_right">
+                                        <ul class="field_wrapper">
+                                            <li class="filed_li">
+                                                <select id="source_field_select1_1" name="state" class="head_input selectpicker"></select>
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                            </li>
+                                            <li class="filed_li">
+                                                <select id="source_field_select2_1" name="state" class="head_input selectpicker"></select>
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                            </li>
+                                            <li class="filed_li">
+                                                <select id="source_field_select3_1" name="state" class="head_input selectpicker"></select>
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <button class="btn btn-primary add_new_field">+添加新字段</button>
+                            </div>
+                            <div role="tabpanel" id="input_sql_wrapper" class="tab-pane">
+                                <textarea class="form-control" rows="8" name="textarea"></textarea>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="subtask_list_item">
+                        <ul class="nav nav-tabs">
+                            <li role="presentation" class="active">
+                                <a data-toggle="tab" disable_anchor="true" role="tab" aria-expanded="true" href="#select_wrapper">目的库</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content nav nav-tabs">
+                            <div role="tabpanel" id="select_wrapper" class="tab-pane active">
+                                <ul class="sub_select_zone">
+                                    <li class="sub_select_li li_left">
+                                        <select id="target_link_method_select1" name="state" class="head_input selectpicker"></select>
+                                    </li>
+                                    <li class="sub_select_li li_center">
+                                        <select id="target_table_select1" name="state" class="head_input selectpicker"></select>
+                                    </li>
+                                    <li class="sub_select_li li_right">
+                                        <ul class="field_wrapper">
+                                            <li class="filed_li">
+                                                <select id="target_field_select1_1" name="state" class="head_input selectpicker"></select>
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                            </li>
+                                            <li class="filed_li">
+                                                <select id="target_field_select2_1" name="state" class="head_input selectpicker"></select>
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                            </li>
+                                            <li class="filed_li">
+                                                <select id="target_field_select3_1" name="state" class="head_input selectpicker"></select>
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <button class="btn btn-primary add_new_field">+添加新字段</button>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <div class="save_sub_btn_wrap">
+                    <button class="btn btn-primary save_sub_task">保存</button>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block add_tail_js %}
+    <script>
+        var preTaskOptions = [
+                    {
+                        label: '子选项1',
+                        value: '1'
+                    },
+                    {
+                        label: '子选项2',
+                        value: '2'
+                    },
+                    {
+                        label: '子选项2',
+                        value: '2'
+                    },
+                ]
+        $('#pre_task_select').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+        $('#source_link_method_select1').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+        $('#source_table_select1').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+        $('#target_link_method_select1').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+        $('#target_table_select1').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+        $('#source_field_select1_1').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+        $('#source_field_select2_1').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+        $('#source_field_select3_1').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+        $('#target_field_select1_1').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+        $('#target_field_select2_1').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+        $('#target_field_select3_1').selectpicker('initSelectOption', {
+            idKey: 'value',
+            nameKey: 'label',
+            data: preTaskOptions
+        });
+    </script>
+{% endblock %}

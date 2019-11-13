@@ -8,7 +8,7 @@ _session_class = {}
 
 
 @contextmanager
-def open_session(conn):
+def create_external_session(conn):
     """
     return a sqlalchemy database session.
 
@@ -49,7 +49,7 @@ def trans_conn(conn):
     }
 
 
-def _build_session(conn_params):
+def _build_external_session(conn_params):
     """
     new a sqlalchemy database session.
     """
@@ -60,5 +60,61 @@ def _build_session(conn_params):
         engine = create_engine(conn_info)
         Session = sessionmaker(bind=engine)
         _session_class[conn_info] = Session
-    return _session_class[conn_info]()
+    session = _session_class[conn_info]()
+    session.conn_type = conn_params["conn_type"]
+    return session
 
+
+def get_external_tables(session):
+    """
+    return all tables of given database session
+
+    目前只支持PG库
+    """
+    assert session.conn_type == "postgresql"
+    result = session.execute("select tablename from pg_tables where schemaname='public'")
+    tables = []
+    for row in result.fetchall():
+        tables.append(row[0])
+    return tables
+
+
+def get_external_columns(session, table):
+    assert session.conn_type == "postgresql"
+    sql = "select column_name,data_type from information_schema.columns where table_name='%s';" % table
+    print(sql)
+    result = session.execute(sql)
+    tables = []
+    for row in result.fetchall():
+        tables.append({
+            "column_name": row[0],
+            "data_type": row[1]
+        })
+    return tables
+
+
+class ExternalDBUtil(object):
+
+    def get_tables(self, session):
+        return get_external_tables(session)
+
+    def get_cloumns(self, session, table):
+        return get_external_columns(session, table)
+
+
+dbutil = ExternalDBUtil()
+
+
+if __name__ == "__main__":
+    data = {
+        "conn_type": "postgresql",
+        "host": "pg_master",
+        "port": 5432,
+        "username": "odoo",
+        "password": "odoo",
+        "schema": "erp"
+    }
+
+    sess = _build_external_session(data)
+    # print(get_external_tables(sess))
+    print(get_external_columns(sess, "sale_order"))
