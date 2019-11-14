@@ -3,12 +3,16 @@ import json
 import uuid
 import subprocess
 import os
+import json
+import re
 
+from datetime import timedelta
 from airflow.plugins_manager import AirflowPlugin
-
-from flask import Blueprint
+from flask import Blueprint, request
+from flask.views import MethodView
 from flask_admin import expose
 from flask_admin.base import MenuLink
+from flask.json import jsonify
 
 # Importing base classes that we need to derive
 from sqlalchemy import Column, Integer, String, ForeignKey
@@ -23,14 +27,35 @@ from flask_appbuilder import BaseView as AppBuilderBaseView
 from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator, Connection, DagModel, DagRun
 from airflow.utils.db import create_session, provide_session
+from airflow.www_rbac.app import csrf
 
 
 SYNC_TYPES = ["增量同步", "全量同步"]
 
 
-class Parent(Base):
-    __tablename__ = 'parent'
-    id = Column(Integer, primary_key=True)
+def load_interval(text):
+    time_type_trans = {
+        "d": "days",
+        "h": "hours",
+        "m": "minutes",
+        "s": "seconds",
+    }
+    matcher = re.compile("^(\d+)([s|h|d|ms])$").match(text)
+    if not matcher:
+        raise Exception()
+    time, time_type = matcher.groups()
+    return timedelta(**{time_type_trans[time_type]: int(time)})
+
+
+def dump_interval(obj):
+    if obj.seconds:
+        return "%ss" % obj.seconds
+    if obj.days:
+        return "%sd" % obj.days
+    if obj.hours:
+        return "%sh" % obj.hours
+    if obj.minutes:
+        return "%sm" % obj.minutes
 
 
 class SyncDAGModel(DagModel):
@@ -38,6 +63,20 @@ class SyncDAGModel(DagModel):
     __mapper_args__ = {'polymorphic_identity': 'sync_dag'}
     sync_dag_id = Column(String(ID_LEN), ForeignKey('dag.dag_id'), primary_key=True)
     sync_type = Column(String(50))
+    task_json_str = Column(String(5000), default="[]")
+
+    def to_json(self):
+        return {
+            "name": self.dag_id,
+            "sync_type": self.sync_type,
+            "interval": dump_interval(self.schedule_interval),
+            "state": self.state,
+            "tasks": json.loads(self.task_json_str)
+        }
+
+    @property
+    def state(self):
+        return "启用" if self.is_active else "禁用"
 
 
 class RDMS2RDMSOperator(BaseOperator):
@@ -266,47 +305,149 @@ bp = Blueprint(
     static_folder='static',
     static_url_path='/static/datax')
 
+csrf.exempt(bp)
 
-@bp.route("/test")
-def test():
-    return "SUCCSLJDL"
+
+class SyncDAGListView(MethodView):
+
+    @provide_session
+    def post(self, session=None):
+        """
+        增加syncdag
+
+        Input:
+            {
+                "name": "xx",
+                "sync_type": "增量同步",
+                "interval": "10s",
+                "tasks": [{
+                    "name": "yy",
+                    "pre_task": "zz",
+                    "source":{
+                        "conn_id": "",
+                        "query_sql": "",
+                    },
+                    "target":{
+                        "conn_id": "",
+                        "columns": [""],
+                    }
+                }]
+            }
+        """
+        params = json.loads(request.data)
+        name = params["name"]
+
+        dag = session.query(DagModel).filter_by(dag_id=name).first()
+        if dag:
+            return jsonify({
+                "code": -1,
+                "msg": "名字为%s的DAG已存在!" % name
+            })
+
+        try:
+            interval = load_interval(params["interval"])
+        except Exception as e:
+            raise e
+            return jsonify({
+                "code": -1,
+                "msg": "interval数据格式错误! %s" % params["interval"]
+            })
+
+        dag = SyncDAGModel(
+            dag_id=name,
+            sync_type=params["sync_type"],
+            owners="luke",
+            schedule_interval=interval,
+            fileloc="",
+            task_json_str=json.dumps(params["tasks"]),
+            is_active=True,
+        )
+        session.add(dag)
+        session.commit()
+        return jsonify({
+            "status": 0,
+            "msg": "新建成功"
+        })
+
+
+class SyncDAGDetailView(MethodView):
+
+    @provide_session
+    def delete(self, dag_id, session=None):
+        """
+        删除DAG
+        """
+        dag = session.query(SyncDAGModel).get(dag_id)
+        if not dag:
+            return jsonify({
+                "status": -1,
+                "msg": "不存在名为%s的dag" % dag_id
+            })
+        session.delete(dag)
+        session.commit()
+        return jsonify({
+            "status": 0,
+            "msg": "删除成功"
+        })
+
+    @provide_session
+    def put(self, dag_id, session=None):
+        """
+        修改DAG
+        """
+        dag = session.query(SyncDAGModel).get(dag_id)
+        if not dag:
+            return jsonify({
+                "status": -1,
+                "msg": "不存在名为%s的dag" % dag_id
+            })
+        params = json.loads(request.data)
+        # dag.dag_id = params["name"]
+        dag.sync_type = params["sync_type"]
+        dag.schedule_interval = load_interval(params["interval"])
+        dag.task_json_str = json.dumps(params["tasks"])
+        session.commit()
+        return jsonify({
+            "status": 0,
+            "msg": "修改成功"
+        })
+
+    @provide_session
+    def get(self, dag_id, session=None):
+        """
+        获取DAG
+        """
+        dag = session.query(SyncDAGModel).get(dag_id)
+        if not dag:
+            return jsonify({
+                "status": -1,
+                "msg": "不存在名为%s的dag" % dag_id
+            })
+        return jsonify(dag.to_json())
+
+
+bp.add_url_rule('/datax/api/syncdags', view_func=SyncDAGListView.as_view('syncdaglist'))
+bp.add_url_rule('/datax/api/syncdag/<dag_id>', view_func=SyncDAGDetailView.as_view('syncdetaillist'))
 
 
 class DataXDAGView(AppBuilderBaseView):
 
     @expose('/')
-    def list(self):
-        dags = [
-            {
-                "name": "销售数据同步",
-                "sync_type": "增量",
-                "interval": "60s",
-                "state": "启用"
-            },
-            {
-                "name": "同步任务2",
-                "sync_type": "全量",
-                "interval": "300s",
-                "state": "禁用"
-            },
-            {
-                "name": "同步任务3",
-                "sync_type": "全量",
-                "interval": "300s",
-                "state": "禁用"
-            },
-            {
-                "name": "同步任务4",
-                "sync_type": "全量",
-                "interval": "300s",
-                "state": "禁用"
-            },
-        ]
+    @provide_session
+    def list(self, session=None):
         currentPage = 1
         pageSize = 10
         allPages = 1
+        qs = session.query(SyncDAGModel).all()
+        dags = []
+        for dag in qs:
+            dags.append({
+                "name": dag.dag_id,
+                "sync_type": dag.sync_type,
+                "interval": dump_interval(dag.schedule_interval),
+                "state": dag.state,
+            })
         return self.render_template("datax/list.html",
-                                    content='任务列表',
                                     dags=dags,
                                     pageSize=pageSize,
                                     allPages=allPages,
