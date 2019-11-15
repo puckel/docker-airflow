@@ -28,12 +28,21 @@ from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator, Connection, DagModel, DagRun
 from airflow.utils.db import create_session, provide_session
 from airflow.www_rbac.app import csrf
+from airflowext.dag_utils import generate_dag_file
+from airflowext.sqlalchemy_utils import dbutil, create_external_session
 
 
 SYNC_TYPES = ["增量同步", "全量同步"]
 
 
 def load_interval(text):
+    """
+    时间文本转timedelta对象
+
+    eg:
+        >> load_interval("10s")
+           timedelta(seconds=10)
+    """
     time_type_trans = {
         "d": "days",
         "h": "hours",
@@ -77,6 +86,16 @@ class SyncDAGModel(DagModel):
     @property
     def state(self):
         return "启用" if self.is_active else "禁用"
+
+    @provide_session
+    def refresh_dag_file(self, session=None):
+        path = generate_dag_file(self.to_json())
+        self.fileloc = path
+        session.commit()
+
+    def delete_dag_file(self):
+        if os.path.exists(self.fileloc):
+            os.unlink(self.fileloc)
 
 
 class RDMS2RDMSOperator(BaseOperator):
@@ -364,6 +383,8 @@ class SyncDAGListView(MethodView):
         )
         session.add(dag)
         session.commit()
+
+        dag.refresh_dag_file()
         return jsonify({
             "status": 0,
             "msg": "新建成功"
@@ -385,6 +406,8 @@ class SyncDAGDetailView(MethodView):
             })
         session.delete(dag)
         session.commit()
+        dag.delete_dag_file()
+
         return jsonify({
             "status": 0,
             "msg": "删除成功"
@@ -402,11 +425,12 @@ class SyncDAGDetailView(MethodView):
                 "msg": "不存在名为%s的dag" % dag_id
             })
         params = json.loads(request.data)
-        # dag.dag_id = params["name"]
         dag.sync_type = params["sync_type"]
         dag.schedule_interval = load_interval(params["interval"])
         dag.task_json_str = json.dumps(params["tasks"])
         session.commit()
+        dag.refresh_dag_file()
+
         return jsonify({
             "status": 0,
             "msg": "修改成功"
@@ -425,6 +449,57 @@ class SyncDAGDetailView(MethodView):
             })
         return jsonify(dag.to_json())
 
+
+@bp.route("/datax/api/connections", methods=["GET"])
+@provide_session
+@csrf.exempt
+def get_connections(session=None):
+    conns = session.query(Connection).all()
+    conn_ids = [c.conn_id for c in conns]
+    return jsonify({
+        "code": 0,
+        "msg": "OK",
+        "connections": conn_ids,
+    })
+
+
+@bp.route("/datax/api/connection/<conn_id>/tables", methods=["GET"])
+@csrf.exempt
+@provide_session
+def get_tables(conn_id, session=None):
+    conn = session.query(Connection).filter_by(conn_id=conn_id).one()
+    if not conn:
+        return jsonify({
+            "code": -1,
+            "msg": "不存在名为%s的Connection" % conn_id,
+        })
+
+    with create_external_session(conn) as external_session:
+        tables = dbutil.get_tables(external_session)
+    return jsonify({
+        "code": 0,
+        "msg": "SUCCESS",
+        "tables": tables
+    })
+
+
+@bp.route("/datax/api/connection/<conn_id>/table/<table_name>/columns", methods=["GET"])
+@csrf.exempt
+@provide_session
+def get_columns(conn_id, table_name, session=None):
+    conn = session.query(Connection).filter_by(conn_id=conn_id).one()
+    if not conn:
+        return jsonify({
+            "code": -1,
+            "msg": "不存在名为%s的Connection" % conn_id,
+        })
+    with create_external_session(conn) as external_session:
+        columns = dbutil.get_cloumns(external_session, table_name)
+    return jsonify({
+        "code": 0,
+        "msg": "SUCCESS",
+        "tables": columns
+    })
 
 bp.add_url_rule('/datax/api/syncdags', view_func=SyncDAGListView.as_view('syncdaglist'))
 bp.add_url_rule('/datax/api/syncdag/<dag_id>', view_func=SyncDAGDetailView.as_view('syncdetaillist'))
@@ -454,37 +529,9 @@ class DataXDAGView(AppBuilderBaseView):
                                     currentPage=currentPage)
 
     @expose('/create')
-    def dag_list_page(self):
+    def dag_add_page(self):
         return self.render_template("datax/add_task.html",
                                     sync_types=SYNC_TYPES)
-
-    @expose('/api/add', methods=["POST"])
-    def api_add_dag(self):
-        """
-        {
-            "name": "xx",
-            "sync_type": "增量同步",
-            "interval": "10s",
-            "tasks": [
-                "name": "yy",
-                "pre_task": "zz",
-                "source":{
-
-                },
-                "target":{
-                }
-            ]
-        }
-        """
-        return "ADD OK"
-
-    @expose('/api/update')
-    def api_update_dag(self):
-        pass
-
-    @expose('/api/delete')
-    def api_update_dag(self):
-        pass
 
 
 datax_view = DataXDAGView()

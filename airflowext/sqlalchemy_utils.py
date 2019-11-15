@@ -16,7 +16,7 @@ def create_external_session(conn):
         with open_session(conn) as session:
             pass
     """
-    session = _build_session(trans_conn(conn))
+    session = _build_external_session(trans_conn(conn))
     try:
         yield session
         session.commit()
@@ -82,7 +82,6 @@ def get_external_tables(session):
 def get_external_columns(session, table):
     assert session.conn_type == "postgresql"
     sql = "select column_name,data_type from information_schema.columns where table_name='%s';" % table
-    print(sql)
     result = session.execute(sql)
     tables = []
     for row in result.fetchall():

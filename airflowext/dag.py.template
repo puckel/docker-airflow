@@ -1,0 +1,46 @@
+# coding:utf-8
+
+"""
+=== Auto Generated ===
+"""
+
+from datetime import datetime, timedelta
+from airflow import DAG
+from airflow.operators.datax2 import RDMS2RDMSOperator
+
+
+default_args = {
+    'owner': '{{owner}}',
+    'depends_on_past': False,
+    'start_date': {{start_date}},
+    'email': ['{{email}}'],
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': {{retries}},
+    # 'retry_delay': timedelta(minutes=5),
+    # 'queue': 'bash_queue',
+    # 'pool': 'backfill',
+    # 'priority_weight': 10,
+    # 'end_date': datetime(2016, 1, 1),
+}
+
+dag = DAG(
+    '{{name}}', default_args=default_args, schedule_interval={{interval}}
+)
+{% for t in tasks %}
+
+{{t.name}} = RDMS2RDMSOperator(
+    task_id="{{t.name}}",
+    src_conn_id="{{t.source.conn_id}}",
+    src_query_sql="{{t.source.query_sql}}",
+    tar_conn_id="{{t.target.conn_id}}",
+    tar_table="{{t.target.table}}",
+    tar_columns={{t.target.columns}},
+    tar_pre_sql="delete from {{t.target.table}}",
+    dag=dag,
+)
+{% endfor %}
+
+{% for parent, child in parent2child %}
+{{parent}} >> {{child}}
+{% endfor %}
