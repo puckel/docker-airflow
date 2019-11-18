@@ -228,7 +228,7 @@ class RDBMS2RDBMSHook(BaseHook):
         self.Popen(cmd)
         # 删除配置文件
         os.remove(self.json_file)
-        
+
 
 # Will show up under airflow.sensors.test_plugin.PluginSensorOperator
 class PluginSensorOperator(BaseSensorOperator):
