@@ -1,0 +1,29 @@
+# PREREQUISITE: PROJECT_ID=$(gcloud config get-value project)
+# Execute: gcloud builds submit --config cloudbuild.yaml .
+# [START cloudbuild]
+steps:
+
+# This step builds the container image.
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build
+  args:
+  - 'build'
+  - '--force-rm'
+  - '--no-cache'
+  - '-t'
+  - 'gcr.io/$PROJECT_ID/$_AIRFLOW_IMAGE_NAME'
+  - '.'
+
+# This step pushes the image to Container Registry
+# The PROJECT_ID and BUILD_ID variables are automatically
+# replaced by Cloud Build.
+- name: 'gcr.io/cloud-builders/docker'
+  id: Push
+  args:
+  - 'push'
+  - 'gcr.io/$PROJECT_ID/$_AIRFLOW_IMAGE_NAME'
+  
+  images: ['gcr.io/$PROJECT_ID/$_AIRFLOW_IMAGE_NAME']
+  tags: ['accenture', 'jtmartin']
+  
+# [END cloudbuild]
