@@ -20,7 +20,7 @@ jobs:
       - run:
           name: Test docker image
           command: |
-            docker run puckel/docker-airflow version |grep '1.10.4'
+            docker run puckel/docker-airflow version |grep '1.10.6'
 workflows:
   version: 2
   build_and_test:
