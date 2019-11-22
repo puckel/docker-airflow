@@ -122,6 +122,22 @@ You can also use this to run a bash shell or any other command in the same envir
     docker run --rm -ti puckel/docker-airflow bash
     docker run --rm -ti puckel/docker-airflow ipython
 
+## Usual commands
+
+A Makefile is provided in the directory with typical commands saved as targets.
+
+Build the container
+    make build
+
+Start the container
+    make run
+
+Access the container shell
+    make tty
+
+Kill the running container
+    make kill
+
 # Wanna help?
 
 Fork, improve and PR. ;-)
