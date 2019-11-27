@@ -6,6 +6,8 @@ services:
             - POSTGRES_USER=airflow
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
+        ports:
+            - "5432:5432"
 
     webserver:
         image: puckel/docker-airflow:1.10.6
@@ -13,10 +15,10 @@ services:
         depends_on:
             - postgres
         environment:
-            - LOAD_EX=n
+            - LOAD_EX=y
             - EXECUTOR=Local
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - ./dags:/usr/local/airflow/dags/
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
@@ -27,3 +29,22 @@ services:
             interval: 30s
             timeout: 30s
             retries: 3
+    mysql:
+        image: mysql:5.7
+        environment:
+            - MYSQL_ROOT_PASSWORD=password
+            - MYSQL_USER=user
+            - MYSQL_PASSWORD=password
+            - MYSQL_DATABASE=db
+        volumes:
+            - ./data:/var/lib/mysql/
+        ports:
+            - "3306:3306"
+            - "33060:33060"
+        expose:
+             - "3306"
+             - "33060"
+        # command: mysqld --default-authentication-plugin=mysql_native_password
+        # command: --default-authentication-plugin=mysql_native_password
+        restart: always
+
