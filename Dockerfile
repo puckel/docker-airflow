@@ -17,7 +17,7 @@ ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG GITHUB_TOKEN
 ARG AIRFLOW_DEPS="kubernetes,gcp"
 # remove after fixed in upstream https://github.com/epoch8/airflow-exporter/pull/73
-ARG PYTHON_DEPS="git+https://${GITHUB_TOKEN}@github.com/snapcart/airflow-exporter.git@bac8f1e0531fe6e383ac30bf5384953156d120b4"
+ARG PYTHON_DEPS="git+https://${GITHUB_TOKEN}@github.com/snapcart/airflow-exporter.git@e69aebce23721ff7d1b90d63aae819b6b975fcf1"
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
 
 # Define en_US.
