@@ -81,3 +81,4 @@ USER airflow
 WORKDIR ${AIRFLOW_USER_HOME}
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["webserver"] # set default arg for entrypoint
+HEALTHCHECK --interval=1m CMD curl -sLf http://localhost:8080/ || exit 1
