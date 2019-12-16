@@ -26,7 +26,6 @@ export \
   AIRFLOW__CORE__LOAD_EXAMPLES \
   AIRFLOW__CORE__SQL_ALCHEMY_CONN \
 
-
 # Load DAGs exemples (default: Yes)
 if [[ -z "$AIRFLOW__CORE__LOAD_EXAMPLES" && "${LOAD_EX:=n}" == n ]]
 then
@@ -36,6 +35,7 @@ fi
 # Install custom python package if requirements.txt is present
 if [ -e "/requirements.txt" ]; then
     $(command -v pip) install --user -r /requirements.txt
+    export PATH=$HOME/.local/bin/:$PATH
 fi
 
 if [ -n "$REDIS_PASSWORD" ]; then
