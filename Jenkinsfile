@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Docker Build') {
             steps {
-                '''#!/bin/bash
+                sh'''#!/bin/bash
                     docker build . -f Dockerfile \
                         -t 347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow:latest
 
