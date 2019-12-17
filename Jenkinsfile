@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Docker Build') {
             steps {
-                sh"""#!/bin/bash
+                sh'''#!/bin/bash
                     docker build . -f Dockerfile \
                         -t $PROD_IMAGE
 
@@ -20,7 +20,7 @@ pipeline {
 
                     echo "Latest image available at: $PROD_IMAGE"
 
-                """
+                    '''
             }
         }
 
