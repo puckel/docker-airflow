@@ -11,15 +11,16 @@ pipeline {
     stages {
         stage('Docker Build') {
             steps {
-                sh'''#!/bin/bash
+                sh"""#!/bin/bash
                     docker build . -f Dockerfile \
-                        -t 347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow:latest
+                        -t $PROD_IMAGE
 
                     $(aws ecr get-login --no-include-email --region us-east-1)
                     docker push $PROD_IMAGE
 
                     echo "Latest image available at: $PROD_IMAGE"
-                '''
+
+                """
             }
         }
 
