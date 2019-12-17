@@ -42,7 +42,7 @@ job "airflow" {
       user = "0"
 
       config {
-        image      = "347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow:latest"
+        image      = "[[ .DOCKER_IMAGE_ID ]]"
         force_pull = true
 
         port_map {

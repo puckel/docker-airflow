@@ -3,6 +3,10 @@ pipeline {
     options {
         timestamps()
     }
+    environment {
+        BUILD_STRING="${env.BUILD_NUMBER}-${env.GIT_COMMIT}"
+        PROD_IMAGE="347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow:$BUILD_STRING"
+    }
 
     stages {
         stage('Docker Build') {
@@ -12,9 +16,9 @@ pipeline {
                         -t 347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow:latest
 
                     $(aws ecr get-login --no-include-email --region us-east-1)
-                    docker push 347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow:latest
+                    docker push $PROD_IMAGE
 
-                    echo "Latest image available at: 347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow:latest"
+                    echo "Latest image available at: $PROD_IMAGE"
                 '''
             }
         }
@@ -55,6 +59,10 @@ pipeline {
                     levant_docker.pull()
                     levant_docker.inside {
                         sh '''
+                            levant render -var 'DOCKER_IMAGE_ID=${PROD_IMAGE}' \
+                                -consul-address http://consul.internal.classdojo.com \
+                                -var 'DEPLOYED_API_VERSION=${BUILD_STRING}' -out "airflow.nomad" "airflow.nomad";
+
                             levant deploy \
                             -address=https://nomad.internal.classdojo.com \
                             airflow.nomad
