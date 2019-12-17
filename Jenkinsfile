@@ -61,7 +61,7 @@ pipeline {
                         sh '''
                             levant render -var 'DOCKER_IMAGE_ID=${PROD_IMAGE}' \
                                 -consul-address http://consul.internal.classdojo.com \
-                                -var 'DEPLOYED_API_VERSION=${BUILD_STRING}' -out "airflow.nomad" "airflow.nomad";
+                                -out "airflow.nomad" "airflow.nomad";
 
                             levant deploy \
                             -address=https://nomad.internal.classdojo.com \
