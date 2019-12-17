@@ -58,7 +58,7 @@ pipeline {
                     def levant_docker = docker.image('347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/levant:latest')
                     levant_docker.pull()
                     levant_docker.inside {
-                        sh '''
+                        sh """#!/bin/sh
                             levant render -var 'DOCKER_IMAGE_ID=${PROD_IMAGE}' \
                                 -consul-address http://consul.internal.classdojo.com \
                                 -out "airflow.nomad" "airflow.nomad";
@@ -66,7 +66,8 @@ pipeline {
                             levant deploy \
                             -address=https://nomad.internal.classdojo.com \
                             airflow.nomad
-                        '''
+                            """
+
                     }
 
                 }
