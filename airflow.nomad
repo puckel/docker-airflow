@@ -53,12 +53,6 @@ job "airflow" {
           type = "json-file"
         }
 
-        template {
-          data        = "{{ key \"config/airflow\" }}"
-          destination = "local/airflow/airflow.cfg"
-          change_mode = "restart"
-        }
-
         # These labels need the dd-agent docker.d/conf.yaml to be set which isn't on our current ami
         # Enable when new AMI has it.
         labels {
@@ -78,6 +72,12 @@ job "airflow" {
             static = "9001"
           }
         }
+      }
+
+      template {
+        data        = "{{ key \"config/airflow\" }}"
+        destination = "local/airflow/airflow.cfg"
+        change_mode = "restart"
       }
 
       service {
