@@ -41,6 +41,8 @@ job "airflow" {
         EXECUTOR     = "Local"
         POSTGRES_HOST = "airflow.cieeljuzwsdg.us-east-1.rds.amazonaws.com"
         POSTGRES_PORT = "5432"
+        FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
+        AIRFLOW__CORE__FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
       }
 
       user = "0"
