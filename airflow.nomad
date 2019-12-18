@@ -38,6 +38,8 @@ job "airflow" {
 
       env {
         AIRFLOW_DEPS = "datadog"
+        LOAD_EX      = "n"
+        EXECUTOR     = "Local"
       }
 
       user = "0"
