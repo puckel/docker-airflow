@@ -38,7 +38,7 @@ job "airflow" {
 
       env {
         AIRFLOW_DEPS = "datadog"
-        LOAD_EX      = "n"
+        LOAD_EX      = "y"
         EXECUTOR     = "Local"
         POSTGRES_HOST = "airflow.cieeljuzwsdg.us-east-1.rds.amazonaws.com"
         POSTGRES_PORT = "5432"
