@@ -1,8 +1,6 @@
 # VERSION 1.10.6
-# AUTHOR: Matthieu "Puckel_" Roisil
 # DESCRIPTION: Basic Airflow container
-# BUILD: docker build --rm -t puckel/docker-airflow .
-# SOURCE: https://github.com/puckel/docker-airflow
+# SOURCE: https://github.com/classdojo/docker-airflow
 
 FROM python:3.7-slim-stretch
 LABEL maintainer="Classdojo_"

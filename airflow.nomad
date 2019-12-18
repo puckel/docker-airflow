@@ -37,6 +37,7 @@ job "airflow" {
       driver = "docker"
 
       env {
+        AIRFLOW_DEPS=datadog
       }
 
       user = "0"
