@@ -37,7 +37,6 @@ job "airflow" {
       driver = "docker"
 
       env {
-        AIRFLOW_DEPS = "datadog,google_auth"
         LOAD_EX      = "y"
         EXECUTOR     = "Local"
         POSTGRES_HOST = "airflow.cieeljuzwsdg.us-east-1.rds.amazonaws.com"

@@ -13,6 +13,7 @@ pipeline {
             steps {
                 sh'''#!/bin/bash
                     docker build . -f Dockerfile \
+                        --build-arg AIRFLOW_DEPS="datadog,google_auth"
                         -t $PROD_IMAGE
 
                     $(aws ecr get-login --no-include-email --region us-east-1)
