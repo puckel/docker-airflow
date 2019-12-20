@@ -60,11 +60,8 @@ job "airflow" {
         }
 
         volumes = [
-          "dojo-airflow-dags:/local/airflow/dags",
+          "../alloc/dags:/local/airflow/dags",
         ]
-
-        volume_driver = "rexray/s3fs"
-
 
         # These labels need the dd-agent docker.d/conf.yaml to be set which isn't on our current ami
         # Enable when new AMI has it.
@@ -109,6 +106,38 @@ job "airflow" {
           type     = "tcp"
           interval = "10s"
           timeout  = "2s"
+        }
+      }
+    }
+    task {
+      driver = "docker"
+      config {
+        image      = "[[ .DOCKER_DATA_IMAGE_ID ]]"
+        force_pull = true
+
+        logging {
+          type = "json-file"
+        }
+
+        volumes = [
+          "../alloc/dags:/data/dags",
+        ]
+
+        # These labels need the dd-agent docker.d/conf.yaml to be set which isn't on our current ami
+        # Enable when new AMI has it.
+        labels {
+          com.datadoghq.ad.check_names  = "[\"process\"]"
+          com.datadoghq.ad.init_configs = "[{\"pid_cache_duration\": \"30\"}]"
+          com.datadoghq.ad.instances    = "[{\"host\": \"%%host%%\", \"port\": \"%%port%%\", \"airflow\"}]"
+          com.datadoghq.ad.logs         = "[{\"source\": \"python\", \"service\": \"airflow\"}]"
+        }
+      }
+      resources {
+        cpu    = 1000 # 3 cores
+        memory = 1024  # 8 GB
+
+        network {
+          port "http" {}
         }
       }
     }
