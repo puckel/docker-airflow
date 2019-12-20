@@ -109,25 +109,5 @@ job "airflow" {
         }
       }
     }
-
-    task "airflow-data" {
-      driver = "docker"
-      config {
-        image      = "[[ .DOCKER_DATA_IMAGE_ID ]]"
-        force_pull = true
-
-        logging {
-          type = "json-file"
-        }
-
-        volumes = [
-          "dags:/data/dags",
-        ]
-      }
-      resources {
-        cpu    = 1000 # 3 cores
-        memory = 1024  # 8 GB
-      }
-    }
   }
 }
