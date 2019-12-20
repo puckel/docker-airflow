@@ -16,6 +16,8 @@ TRY_LOOP="20"
 : "${AIRFLOW_HOME:="/local/airflow"}"
 : "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR:-Sequential}Executor}"
 
+export PYTHONPATH=$AIRFLOW_HOME:$PYTHONPATH
+
 export \
   AIRFLOW_HOME \
   AIRFLOW__CELERY__BROKER_URL \
