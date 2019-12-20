@@ -6,6 +6,7 @@ pipeline {
     environment {
         BUILD_STRING="${env.BUILD_NUMBER}-${env.GIT_COMMIT}"
         PROD_IMAGE="347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow:$BUILD_STRING"
+        PROD_DATA_IMAGE="347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow-data:$BUILD_STRING"
     }
 
     stages {
@@ -25,12 +26,18 @@ pipeline {
             }
         }
 
-        stage('Upload Dags') {
+        stage ('Docker Build Data') {
             steps {
-                sh '''#!/bin/bash
-                    make upload-dags
+                sh'''#!/bin/bash
+                    docker build . -f Dockerfile.data \
+                        -t $PROD_DATA_IMAGE
 
-                '''
+                    $(aws ecr get-login --no-include-email --region us-east-1)
+                    docker push $PROD_DATA_IMAGE
+
+                    echo "Latest image available at: $PROD_DATA_IMAGE"
+
+                    '''
             }
         }
 
