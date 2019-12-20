@@ -1,7 +1,7 @@
 from airflow import DAG
 from datetime import timedelta, datetime
 
-from cm_graph import create_view_tasks
+from cm_graph import create_tasks
 
 
 def failure_callback(ctx):
@@ -18,4 +18,4 @@ dag = DAG("campaign_manager_refresh_events",
           start_date=datetime(2019, 12, 19),
           on_failure_callback=failure_callback)
 
-create_view_tasks = create_view_tasks(dag)
+create_view_tasks = create_tasks(dag)
