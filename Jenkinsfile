@@ -6,7 +6,6 @@ pipeline {
     environment {
         BUILD_STRING="${env.BUILD_NUMBER}-${env.GIT_COMMIT}"
         PROD_IMAGE="347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow:$BUILD_STRING"
-        PROD_DATA_IMAGE="347708466071.dkr.ecr.us-east-1.amazonaws.com/classdojo/airflow-data:$BUILD_STRING"
     }
 
     stages {
@@ -21,21 +20,6 @@ pipeline {
                     docker push $PROD_IMAGE
 
                     echo "Latest image available at: $PROD_IMAGE"
-
-                    '''
-            }
-        }
-
-        stage ('Docker Build Data') {
-            steps {
-                sh'''#!/bin/bash
-                    docker build . -f Dockerfile.data \
-                        -t $PROD_DATA_IMAGE
-
-                    $(aws ecr get-login --no-include-email --region us-east-1)
-                    docker push $PROD_DATA_IMAGE
-
-                    echo "Latest image available at: $PROD_DATA_IMAGE"
 
                     '''
             }
@@ -78,7 +62,6 @@ pipeline {
                     levant_docker.inside {
                         sh """#!/bin/sh
                             levant render -var 'DOCKER_IMAGE_ID=${PROD_IMAGE}' \
-                                -var 'DOCKER_DATA_IMAGE_ID=${PROD_DATA_IMAGE}' \
                                 -consul-address http://consul.internal.classdojo.com \
                                 -out "airflow.nomad" "airflow.nomad";
 

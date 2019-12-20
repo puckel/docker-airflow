@@ -1,6 +1,0 @@
-from ubuntu:16.04
-
-RUN mkdir -p /data
-COPY ./dags /data/dags
-
-CMD ["tail", "-f", "/dev/null"]
