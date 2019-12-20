@@ -78,6 +78,7 @@ pipeline {
                     levant_docker.inside {
                         sh """#!/bin/sh
                             levant render -var 'DOCKER_IMAGE_ID=${PROD_IMAGE}' \
+                                -var 'DOCKER_DATA_IMAGE_ID=${PROD_DATA_IMAGE}' \
                                 -consul-address http://consul.internal.classdojo.com \
                                 -out "airflow.nomad" "airflow.nomad";
 
