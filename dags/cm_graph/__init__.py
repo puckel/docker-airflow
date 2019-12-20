@@ -1,4 +1,4 @@
-from cm_create_views import (
+from cm_graph.create_views import (
     create_cache_views, mentor_lifecycle,
     parent_lifecycle, school_leader_lifecycle,
     teacher_lifecycle

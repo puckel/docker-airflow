@@ -1,7 +1,7 @@
 from airflow import DAG
 from datetime import timedelta, datetime
 
-from cm_create_views import create_view_tasks
+from cm_graph.create_views import create_view_tasks
 
 
 def failure_callback(ctx):
