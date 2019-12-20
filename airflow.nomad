@@ -60,7 +60,7 @@ job "airflow" {
         }
 
         volumes = [
-          "../alloc/dags:/local/airflow/dags",
+          "dags:/local/airflow/dags",
         ]
 
         # These labels need the dd-agent docker.d/conf.yaml to be set which isn't on our current ami
@@ -121,7 +121,7 @@ job "airflow" {
         }
 
         volumes = [
-          "../alloc/dags:/data/dags",
+          "dags:/data/dags",
         ]
       }
       resources {
