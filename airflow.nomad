@@ -59,6 +59,13 @@ job "airflow" {
           type = "json-file"
         }
 
+        volumes = [
+          "dojo-airflow-dags:/local/airflow/dags",
+        ]
+
+        volume_driver = "rexray/s3fs"
+
+
         # These labels need the dd-agent docker.d/conf.yaml to be set which isn't on our current ami
         # Enable when new AMI has it.
         labels {

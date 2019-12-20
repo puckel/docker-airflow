@@ -5,7 +5,7 @@
 FROM python:3.7-slim-stretch
 LABEL maintainer="Classdojo_"
 
-RUN mkdir -p /local/airflow/dags
+RUN mkdir -p /local/airflow
 
 # Never prompts the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
@@ -73,7 +73,6 @@ RUN set -ex \
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
-COPY ./dags /local/dags
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
