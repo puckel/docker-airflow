@@ -73,6 +73,7 @@ case "$1" in
       airflow scheduler &
     fi
     exec airflow webserver
+    copy -r /local/dags /local/airflow/dags
     ;;
   worker|scheduler)
     # To give the webserver time to run initdb.
