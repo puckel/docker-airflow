@@ -36,7 +36,7 @@ def create_cache_parent_view(**kwargs):
                 email_address as emailaddress,
                 (UPPER(entity_id)) as parentid
             FROM
-                public.parent
+                airflow_test.parent
         )
     '''
     pg_hook.run(sql)
@@ -51,12 +51,12 @@ def create_cache_schoolleader_mentor(**kwargs):
       (
         SELECT
           entity_id,title,first_name,last_name,school_id
-        FROM public.school_leader
+        FROM airflow_test.school_leader
         WHERE is_verified=true
         UNION
         SELECT
           entity_id,title,first_name,last_name,school_id
-        FROM public.mentor
+        FROM airflow_test.mentor
         WHERE is_verified=true
       ) AS subquery
       ORDER BY entity_id DESC
