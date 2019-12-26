@@ -1,0 +1,11 @@
+# Builds an image of the form: {repo}/{project}:{app}-{sha}
+---
+# CPU Image
+repo: 304253571449.dkr.ecr.us-west-2.amazonaws.com/viaduct.ai
+project: forked-apps
+app: airflow
+# Raw build arguments
+args:
+  AIRFLOW_DEPS: kubernetes,aws,slack
+# Environment variables to inject as build arguments
+env: {}
