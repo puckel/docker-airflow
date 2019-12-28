@@ -24,3 +24,7 @@ sftp-config.json
 
 # Python
 __pycache__
+
+# IntelliJ
+.idea
+*.iml
