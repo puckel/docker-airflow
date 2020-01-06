@@ -13,7 +13,7 @@ TRY_LOOP="20"
 : "${POSTGRES_DB:="airflow"}"
 
 # Defaults and back-compat
-: "${AIRFLOW_HOME:="/local/airflow"}"
+: "${AIRFLOW_HOME:="/usr/local/airflow"}"
 : "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR:-Sequential}Executor}"
 
 export PYTHONPATH=$AIRFLOW_HOME:$PYTHONPATH
@@ -72,6 +72,7 @@ case "$1" in
       # With the "Local" and "Sequential" executors it should all run in one container.
       airflow scheduler &
     fi
+    echo "$(ls /usr/local/airflow/dags)"
     exec airflow webserver
     ;;
   worker|scheduler)

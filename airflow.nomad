@@ -82,7 +82,7 @@ job "airflow" {
 
       template {
         data        = "{{ key \"config/airflow\" }}"
-        destination = "local/airflow/airflow.cfg"
+        destination = "/usr/local/airflow/airflow.cfg"
         change_mode = "restart"
       }
 
