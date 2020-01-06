@@ -72,6 +72,8 @@ case "$1" in
       # With the "Local" and "Sequential" executors it should all run in one container.
       airflow scheduler &
     fi
+    # mv /local/dags ${AIRFLOW_HOME}/dags
+    echo "$(ls /local/airflow/dags)"
     exec airflow webserver
     ;;
   worker|scheduler)
