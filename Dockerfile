@@ -5,7 +5,7 @@
 FROM python:3.7-slim-stretch
 LABEL maintainer="Classdojo_"
 
-RUN mkdir -p /local/airflow
+RUN mkdir -p /usr/local/airflow
 
 # Never prompts the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
