@@ -3,6 +3,7 @@ from . import (
     refresh_vanilla_teacher, refresh_parent,
     refresh_invite, refresh_school,
     refresh_parent_connection_request,
+    refresh_all_teacher,
 )
 
 
