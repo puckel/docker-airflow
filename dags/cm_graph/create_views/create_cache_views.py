@@ -84,10 +84,11 @@ def create_cache_parent_view_task(dag):
     return t
 
 def create_schoolleader_mentor_view_task(dag):
-    t7 = PythonOperator(
+    t = PythonOperator(
         task_id="create_cache_schoolleader_mentor",
         op_kwargs={'conn_id': 'campaign_manager_redshift'},
         python_callable=create_cache_schoolleader_mentor,
         dag=dag
     )
+    return t
 

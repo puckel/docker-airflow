@@ -10,13 +10,13 @@ def create_refresh_tasks(dag):
         'refresh_table_tasks': refresh_table_tasks,
     }
 
-    d['create_view_tasks']['cache_schoolleader_mentor'].set_upstream(
-        d['refresh_table_tasks']['refresh_mentor_task'],
-        d['refresh_table_tasks']['refresh_schoolleader_task'],
+    create_view_tasks['cache_schoolleader_mentor'].set_upstream([
+        refresh_table_tasks['refresh_mentor_task'],
+        refresh_table_tasks['refresh_schoolleader_task']]
     )
 
-    d['create_view_tasks']['cache_parent'].set_upstream(
-        d['refresh_table_tasks']['refresh_parent_task'],
+    create_view_tasks['cache_parent'].set_upstream(
+        refresh_table_tasks['refresh_parent_task'],
     )
 
 
