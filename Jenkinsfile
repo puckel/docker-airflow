@@ -14,7 +14,7 @@ pipeline {
                 sh'''#!/bin/bash
                     docker build . -f Dockerfile \
                         --build-arg AIRFLOW_DEPS="datadog" \
-                        --build-arg AIRFLOW_CONFIG="$(consul kv get -http-addr=consul.internal.classdojo.com config/airflow)"
+                        --build-arg AIRFLOW_CONFIG="$(consul kv get -http-addr=consul.internal.classdojo.com config/airflow)" \
                         -t $PROD_IMAGE
 
                     $(aws ecr get-login --no-include-email --region us-east-1)
