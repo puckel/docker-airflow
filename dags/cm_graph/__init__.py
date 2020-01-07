@@ -19,5 +19,9 @@ def create_refresh_tasks(dag):
         refresh_table_tasks['refresh_parent_task'],
     )
 
+    create_view_tasks['cache_teacher'].set_upstream(
+        refresh_table_tasks['refresh_all_teacher_task']
+    )
+
 
     return d

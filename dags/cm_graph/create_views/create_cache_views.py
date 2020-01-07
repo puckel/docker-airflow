@@ -16,7 +16,7 @@ def create_cache_teacher_view(**kwargs):
                 email_address as emailaddress,
                 (UPPER(entity_id)) as teacherid
             FROM
-                public.all_teacher
+                airflow_test.all_teacher
         );
 
     '''
