@@ -6,8 +6,8 @@ def refresh_schoolleader_table(**kwargs):
     conn_id = kwargs.get('conn_id')
     pg_hook = PostgresHook(conn_id)
     sql = '''
-    CREATE TABLE airflow_test.school_leader (LIKE public.school_leader);
-    CREATE TABLE airflow_test.school_leader_refresh (LIKE public.school_leader);
+    CREATE TABLE IF NOT EXISTS airflow_test.school_leader (LIKE public.school_leader);
+    CREATE TABLE IF NOT EXISTS airflow_test.school_leader_refresh (LIKE public.school_leader);
 
     INSERT INTO
       airflow_test.school_leader_refresh
