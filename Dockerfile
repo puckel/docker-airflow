@@ -71,7 +71,7 @@ RUN set -ex \
 
 ARG AIRFLOW_CONFIG
 COPY script/entrypoint.sh /entrypoint.sh
-RUN echo "$(AIRFLOW_CONFIG)" > ${AIRFLOW_USER_HOME}/airflow.cfg
+RUN echo "${AIRFLOW_CONFIG}" > ${AIRFLOW_USER_HOME}/airflow.cfg
 COPY dags ${AIRFLOW_USER_HOME}/dags
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
