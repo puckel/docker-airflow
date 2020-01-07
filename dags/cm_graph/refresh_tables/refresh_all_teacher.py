@@ -18,7 +18,7 @@ def refresh_all_teacher_table(**kwargs):
     SELECT entity_id, email_address, title, first_name, last_name, school_id, timezone, locale, quiet_hours, marketing_email_opt_out
     FROM airflow_test.mentor;
 
-    INSERT INTO airlow_test.all_teacher_refresh
+    INSERT INTO airflow_test.all_teacher_refresh
     SELECT entity_id, email_address, title, first_name, last_name, school_id, timezone, locale, quiet_hours, marketing_email_opt_out
     FROM airflow_test.school_leader;
 
