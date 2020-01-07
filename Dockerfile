@@ -5,8 +5,6 @@
 FROM python:3.7-slim-stretch
 LABEL maintainer="Classdojo_"
 
-RUN mkdir -p /usr/local/airflow
-
 # Never prompts the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
@@ -71,9 +69,10 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
+ARG AIRFLOW_CONFIG
 COPY script/entrypoint.sh /entrypoint.sh
-COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
-COPY dags /usr/local/airflow/dags
+RUN echo "$(AIRFLOW_CONFIG)" > ${AIRFLOW_USER_HOME}/airflow.cfg
+COPY dags ${AIRFLOW_USER_HOME}/dags
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 

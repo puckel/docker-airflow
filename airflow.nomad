@@ -80,12 +80,6 @@ job "airflow" {
         }
       }
 
-      template {
-        data        = "{{ key \"config/airflow\" }}"
-        destination = "/usr/local/airflow/airflow.cfg"
-        change_mode = "restart"
-      }
-
       service {
         name = "airflow"
 
