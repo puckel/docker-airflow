@@ -7,6 +7,6 @@ app: airflow
 # Raw build arguments
 args:
   AIRFLOW_VERSION: 1.10.7
-  AIRFLOW_DEPS: kubernetes,s3,slack,elasticsearch,emr
+  AIRFLOW_DEPS: kubernetes,s3,slack,elasticsearch,emr,papermill
 # Environment variables to inject as build arguments
 env: {}
