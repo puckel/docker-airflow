@@ -63,6 +63,7 @@ RUN set -ex \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install boto3 \
+    && pip install oauthlib \
     && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     #&& pip install 'airflow-exporter==1.2.0' \
     && pip install 'redis==3.2' \
