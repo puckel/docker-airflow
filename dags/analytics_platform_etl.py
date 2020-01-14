@@ -34,7 +34,10 @@ def select_analytics_events(ts, conn_id, **kwargs):
     ''' % ts
 
     records = pg_hook.get_records(query)
-    return records
+
+    # Zip field names into each record
+    l = [dict(zip(['sessionId', 'entityId', 'createdAt', 'eventName', 'eventValue', 'userType', 'appVersion', 'metadata'], r)) for r in records]
+    return l
 
 t1 = PythonOperator(
     task_id="select_analytics_platform_events",
