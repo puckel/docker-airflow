@@ -29,7 +29,7 @@ def select_analytics_events(ts, conn_id, **kwargs):
         FROM
             logs.analytics_platform_event
         WHERE
-            createdAt >= '%s'
+            createdAt >= timestamp '%s' - interval '30 minutes'
     ''' % ts
 
     records = pg_hook.get_records(query)
