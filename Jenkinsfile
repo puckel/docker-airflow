@@ -26,15 +26,6 @@ pipeline {
             }
         }
 
-        stage('Upload Dags') {
-            steps {
-                sh '''#!/bin/bash
-                    make upload-dags
-
-                '''
-            }
-        }
-
         stage ('Nomad Plan'){
             steps {
                 sh '''
