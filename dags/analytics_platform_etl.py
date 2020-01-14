@@ -3,6 +3,8 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.hooks import PostgresHook
 
+from datetime import timedelta, datetime
+
 
 def failure_callback(ctx):
     print("FAILED")
