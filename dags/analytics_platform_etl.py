@@ -5,6 +5,7 @@ from airflow.hooks import PostgresHook
 
 from datetime import timedelta, datetime
 
+import pprint
 
 def failure_callback(ctx):
     print("FAILED")
@@ -48,7 +49,7 @@ def process_records(**kwargs):
     records = task_instance.xcom_pull(task_ids='select_analytics_platform_events')
 
     for record in records:
-        pprint(record)
+        pprint.pprint(record)
 
 t2 = PythonOperator(
     task_id="process_records",
