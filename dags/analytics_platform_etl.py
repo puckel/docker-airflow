@@ -36,7 +36,10 @@ def select_analytics_events(ts, conn_id, **kwargs):
     records = pg_hook.get_records(query)
 
     # Zip field names into each record
-    l = [dict(zip(['sessionId', 'entityId', 'createdAt', 'eventName', 'eventValue', 'userType', 'appVersion', 'metadata'], r)) for r in records]
+    l = [
+        dict(zip(['sessionId', 'entityId', 'createdAt', 'eventName', 'eventValue', 'userType', 'appVersion', 'metadata'], r))
+        for r in records
+    ]
     return l
 
 t1 = PythonOperator(
@@ -47,12 +50,23 @@ t1 = PythonOperator(
     dag=dag
 )
 
+def _extract_table_name(record):
+    event_name = record['eventName']
+    event_name_list = event_name.split('.')
+
+    if len(event_name_list) < 2:
+        return
+
+    return event_name_list[1]
+
 def process_records(**kwargs):
     task_instance = kwargs['task_instance']
     records = task_instance.xcom_pull(task_ids='select_analytics_platform_events')
 
     for record in records:
-        pprint.pprint(record)
+        print(record['eventName'])
+
+
 
 t2 = PythonOperator(
     task_id="process_records",
@@ -61,4 +75,27 @@ t2 = PythonOperator(
     dag=dag
 )
 
-t1 >> t2
+def extract_table_names(**kwargs):
+    task_instance = kwargs['task_instance']
+    records = task_instance.xcom_pull(task_ids='select_analytics_platform_events')
+    tablename_set = set()
+
+    for record in records:
+        tablename = _extract_table_name(record)
+        if not tablename:
+            print("EventName for record invalid, skipping record")
+            pprint.pprint(record)
+            continue
+        tablename_set.add(tablename)
+
+    return list(tablename_set)
+
+t3 = PythonOperator(
+    task_id="extract_table_names",
+    provide_context=True,
+    python_callable=extract_table_names,
+    dag=dag
+)
+
+
+t1 >> [t2, t3]
