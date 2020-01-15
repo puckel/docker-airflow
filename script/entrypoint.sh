@@ -27,7 +27,7 @@ export \
   AIRFLOW__CORE__SQL_ALCHEMY_CONN \
 
 
-# Load DAGs exemples (default: Yes)
+# Load DAGs examples (default: Yes)
 if [[ -z "$AIRFLOW__CORE__LOAD_EXAMPLES" && "${LOAD_EX:=n}" == n ]]
 then
   AIRFLOW__CORE__LOAD_EXAMPLES=False
@@ -79,7 +79,7 @@ case "$1" in
     exec airflow webserver
     ;;
   worker|scheduler)
-    # To give the webserver time to run initdb.
+    # Give the webserver time to run initdb.
     sleep 10
     exec airflow "$@"
     ;;

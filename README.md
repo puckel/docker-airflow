@@ -67,7 +67,7 @@ For encrypted connection passwords (in Local or Celery Executor), you must have 
 
     docker run puckel/docker-airflow python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"
 
-## Configurating Airflow
+## Configuring Airflow
 
 It's possible to set any configuration value for Airflow from environment variables, which are used over values from the airflow.cfg.
 
@@ -124,4 +124,4 @@ You can also use this to run a bash shell or any other command in the same envir
 
 # Wanna help?
 
-Fork, improve and PR. ;-)
+Fork, improve and PR.
