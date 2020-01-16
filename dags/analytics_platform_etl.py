@@ -108,7 +108,7 @@ extract_table_names_task = PythonOperator(
     dag=dag
 )
 
-def create_experiment_tables(conn_id, **kwargs):
+def create_experiment_tables(conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
     tablenames = task_instance.xcom_pull(task_ids='extract_table_names')
     pg_hook = PostgresHook(conn_id)
