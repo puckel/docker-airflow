@@ -119,7 +119,7 @@ def create_experiment_tables(conn_id, **kwargs):
             CREATE TABLE IF NOT EXISTS %s (
                 sessionId varchar(100) encode zstd,
                 entityId varchar(100) encode zstd distkey,
-                createdAt timestamp,
+                createdAt timestamp encode zstd,
                 logType varchar(100) encode zstd,
                 qualifier varchar(100) NULL encode zstd,
                 eventValue varchar(100) NULL encode zstd,
