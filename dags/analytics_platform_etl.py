@@ -65,8 +65,8 @@ def process_records(**kwargs):
             pprint.pprint(record)
             continue
 
-        if event_name_list[-1] == 'exposure':
-            event_name_list[0] = 'exposure'
+        if event_name_list[-1] == 'exposure' or event_name_list[-1] == 'conversion':
+            event_name_list[0] = event_name_list[-1]
             event_name_list = event_name_list[:-1]
 
         record['logType'] = event_name_list[0] # have to do this to fix
