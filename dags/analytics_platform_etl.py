@@ -185,7 +185,7 @@ def insert_records(conn_id, **kwargs):
     for record in records:
         insert_values = insert_values_by_table.get(record['tableName'], [])
 
-        values = '''('%(sessionid)s','%(entityId)s',timestamp '%(createdAt)s','%(logType)s','%(qualifier)s','%(eventValue)s','%(userType)s','%(appVersion)s','%(metadata)s')''' % record
+        values = '''('%(sessionId)s','%(entityId)s',timestamp '%(createdAt)s','%(logType)s','%(qualifier)s','%(eventValue)s','%(userType)s','%(appVersion)s','%(metadata)s')''' % record
         values.replace("'None'", "NULL") # Make sure we get rid of Nones
         insert_values.append(values)
 
