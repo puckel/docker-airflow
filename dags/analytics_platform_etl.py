@@ -116,7 +116,7 @@ def create_experiment_tables(conn_id, **kwargs):
     for tablename in tablenames:
         # Create Table
         query = '''
-            CREATE TABLE IF NOT EXISTS %s (
+            CREATE TABLE IF NOT EXISTS analytics_platform.%s (
                 sessionId varchar(100) encode zstd,
                 entityId varchar(100) encode zstd distkey,
                 createdAt timestamp encode zstd,
@@ -134,7 +134,7 @@ def create_experiment_tables(conn_id, **kwargs):
 
         # Update metadata
         query = '''
-            SELECT * FROM analytics_platform.analytics_platform_metadata WHERE tableName = %s
+            SELECT * FROM analytics_platform.analytics_platform_metadata WHERE tableName = '%s'
         ''' % tablename
 
         records = pg_hook.get_records(query)
@@ -143,7 +143,7 @@ def create_experiment_tables(conn_id, **kwargs):
                 INSERT INTO analytics_platform.analytics_platform_metadata (
                     tableName, createdAt, teamOwner, active, lastUpdated
                 ) VALUES (
-                    %s, %s, NULL, true, NULL
+                    '%s', timestamp '%s', NULL, true, NULL
                 )
             ''' % (tablename, ts)
 
@@ -175,7 +175,7 @@ def insert_records(conn_id, **kwargs):
 
     for tablename,insert_values in insert_values_by_table.items():
         partial_query = '''
-            insert into %s values %s;
+            insert into analytics_platform.%s values %s;
         ''' % (tablename, ','.join(insert_values))
         pprint.pprint(partial_query)
 
