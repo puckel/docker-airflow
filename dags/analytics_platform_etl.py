@@ -108,12 +108,13 @@ extract_table_names_task = PythonOperator(
     dag=dag
 )
 
-def create_experiment_tables(**kwargs):
+def create_experiment_tables(conn_id, **kwargs):
     task_instance = kwargs['task_instance']
     tablenames = task_instance.xcom_pull(task_ids='extract_table_names')
+    pg_hook = PostgresHook(conn_id)
 
-    def create_table(conn_id, tablename, **kwargs):
-        pg_hook = PostgresHook(conn_id)
+    for tablename in tablenames:
+        # Create Table
         query = '''
             CREATE TABLE IF NOT EXISTS %s (
                 sessionId varchar(100) encode zstd,
@@ -131,8 +132,7 @@ def create_experiment_tables(**kwargs):
         ''' % tablename
         pg_hook.run(sql)
 
-    def create_metadata_row(conn_id, tablename, ts, **kwargs):
-        pg_hook = PostgresHook(conn_id)
+        # Update metadata
         query = '''
             SELECT * FROM analytics_platform.analytics_platform_metadata WHERE tableName = %s
         ''' % tablename
@@ -149,29 +149,11 @@ def create_experiment_tables(**kwargs):
 
         pg_hook.run(query)
 
-    for tablename in tablenames:
-        t = PythonOperator(
-            task_id="create_%s_table" % tablename,
-            provide_context=True,
-            op_kwargs={'conn_id': 'analytics_redshift', 'tablename': tablename},
-            python_callable=create_table,
-            dag=dag
-        )
-
-        t1 = PythonOperator(
-            task_id="insert_%s_into_metadata" % tablename,
-            provide_context=True,
-            op_kwargs={'conn_id': 'analytics_redshift', 'tablename': tablename},
-            python_callable=create_metadata_row,
-            dag=dag
-        )
-
-        # TODO: make sure to add downstream events here
-        create_experiment_tables_task >> [t, t1] >> insert_records_task
 
 create_experiment_tables_task = PythonOperator(
     task_id = 'create_experiment_tables',
     provide_context=True,
+    op_kwargs={'conn_id': 'analytics_redshift'},
     python_callable=create_experiment_tables,
     dag=dag
 )
