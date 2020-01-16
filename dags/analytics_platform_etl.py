@@ -211,4 +211,5 @@ insert_records_task = PythonOperator(
 )
 
 select_analytics_platform_events_task >> [process_records_task, extract_table_names_task]
-extract_table_names_task >> create_experiment_tables_task >> insert_records_task
+extract_table_names_task >> create_experiment_tables_task
+[process_records_task, create_experiment_tables_task] >> insert_records_task
