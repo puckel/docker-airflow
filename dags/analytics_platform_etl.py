@@ -130,7 +130,7 @@ def create_experiment_tables(conn_id, **kwargs):
             diststyle key
             sortkey(createdAt, logType, qualifier, entityId)
         ''' % tablename
-        pg_hook.run(sql)
+        pg_hook.run(query)
 
         # Update metadata
         query = '''
