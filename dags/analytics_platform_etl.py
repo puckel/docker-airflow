@@ -108,7 +108,7 @@ def select_analytics_events(ts, conn_id, **kwargs):
             logs.analytics_platform_event
         WHERE
             createdAt >= timestamp '%s' and
-            createdAt < '%s'
+            createdAt < timestamp '%s'
     ''' % (lastQueryTs, ts)
 
     records = pg_hook.get_records(query)
@@ -118,12 +118,14 @@ def select_analytics_events(ts, conn_id, **kwargs):
         dict(zip(['sessionId', 'entityId', 'createdAt', 'eventName', 'eventValue', 'userType', 'appVersion', 'metadata'], r))
         for r in records
     ]
+    pprint.pprint(l)
 
     # Update the last Query ts on this run
     query = '''
         UPDATE analytics_platform.etl_run_record SET recordqueryts = timestamp '%s' WHERE id = '%s'
     ''' % (ts, run_id)
     pg_hook.run(query)
+
     return l
 
 select_analytics_platform_events_task = PythonOperator(
