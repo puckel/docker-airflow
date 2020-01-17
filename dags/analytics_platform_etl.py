@@ -291,10 +291,8 @@ def update_fail_state(conn_id, ts, **kwargs):
     pg_hook = PostgresHook(conn_id)
     query = '''
         UPDATE anlaytics_platform.etl_run set state = '%s', lastUpdated = timestamp '%s' WHERE id = '%s'
-        )
     ''' % (RUN_STATE_FAIL, ts, run_id)
     pg_hook.run(query)
-    return run_id
 
 update_fail_state_task = PythonOperator(
     task_id='update_fail_state',
@@ -305,9 +303,29 @@ update_fail_state_task = PythonOperator(
     dag=dag
 )
 
+def update_success_state(conn_id, ts, **kwargs):
+    task_instance = kwargs['task_instance']
+    run_id = task_instance.xcom_pull(task_ids='generate_run_record')
+
+    pg_hook = PostgresHook(conn_id)
+    query = '''
+        UPDATE anlaytics_platform.etl_run set state = '%s', lastUpdated = timestamp '%s' WHERE id = '%s'
+    ''' % (RUN_STATE_SUCCEESS, ts, run_id)
+    pg_hook.run(query)
+
+update_success_state_task = PythonOperator(
+    task_id='update_success_state',
+    provide_context=True,
+    op_kwargs={'conn_id': 'analytics_redshift'},
+    python_callable=update_fail_state,
+    dag=dag
+)
+
 generate_run_record_task >> [select_analytics_platform_events_task, get_stop_list_task, get_last_successful_run_pull_time_task]
 extract_table_names_task >> create_experiment_tables_task
 [process_records_task, create_experiment_tables_task] >> insert_records_task
 [select_analytics_platform_events_task, get_stop_list_task, get_last_successful_run_pull_time_task, extract_table_names_task, process_records_task, create_experiment_tables_task, insert_records_task] >> update_fail_state_task
+
+insert_records_task >> update_success_state_task
 
 cross_downstream([select_analytics_platform_events_task, get_stop_list_task, get_last_successful_run_pull_time_task], [process_records_task, extract_table_names_task])
