@@ -297,7 +297,7 @@ def update_state(conn_id, state, ts, **kwargs):
 update_fail_state_task = PythonOperator(
     task_id='update_fail_state',
     provide_context=True,
-    op_kwargs={'conn_id': 'analytics_redshift', 'state': RUN_STATE_FAILED},
+    op_kwargs={'conn_id': 'analytics_redshift', 'state': RUN_STATE_FAIL},
     python_callable=update_state,
     trigger_rule='one_failed',
     dag=dag
@@ -306,7 +306,7 @@ update_fail_state_task = PythonOperator(
 update_success_state_task = PythonOperator(
     task_id='update_success_state',
     provide_context=True,
-    op_kwargs={'conn_id': 'analytics_redshift', 'state': RUN_STATE_SUCCEEDED},
+    op_kwargs={'conn_id': 'analytics_redshift', 'state': RUN_STATE_SUCCESS},
     python_callable=update_state,
     trigger_rule="all_success",
     dag=dag
