@@ -1,5 +1,6 @@
 from airflow import DAG
 
+from airflow.utils.helpers import cross_downstream
 from airflow.operators.python_operator import PythonOperator
 from airflow.hooks import PostgresHook
 
@@ -321,9 +322,9 @@ update_success_state_task = PythonOperator(
 
 generate_run_record_task >> [get_stop_list_task, get_last_successful_run_pull_time_task]
 get_last_successful_run_pull_time_task >> select_analytics_platform_events_task
-[select_analytics_platform_events_task, get_stop_list_task]>> [process_records_task, extract_table_names_task]
 extract_table_names_task >> create_experiment_tables_task
 [process_records_task, create_experiment_tables_task] >> insert_records_task
 [select_analytics_platform_events_task, get_stop_list_task, get_last_successful_run_pull_time_task, extract_table_names_task, process_records_task, create_experiment_tables_task, insert_records_task] >> update_fail_state_task
 
 insert_records_task >> update_success_state_task
+cross_downstream([select_analytics_platform_events_task, get_stop_list_task], [process_records_task, extract_table_names_task])
