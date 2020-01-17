@@ -290,7 +290,7 @@ def update_state(conn_id, state, ts, **kwargs):
 
     pg_hook = PostgresHook(conn_id)
     query = '''
-        UPDATE anlaytics_platform.etl_run set state = '%s', lastUpdated = timestamp '%s' WHERE id = '%s'
+        UPDATE anlaytics_platform.etl_run_record set state = '%s', lastUpdated = timestamp '%s' WHERE id = '%s'
     ''' % (state, ts, run_id)
     pg_hook.run(query)
 
