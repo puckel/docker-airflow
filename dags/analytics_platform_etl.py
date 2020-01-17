@@ -7,10 +7,21 @@ from airflow.hooks import PostgresHook
 from datetime import timedelta, datetime
 
 import pprint
+import uuid
+
+
+RUN_STATE_IN_PROGRESS = 'in_progress'
+RUN_STATE_FAIL = 'fail'
+RUN_STATE_SUCCESS = 'success'
+
 
 def failure_callback(ctx):
     print("FAILED")
     # Add PD
+
+def on_success_callback(ctx):
+    print(ctx)
+
 
 dag = DAG("analytics_platform_etl",
           description="Take the data from logs.analytics_platform_event and put them into the correct tables",
@@ -20,7 +31,52 @@ dag = DAG("analytics_platform_etl",
           max_active_runs=1,
           catchup=False,
           start_date=datetime(2020, 1, 13),
-          on_failure_callback=failure_callback)
+          on_failure_callback=failure_callback,
+          on_success_callback=on_success_callback)
+
+def generate_run_record(conn_id, ts, **kwargs):
+    run_id = str(uuid.uuid4())
+    pg_hook = PostgresHook(conn_id)
+    query = '''
+        INSERT INTO analytics_platform.etl_run_record VALUES (
+            '%s', '%s', timestamp '%s', NULL, NULL
+        )
+    ''' % (run_id, RUN_STATE_IN_PROGRESS, ts)
+    pg_hook.run(query)
+    return run_id
+
+generate_run_record_task = PythonOperator(
+    task_id='generate_run_record',
+    op_kwargs={'conn_id': 'analytics_redshift'},
+    provide_context=True,
+    python_callable=generate_run_record,
+    dag=dag
+)
+
+def get_last_successful_run_pull_time(conn_id, **kwargs):
+    pg_hook = PostgresHook(conn_id)
+    query = '''
+        SELECT
+            recordqueryts
+        FROM
+            analytics_platform.etl_run_record
+        WHERE
+            state = %s
+        ORDER BY
+            recordqueryts desc
+        limit 1
+    ''' % RUN_STATE_SUCCESS
+    records = pg_hook.get_records(query)
+    timestamps = [r[0] for r in records]
+    ts = timestamps[0] if timestamps else None
+    return ts
+
+get_last_successful_run_pull_time_task = PythonOperator(
+    task_id='get_last_successful_run_pull_time',
+    op_kwargs={'conn_id': 'analytics_redshift'},
+    python_callable=get_last_successful_run_pull_time,
+    dag=dag
+)
 
 def get_stop_list(conn_id, **kwargs):
     pg_hook = PostgresHook(conn_id)
@@ -33,7 +89,6 @@ def get_stop_list(conn_id, **kwargs):
 
 get_stop_list_task = PythonOperator(
     task_id="get_stop_list",
-    provide_context=True,
     op_kwargs={'conn_id': 'analytics_redshift'},
     python_callable=get_stop_list,
     dag=dag
@@ -72,6 +127,9 @@ select_analytics_platform_events_task = PythonOperator(
 def process_records(**kwargs):
     task_instance = kwargs['task_instance']
     records = task_instance.xcom_pull(task_ids='select_analytics_platform_events')
+    stop_list = task_instance.xcom_pull(task_ids='get_stop_list')
+    run_id = task_instance.xcom_pull(task_ids='generate_run_record')
+    lastQueryTs = task_instance.xcom_pull(task_ids='get_last_successful_run_pull_time')
 
     for record in records:
         event_name = record['eventName']
@@ -82,12 +140,18 @@ def process_records(**kwargs):
             pprint.pprint(record)
             continue
 
+        tablename = event_name_list[1]
+        if tablename in stop_list:
+            print("record is part of stop list, skipping")
+            pprint.pprint(record)
+            continue
+
         if event_name_list[-1] == 'exposure' or event_name_list[-1] == 'conversion':
             event_name_list[0] = event_name_list[-1]
             event_name_list = event_name_list[:-1]
 
         record['logType'] = event_name_list[0] # have to do this to fix
-        record['tableName'] = event_name_list[1]
+        record['tableName'] = tablename
         record['qualifier'] = '.'.join(event_name_list[2:]) # because of magic, this doesn't get us an index error if len < 2
 
     return records
@@ -104,6 +168,7 @@ process_records_task = PythonOperator(
 def extract_table_names(**kwargs):
     task_instance = kwargs['task_instance']
     records = task_instance.xcom_pull(task_ids='select_analytics_platform_events')
+    stop_list = task_instance.xcom_pull(task_ids='get_stop_list')
     tablename_set = set()
 
     for record in records:
@@ -114,7 +179,12 @@ def extract_table_names(**kwargs):
             pprint.pprint(record)
             continue
 
-        tablename_set.add(event_name_list[1])
+        tablename = event_name_list[1]
+        if tablename in stop_list:
+            print("Tablename %s found in stop list, skipping" % tablename)
+            continue
+
+        tablename_set.add(tablename)
 
     return list(tablename_set)
 
@@ -179,6 +249,7 @@ def insert_records(conn_id, **kwargs):
     pg_hook = PostgresHook(conn_id)
     task_instance = kwargs['task_instance']
     records = task_instance.xcom_pull(task_ids='process_records')
+    updated_tablenames = []
     insert_values_by_table = {}
     query = "begin;"
 
@@ -198,9 +269,12 @@ def insert_records(conn_id, **kwargs):
         pprint.pprint(partial_query)
 
         query += partial_query
+        updated_tablenames.append(tablename)
         #TODO run sql query
     query += "commit;"
     pg_hook.run(query)
+
+    return updated_tablenames
 
 insert_records_task = PythonOperator(
     task_id = 'insert_records',
@@ -210,6 +284,6 @@ insert_records_task = PythonOperator(
     dag=dag
 )
 
-[select_analytics_platform_events_task, get_stop_list]>> [process_records_task, extract_table_names_task]
+generate_run_record_task >> [select_analytics_platform_events_task, get_stop_list, get_last_successful_run_pull_time_task] >> [process_records_task, extract_table_names_task]
 extract_table_names_task >> create_experiment_tables_task
 [process_records_task, create_experiment_tables_task] >> insert_records_task
