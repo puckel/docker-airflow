@@ -22,6 +22,23 @@ dag = DAG("analytics_platform_etl",
           start_date=datetime(2020, 1, 13),
           on_failure_callback=failure_callback)
 
+def get_stop_list(conn_id, **kwargs):
+    pg_hook = PostgresHook(conn_id)
+    query = '''
+        SELECT tablename from analytics_platform.analytics_platform_metadata where active = false
+    '''
+    records = pg_hook.get_records(query)
+    l = [r[0] for r in records]
+    return records
+
+get_stop_list_task = PythonOperator(
+    task_id="get_stop_list",
+    provide_context=True,
+    op_kwargs={'conn_id': 'analytics_redshift'},
+    python_callable=get_stop_list,
+    dag=dag
+)
+
 def select_analytics_events(ts, conn_id, **kwargs):
     pg_hook = PostgresHook(conn_id)
 
@@ -193,6 +210,6 @@ insert_records_task = PythonOperator(
     dag=dag
 )
 
-select_analytics_platform_events_task >> [process_records_task, extract_table_names_task]
+[select_analytics_platform_events_task, get_stop_list]>> [process_records_task, extract_table_names_task]
 extract_table_names_task >> create_experiment_tables_task
 [process_records_task, create_experiment_tables_task] >> insert_records_task
