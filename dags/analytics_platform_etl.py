@@ -4,7 +4,7 @@ from airflow.utils.helpers import cross_downstream
 from airflow.operators.python_operator import PythonOperator
 from airflow.hooks import PostgresHook
 
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 
 import pprint
 import uuid
@@ -99,7 +99,7 @@ def select_analytics_events(ts, conn_id, **kwargs):
     task_instance = kwargs['task_instance']
     run_id = task_instance.xcom_pull(task_ids='generate_run_record')
     lastQueryTs = task_instance.xcom_pull(task_ids='get_last_successful_run_pull_time')
-    lastQueryTs = lastQueryTs if lastQueryTs else '2020-01-01' # Start at the beginning of 2020 otherwise
+    lastQueryTs = lastQueryTs if lastQueryTs else datetime.date.today().isoformat()
 
     query = '''
         SELECT
@@ -118,7 +118,6 @@ def select_analytics_events(ts, conn_id, **kwargs):
         dict(zip(['sessionId', 'entityId', 'createdAt', 'eventName', 'eventValue', 'userType', 'appVersion', 'metadata'], r))
         for r in records
     ]
-    pprint.pprint(l)
 
     # Update the last Query ts on this run
     query = '''
