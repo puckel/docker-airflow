@@ -61,7 +61,7 @@ def get_last_successful_run_pull_time(conn_id, **kwargs):
         FROM
             analytics_platform.etl_run_record
         WHERE
-            state = %s
+            state = '%s'
         ORDER BY
             recordqueryts desc
         limit 1
