@@ -99,7 +99,7 @@ def select_analytics_events(ts, conn_id, **kwargs):
     task_instance = kwargs['task_instance']
     run_id = task_instance.xcom_pull(task_ids='generate_run_record')
     lastQueryTs = task_instance.xcom_pull(task_ids='get_last_successful_run_pull_time')
-    lastQueryTs = lastQueryTs if lastQueryTs else date.today().isoformat()
+    lastQueryTs = lastQueryTs if lastQueryTs else (datetime.now() - timedelta(minutes=30)).isoformat()
 
     query = '''
         SELECT
