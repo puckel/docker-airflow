@@ -1,6 +1,5 @@
 from airflow import DAG
 
-from airflow.utils.helpers import cross_downstream
 from airflow.operators.python_operator import PythonOperator
 from airflow.hooks import PostgresHook
 
@@ -96,6 +95,9 @@ get_stop_list_task = PythonOperator(
 
 def select_analytics_events(ts, conn_id, **kwargs):
     pg_hook = PostgresHook(conn_id)
+    run_id = task_instance.xcom_pull(task_ids='generate_run_record')
+    lastQueryTs = task_instance.xcom_pull(task_ids='get_last_successful_run_pull_time')
+    lastQueryTs = lastQueryTs if lastQueryTs else '2020-01-01' # Start at the beginning of 2020 otherwise
 
     query = '''
         SELECT
@@ -103,8 +105,9 @@ def select_analytics_events(ts, conn_id, **kwargs):
         FROM
             logs.analytics_platform_event
         WHERE
-            createdAt >= timestamp '%s' - interval '30 minutes'
-    ''' % ts
+            createdAt >= timestamp '%s' and
+            createdAt < '%s'
+    ''' % (lastQueryTs, ts)
 
     records = pg_hook.get_records(query)
 
@@ -113,6 +116,12 @@ def select_analytics_events(ts, conn_id, **kwargs):
         dict(zip(['sessionId', 'entityId', 'createdAt', 'eventName', 'eventValue', 'userType', 'appVersion', 'metadata'], r))
         for r in records
     ]
+
+    # Update the last Query ts on this run
+    query = '''
+        UPDATE analytics_platform.etl_run_record SET recordqueryts = timestamp '%s' WHERE id = '%s'
+    ''' % (ts, run_id)
+    pg_hook.run(query)
     return l
 
 select_analytics_platform_events_task = PythonOperator(
@@ -128,8 +137,6 @@ def process_records(**kwargs):
     task_instance = kwargs['task_instance']
     records = task_instance.xcom_pull(task_ids='select_analytics_platform_events')
     stop_list = task_instance.xcom_pull(task_ids='get_stop_list')
-    run_id = task_instance.xcom_pull(task_ids='generate_run_record')
-    lastQueryTs = task_instance.xcom_pull(task_ids='get_last_successful_run_pull_time')
 
     for record in records:
         event_name = record['eventName']
@@ -290,7 +297,7 @@ def update_state(conn_id, state, ts, **kwargs):
 
     pg_hook = PostgresHook(conn_id)
     query = '''
-        UPDATE anlaytics_platform.etl_run_record set state = '%s', lastUpdated = timestamp '%s' WHERE id = '%s'
+        UPDATE analytics_platform.etl_run_record set state = '%s', lastUpdated = timestamp '%s' WHERE id = '%s'
     ''' % (state, ts, run_id)
     pg_hook.run(query)
 
@@ -312,11 +319,11 @@ update_success_state_task = PythonOperator(
     dag=dag
 )
 
-generate_run_record_task >> [select_analytics_platform_events_task, get_stop_list_task, get_last_successful_run_pull_time_task]
+generate_run_record_task >> [get_stop_list_task, get_last_successful_run_pull_time_task]
+get_last_successful_run_pull_time_task >> select_analytics_platform_events_task
+[select_analytics_platform_events_task, get_stop_list_task]>> [process_records_task, extract_table_names_task]
 extract_table_names_task >> create_experiment_tables_task
 [process_records_task, create_experiment_tables_task] >> insert_records_task
 [select_analytics_platform_events_task, get_stop_list_task, get_last_successful_run_pull_time_task, extract_table_names_task, process_records_task, create_experiment_tables_task, insert_records_task] >> update_fail_state_task
 
 insert_records_task >> update_success_state_task
-
-cross_downstream([select_analytics_platform_events_task, get_stop_list_task, get_last_successful_run_pull_time_task], [process_records_task, extract_table_names_task])
