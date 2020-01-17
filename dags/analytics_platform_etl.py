@@ -159,6 +159,7 @@ create_experiment_tables_task = PythonOperator(
 )
 
 def insert_records(conn_id, **kwargs):
+    pg_hook = PostgresHook(conn_id)
     task_instance = kwargs['task_instance']
     records = task_instance.xcom_pull(task_ids='process_records')
     insert_values_by_table = {}
@@ -182,7 +183,7 @@ def insert_records(conn_id, **kwargs):
         query += partial_query
         #TODO run sql query
     query += "commit;"
-    pprint.pprint(query)
+    pg_hook.run(query)
 
 insert_records_task = PythonOperator(
     task_id = 'insert_records',
