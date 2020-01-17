@@ -284,6 +284,6 @@ insert_records_task = PythonOperator(
     dag=dag
 )
 
-generate_run_record_task >> [select_analytics_platform_events_task, get_stop_list, get_last_successful_run_pull_time_task] >> [process_records_task, extract_table_names_task]
+generate_run_record_task >> [select_analytics_platform_events_task, get_stop_list_task, get_last_successful_run_pull_time_task] >> [process_records_task, extract_table_names_task]
 extract_table_names_task >> create_experiment_tables_task
 [process_records_task, create_experiment_tables_task] >> insert_records_task
