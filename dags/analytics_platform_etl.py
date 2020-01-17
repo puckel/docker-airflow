@@ -1,6 +1,6 @@
 from airflow import DAG
 
-from airflow.operators.dummy_operator import DummyOperator
+from airflow.models.baseoperator import cross_downstream
 from airflow.operators.python_operator import PythonOperator
 from airflow.hooks import PostgresHook
 
