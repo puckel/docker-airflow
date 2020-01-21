@@ -27,6 +27,8 @@ ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 
+COPY requirements.txt /requirements.txt
+
 RUN set -ex \
     && buildDeps=' \
         freetds-dev \
@@ -62,13 +64,10 @@ RUN set -ex \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install boto3 \
-    && pip install marshmallow==2.19.5 flask-appbuilder==1.13.1 \
-    && pip install requests-oauthlib==1.1.0 oauthlib==2.1.0 flask-oauthlib==0.9.5 \
     && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
-    #&& pip install 'airflow-exporter==1.2.0' \
     && pip install 'redis==3.2' \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
+    && pip install -r/requirements.txt \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
@@ -79,6 +78,34 @@ RUN set -ex \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
+
+# R lang support
+ARG R_VERSION=3.4.3
+COPY packages.R /packages.R
+RUN apt-get update -yqq \
+    && apt-get upgrade -yqq \
+    && apt-get install -yqq --install-recommends \
+            dirmngr \
+    && apt-get install -yqq --no-install-recommends \
+            software-properties-common \
+            apt-transport-https \
+            libcurl4-openssl-dev \
+    && apt-key adv --no-tty --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF' \
+    && add-apt-repository 'deb https://cloud.r-project.org/bin/linux/debian stretch-cran34/' \
+    && apt-get update -yqq \
+        && apt install -yqq r-base \
+        && Rscript /packages.R \
+    && apt-get autoremove -yqq --purge \
+    && apt-get clean \
+    && rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/* \
+        /usr/share/man \
+        /usr/share/doc \
+        /usr/share/doc-base
+            
+ 
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
