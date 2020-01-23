@@ -88,7 +88,6 @@ case "$1" in
     exec airflow "$@"
     ;;
   serve_logs)
-    sleep 10
     exec airflow "$@"
     ;;
   version)
