@@ -1,0 +1,26 @@
+# AWS client
+boto3==1.11.6
+
+# auth libs
+marshmallow==2.19.5 
+flask-appbuilder==1.13.1
+requests-oauthlib==1.1.0 
+oauthlib==2.1.0 
+flask-oauthlib==0.9.5
+
+# TASK packages
+pandas==0.25.1
+pandas-gbq==0.11.0
+numpy==1.14.6
+pytz==2018.7
+gcsfs==0.3.0
+google-api-core==1.7.0
+google-api-python-client==1.6.6
+google-auth==1.5.1
+google-auth-oauthlib==0.2.0
+google-cloud==0.34.0
+google-cloud-bigquery==1.9.0
+google-cloud-core==0.29.1
+google-cloud-storage==1.14.0
+google-resumable-media==0.3.1
+googleapis-common-protos==1.5.5
