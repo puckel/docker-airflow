@@ -20,6 +20,15 @@ ARG AIRFLOW_DEPS="kubernetes,gcp"
 ARG PYTHON_DEPS="git+https://${GITHUB_TOKEN}@github.com/snapcart/airflow-exporter.git@e69aebce23721ff7d1b90d63aae819b6b975fcf1"
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
 
+ARG buildDeps="freetds-dev \
+  libkrb5-dev \
+  libsasl2-dev \
+  libssl-dev \
+  libffi-dev \
+  libpq-dev \
+  git \
+"
+
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
 ENV LANG en_US.UTF-8
@@ -30,17 +39,7 @@ ENV LC_MESSAGES en_US.UTF-8
 COPY requirements.txt /requirements.txt
 
 RUN set -ex \
-    && buildDeps=' \
-        freetds-dev \
-        libkrb5-dev \
-        libsasl2-dev \
-        libssl-dev \
-        libffi-dev \
-        libpq-dev \
-        git \
-    ' \
     && apt-get update -yqq \
-    && apt-get upgrade -yqq \
     && mkdir -p /usr/share/man/man1 \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
@@ -52,6 +51,7 @@ RUN set -ex \
         rsync \
         netcat \
         locales \
+        file \
         openjdk-8-jre-headless \
         openjdk-8-jdk-headless \
         maven \
@@ -68,7 +68,6 @@ RUN set -ex \
     && pip install 'redis==3.2' \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && pip install -r /requirements.txt \
-    && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
     && rm -rf \
@@ -83,7 +82,6 @@ RUN set -ex \
 ARG R_VERSION=3.4.3
 COPY packages.R /packages.R
 RUN apt-get update -yqq \
-    && apt-get upgrade -yqq \
     && apt-get install -yqq --install-recommends \
             dirmngr \
     && apt-get install -yqq --no-install-recommends \
@@ -93,9 +91,9 @@ RUN apt-get update -yqq \
     && apt-key adv --no-tty --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF' \
     && add-apt-repository 'deb https://cloud.r-project.org/bin/linux/debian stretch-cran34/' \
     && apt-get update -yqq \
-        && apt install -yqq r-base \
+        && apt-get install -yqq r-base \
         && Rscript /packages.R \
-    && apt-get autoremove -yqq --purge \
+    && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
@@ -104,8 +102,6 @@ RUN apt-get update -yqq \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
-            
- 
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
@@ -117,4 +113,5 @@ EXPOSE 8080 5555 8793
 USER airflow
 WORKDIR ${AIRFLOW_USER_HOME}
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["webserver"] # set default arg for entrypoint
+# set default arg for entrypoint
+CMD ["webserver"]
