@@ -225,8 +225,9 @@ def create_experiment_tables(conn_id, ts, **kwargs):
                 metadata varchar(5000) NULL encode zstd
             )
             diststyle key
-            sortkey(createdAt, logType, qualifier, entityId)
-        ''' % tablename
+            sortkey(createdAt, logType, qualifier, entityId);
+            grant all on table analytics_platform.%s to group team;
+        ''' % (tablename, tablename)
         pg_hook.run(query)
 
         # Update metadata
