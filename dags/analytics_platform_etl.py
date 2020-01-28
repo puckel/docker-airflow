@@ -227,7 +227,8 @@ def create_experiment_tables(conn_id, ts, **kwargs):
             diststyle key
             sortkey(createdAt, logType, qualifier, entityId);
             grant all on table analytics_platform.%s to group team;
-        ''' % (tablename, tablename)
+            grant all on table analytics_platform.%s to airflow;
+        ''' % (tablename, tablename, tablename)
         pg_hook.run(query)
 
         # Update metadata
