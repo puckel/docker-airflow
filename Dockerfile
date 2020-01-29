@@ -43,6 +43,8 @@ RUN set -ex \
     && mkdir -p /usr/share/man/man1 \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
+        ca-certificates \
+        gnupg \
         freetds-bin \
         build-essential \
         default-libmysqlclient-dev \
@@ -90,9 +92,13 @@ RUN apt-get update -yqq \
             libcurl4-openssl-dev \
     && apt-key adv --no-tty --keyserver keys.gnupg.net --recv-key 'E19F5F87128899B192B1A2C2AD5F960A256A04AF' \
     && add-apt-repository 'deb https://cloud.r-project.org/bin/linux/debian stretch-cran34/' \
+    && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a \
+      /etc/apt/sources.list.d/google-cloud-sdk.list \
+    && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - \
     && apt-get update -yqq \
         && apt-get install -yqq r-base \
         && Rscript /packages.R \
+        && apt-get install -yqq google-cloud-sdk \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get clean \
     && rm -rf \
