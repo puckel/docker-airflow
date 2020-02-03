@@ -78,8 +78,14 @@ case "$1" in
     fi
     exec airflow webserver
     ;;
-  worker|scheduler)
-    # Give the webserver time to run initdb.
+  worker)
+    # To give the webserver time to run initdb.
+    sleep 10
+    # Each celery worker needs a unique name otherwise only one will work. Adds microseconds as prefix.
+    exec airflow "$@" -cn "worker-$(($(date +%s%N)/1000000))"
+    ;;
+  scheduler)
+    # To give the webserver time to run initdb.
     sleep 10
     exec airflow "$@"
     ;;
