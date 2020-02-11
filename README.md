@@ -10,7 +10,7 @@ This repository contains **Dockerfile** of [apache-airflow](https://github.com/a
 
 ## Informations
 
-* Based on Python (3.7-slim-stretch) official Image [python:3.7-slim-stretch](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
+* Based on Python (3.7-slim-buster) official Image [python:3.7-slim-buster](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
 * Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/apache-airflow)
@@ -124,7 +124,7 @@ You can also use this to run a bash shell or any other command in the same envir
 
 # Simplified SQL database configuration using PostgreSQL
 
-If the executor type is set to anything else than *SequentialExecutor* you'll need an SQL database. 
+If the executor type is set to anything else than *SequentialExecutor* you'll need an SQL database.
 Here is a list of PostgreSQL configuration variables and their default values. They're used to compute
 the `AIRFLOW__CORE__SQL_ALCHEMY_CONN` and `AIRFLOW__CELERY__RESULT_BACKEND` variables when needed for you
 if you don't provide them explicitly:
@@ -133,16 +133,16 @@ if you don't provide them explicitly:
 |---------------------|---------------|----------------------|
 | `POSTGRES_HOST`     | `postgres`    | Database server host |
 | `POSTGRES_PORT`     | `5432`        | Database server port |
-| `POSTGRES_USER`     | `airflow`     | Database user        |                                       
+| `POSTGRES_USER`     | `airflow`     | Database user        |
 | `POSTGRES_PASSWORD` | `airflow`     | Database password    |
 | `POSTGRES_DB`       | `airflow`     | Database name        |
 | `POSTGRES_EXTRAS`   | empty         | Extras parameters    |
 
-You can also use those variables to adapt your compose file to match an existing PostgreSQL instance managed elsewhere. 
+You can also use those variables to adapt your compose file to match an existing PostgreSQL instance managed elsewhere.
 
 Please refer to the Airflow documentation to understand the use of extras parameters, for example in order to configure
 a connection that uses TLS encryption.
- 
+
 Here's an important thing to consider:
 
 > When specifying the connection as URI (in AIRFLOW_CONN_* variable) you should specify it following the standard syntax of DB connections,
@@ -156,13 +156,13 @@ Therefore you must provide extras parameters URL-encoded, starting with a leadin
 
 If the executor type is set to *CeleryExecutor* you'll need a Celery broker. Here is a list of Redis configuration variables
 and their default values. They're used to compute the `AIRFLOW__CELERY__BROKER_URL` variable for you if you don't provide
-it explicitly: 
+it explicitly:
 
 | Variable          | Default value | Role                           |
 |-------------------|---------------|--------------------------------|
 | `REDIS_PROTO`     | `redis://`    | Protocol                       |
 | `REDIS_HOST`      | `redis`       | Redis server host              |
-| `REDIS_PORT`      | `6379`        | Redis server port              |                                       
+| `REDIS_PORT`      | `6379`        | Redis server port              |
 | `REDIS_PASSWORD`  | empty         | If Redis is password protected |
 | `REDIS_DBNUM`     | `1`           | Database number                |
 
