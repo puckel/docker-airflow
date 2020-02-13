@@ -32,6 +32,7 @@ RUN set -ex \
     && buildDeps=' \
         freetds-dev \
         libkrb5-dev \
+        libldap2-dev \
         libsasl2-dev \
         libssl-dev \
         libffi-dev \
@@ -57,6 +58,7 @@ RUN set -ex \
     && pip install -U pip setuptools wheel \
     && pip install pytz \
     && pip install pyOpenSSL \
+    && pip install python-ldap \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
