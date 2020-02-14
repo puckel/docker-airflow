@@ -9,7 +9,6 @@ TRY_LOOP="20"
 
 # Global defaults and back-compat
 : "${AIRFLOW_HOME:="/usr/local/airflow"}"
-: "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}}"
 : "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR:-Sequential}Executor}"
 
 # Load DAGs examples (default: Yes)
@@ -20,8 +19,12 @@ fi
 export \
   AIRFLOW_HOME \
   AIRFLOW__CORE__EXECUTOR \
-  AIRFLOW__CORE__FERNET_KEY \
   AIRFLOW__CORE__LOAD_EXAMPLES \
+
+# Setup the Fernet Key only if the user didn't provide it explicitely as an Airflow configuration
+if [[ -z "$AIRFLOW__CORE__FERNET_KEY" && -z "$AIRFLOW__CORE__FERNET_KEY_CMD" ]]; then
+  export AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}
+fi
 
 # Install custom python package if requirements.txt is present
 if [ -e "/requirements.txt" ]; then
@@ -45,7 +48,7 @@ wait_for_port() {
 # Other executors than SequentialExecutor drive the need for an SQL database, here PostgreSQL is used
 if [ "$AIRFLOW__CORE__EXECUTOR" != "SequentialExecutor" ]; then
   # Check if the user has provided explicit Airflow configuration concerning the database
-  if [ -z "$AIRFLOW__CORE__SQL_ALCHEMY_CONN" ]; then
+  if [[ -z "$AIRFLOW__CORE__SQL_ALCHEMY_CONN" && -z "$AIRFLOW__CORE__SQL_ALCHEMY_CONN_CMD" ]]; then
     # Default values corresponding to the default compose files
     : "${POSTGRES_HOST:="postgres"}"
     : "${POSTGRES_PORT:="5432"}"
@@ -63,13 +66,17 @@ if [ "$AIRFLOW__CORE__EXECUTOR" != "SequentialExecutor" ]; then
       export AIRFLOW__CELERY__RESULT_BACKEND
     fi
   else
-    if [[ "$AIRFLOW__CORE__EXECUTOR" == "CeleryExecutor" && -z "$AIRFLOW__CELERY__RESULT_BACKEND" ]]; then
+    if [[ "$AIRFLOW__CORE__EXECUTOR" == "CeleryExecutor" && -z "$AIRFLOW__CELERY__RESULT_BACKEND" && -z "$AIRFLOW__CELERY__RESULT_BACKEND_CMD" ]]; then
       >&2 printf '%s\n' "FATAL: if you set AIRFLOW__CORE__SQL_ALCHEMY_CONN manually with CeleryExecutor you must also set AIRFLOW__CELERY__RESULT_BACKEND"
       exit 1
     fi
 
     # Derive useful variables from the AIRFLOW__ variables provided explicitly by the user
-    POSTGRES_ENDPOINT=$(echo -n "$AIRFLOW__CORE__SQL_ALCHEMY_CONN" | cut -d '/' -f3 | sed -e 's,.*@,,')
+    if [ -z "$AIRFLOW__CORE__SQL_ALCHEMY_CONN" ]; then
+      POSTGRES_ENDPOINT=$(eval "$AIRFLOW__CORE__SQL_ALCHEMY_CONN_CMD" | cut -d '/' -f3 | sed -e 's,.*@,,')
+    else
+      POSTGRES_ENDPOINT=$(echo -n "$AIRFLOW__CORE__SQL_ALCHEMY_CONN" | cut -d '/' -f3 | sed -e 's,.*@,,')
+    fi
     POSTGRES_HOST=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f1)
     POSTGRES_PORT=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f2)
   fi
@@ -80,7 +87,7 @@ fi
 # CeleryExecutor drives the need for a Celery broker, here Redis is used
 if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
   # Check if the user has provided explicit Airflow configuration concerning the broker
-  if [ -z "$AIRFLOW__CELERY__BROKER_URL" ]; then
+  if [[ -z "$AIRFLOW__CELERY__BROKER_URL" && -z "$AIRFLOW__CELERY__BROKER_URL_CMD" ]]; then
     # Default values corresponding to the default compose files
     : "${REDIS_PROTO:="redis://"}"
     : "${REDIS_HOST:="redis"}"
@@ -99,7 +106,11 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
     export AIRFLOW__CELERY__BROKER_URL
   else
     # Derive useful variables from the AIRFLOW__ variables provided explicitly by the user
-    REDIS_ENDPOINT=$(echo -n "$AIRFLOW__CELERY__BROKER_URL" | cut -d '/' -f3 | sed -e 's,.*@,,')
+    if [ -z "$AIRFLOW__CELERY__BROKER_URL" ]; then
+      REDIS_ENDPOINT=$(eval "$AIRFLOW__CELERY__BROKER_URL_CMD" | cut -d '/' -f3 | sed -e 's,.*@,,')
+    else
+      REDIS_ENDPOINT=$(echo -n "$AIRFLOW__CELERY__BROKER_URL" | cut -d '/' -f3 | sed -e 's,.*@,,')
+    fi
     REDIS_HOST=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f1)
     REDIS_PORT=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f2)
   fi
