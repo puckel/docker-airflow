@@ -24,3 +24,6 @@ google-cloud-core==0.29.1
 google-cloud-storage==1.14.0
 google-resumable-media==0.3.1
 googleapis-common-protos==1.5.5
+
+# JSON transformation
+jq==0.1.6
