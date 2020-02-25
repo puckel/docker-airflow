@@ -4,6 +4,9 @@ boto3==1.11.6
 # fix werkzeug version
 werkzeug==0.16.0
 
+# redis client
+redis==3.2
+
 # auth libs
 marshmallow==2.19.5 
 flask-appbuilder==1.13.1
