@@ -1,6 +1,9 @@
 name: Deploy to ECR
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
