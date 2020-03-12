@@ -28,5 +28,6 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker build --rm --build-arg AIRFLOW_DEPS="google_auth" -t $ECR_REGISTRY/$ECR_REPOSITORY .
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
