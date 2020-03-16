@@ -77,6 +77,7 @@ COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
+RUN chgrp -R 0 /usr/local/airflow && chmod -R g+rwX /usr/local/airflow
 
 EXPOSE 8080 5555 8793
 
