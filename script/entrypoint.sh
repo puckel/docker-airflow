@@ -125,6 +125,9 @@ case "$1" in
     sleep 10
     exec airflow "$@"
     ;;
+  serve_logs)
+    exec airflow "$@"
+    ;;
   version)
     exec airflow "$@"
     ;;
