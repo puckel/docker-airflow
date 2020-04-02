@@ -37,6 +37,8 @@ RUN set -ex \
         libffi-dev \
         libpq-dev \
         git \
+        python-dev \
+        gcc \
     ' \
     && apt-get update -yqq \
     && apt-get upgrade -yqq \
