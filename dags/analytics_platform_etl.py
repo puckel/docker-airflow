@@ -123,7 +123,7 @@ def select_analytics_events(ts, conn_id, **kwargs):
         WHERE
             createdAt >= timestamp '%s' and
             createdAt < timestamp '%s'
-    ''' % (lastQueryTs, currentDt.isoformat())
+    ''' % (lastQueryDt.isoformat(), currentDt.isoformat())
 
     records = pg_hook.get_records(query)
 
