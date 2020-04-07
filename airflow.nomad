@@ -70,8 +70,8 @@ job "airflow" {
       }
 
       resources {
-        cpu    = 10200 # 3 cores
-        memory = 8192  # 8 GB
+        cpu    = 23800 # 7 cores
+        memory = 30720  # 30 GB
 
         network {
           port "http" {
