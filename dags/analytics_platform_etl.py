@@ -102,6 +102,14 @@ def select_analytics_events(ts, conn_id, **kwargs):
     lastQueryTs = task_instance.xcom_pull(task_ids='get_last_successful_run_pull_time')
     lastQueryTs = lastQueryTs if lastQueryTs else (datetime.now() - timedelta(minutes=30)).isoformat()
 
+    lastQueryDt = datetime.fromisoformat(lastQueryTs)
+    currentDt = datetime.fromisoformat(ts)
+
+    elapsed = currentDt - lastQueryDt
+
+    if elapsed > timedelta(days=1):
+        currentDt = lastQueryDt + timedelta(days=1)
+
     query = '''
         SELECT
             sessionId, entityId, createdAt, eventName, eventValue, userType, appVersion, metadata
@@ -110,7 +118,7 @@ def select_analytics_events(ts, conn_id, **kwargs):
         WHERE
             createdAt >= timestamp '%s' and
             createdAt < timestamp '%s'
-    ''' % (lastQueryTs, ts)
+    ''' % (lastQueryTs, currentDt.isoformat())
 
     records = pg_hook.get_records(query)
 
@@ -123,7 +131,7 @@ def select_analytics_events(ts, conn_id, **kwargs):
     # Update the last Query ts on this run
     query = '''
         UPDATE analytics_platform.etl_run_record SET recordqueryts = timestamp '%s' WHERE id = '%s'
-    ''' % (ts, run_id)
+    ''' % (currentDt.isoformat(), run_id)
     pg_hook.run(query)
 
     return l
