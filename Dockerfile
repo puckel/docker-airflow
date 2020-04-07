@@ -2,7 +2,7 @@
 # DESCRIPTION: Basic Airflow container
 # SOURCE: https://github.com/classdojo/docker-airflow
 
-FROM python:3.7-slim-stretch
+FROM python:3.7-slim-buster
 LABEL maintainer="Classdojo_"
 
 # Never prompts the user for choices on installation/configuration of packages
