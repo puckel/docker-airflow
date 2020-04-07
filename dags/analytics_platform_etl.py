@@ -102,7 +102,11 @@ def select_analytics_events(ts, conn_id, **kwargs):
     lastQueryDt = task_instance.xcom_pull(task_ids='get_last_successful_run_pull_time')
     lastQueryDt = lastQueryDt if lastQueryDt else (datetime.now() - timedelta(minutes=30))
 
+    # Because timezone support in Python is stupid
+    lastQueryDt = lastQueryDt.replace(tzinfo=None)
+
     currentDt = datetime.fromisoformat(ts)
+    currentDt = currentDt.replace(tzinfo=None)
 
     elapsed = currentDt - lastQueryDt
 
