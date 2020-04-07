@@ -102,7 +102,7 @@ def select_analytics_events(ts, conn_id, **kwargs):
     lastQueryTs = task_instance.xcom_pull(task_ids='get_last_successful_run_pull_time')
     lastQueryTs = lastQueryTs if lastQueryTs else (datetime.now() - timedelta(minutes=30)).isoformat()
 
-    print(lastQueryTs)
+    print(type(lastQueryTs))
 
     lastQueryDt = datetime.fromisoformat(lastQueryTs)
     currentDt = datetime.fromisoformat(ts)
