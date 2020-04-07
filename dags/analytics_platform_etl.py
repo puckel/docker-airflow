@@ -110,8 +110,8 @@ def select_analytics_events(ts, conn_id, **kwargs):
 
     elapsed = currentDt - lastQueryDt
 
-    if elapsed > timedelta(days=1):
-        currentDt = lastQueryDt + timedelta(days=1)
+    if elapsed > timedelta(hours=3):
+        currentDt = lastQueryDt + timedelta(hours=3)
 
     print("Going to pull between %s and  %s" % (lastQueryDt, currentDt))
 
