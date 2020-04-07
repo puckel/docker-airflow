@@ -25,9 +25,9 @@ def on_success_callback(ctx):
 
 dag = DAG("analytics_platform_etl",
           description="Take the data from logs.analytics_platform_event and put them into the correct tables",
-          schedule_interval=timedelta(minutes=30),
+          schedule_interval=timedelta(hours=1),
           concurrency=5,
-          dagrun_timeout=timedelta(minutes=60),
+          dagrun_timeout=timedelta(minutes=90),
           max_active_runs=1,
           catchup=False,
           start_date=datetime(2020, 1, 13),
@@ -100,7 +100,7 @@ def select_analytics_events(ts, conn_id, **kwargs):
     task_instance = kwargs['task_instance']
     run_id = task_instance.xcom_pull(task_ids='generate_run_record')
     lastQueryDt = task_instance.xcom_pull(task_ids='get_last_successful_run_pull_time')
-    lastQueryDt = lastQueryDt if lastQueryDt else (datetime.now() - timedelta(minutes=30))
+    lastQueryDt = lastQueryDt if lastQueryDt else (datetime.now() - timedelta(minutes=60))
 
     # Because timezone support in Python is stupid
     lastQueryDt = lastQueryDt.replace(tzinfo=None)
