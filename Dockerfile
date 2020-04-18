@@ -55,6 +55,7 @@ RUN set -ex \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
     && pip install -U pip setuptools wheel \
+    && pip install SQLAlchemy==1.3.15 \
     && pip install pytz \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
