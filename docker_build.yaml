@@ -6,7 +6,7 @@ project: forked-apps
 app: airflow
 # Raw build arguments
 args:
-  AIRFLOW_VERSION: 1.10.9
+  AIRFLOW_VERSION: 1.10.10
   AIRFLOW_DEPS: kubernetes,slack,aws,s3,elasticsearch,papermill,postgres
 # Environment variables to inject as build arguments
 env: {}
