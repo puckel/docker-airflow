@@ -64,7 +64,7 @@ job "airflow" {
         labels {
           com.datadoghq.ad.check_names  = "[\"process\"]"
           com.datadoghq.ad.init_configs = "[{\"pid_cache_duration\": \"30\"}]"
-          com.datadoghq.ad.instances    = "[{\"host\": \"%%host%%\", \"port\": \"%%port%%\"}]"
+          com.datadoghq.ad.instances    = "[{\"host\": \"%%host%%\", \"port\": \"%%port%%\", \"name\": \"airflow\", \"search_string\": [\"python\", \"airflow\"]}]"
           com.datadoghq.ad.logs         = "[{\"source\": \"python\", \"service\": \"airflow\"}]"
         }
       }
