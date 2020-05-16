@@ -70,7 +70,7 @@ job "airflow" {
       }
 
       resources {
-        cpu    = 30400 # 6 cores
+        cpu    = 20400 # 6 cores
         memory = 24000  # 24 GB
 
         network {
