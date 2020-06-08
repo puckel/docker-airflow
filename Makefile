@@ -5,10 +5,12 @@ delete-secret:
 	rm creds.json
 
 replace-secret:
-	cat creds.json | jq .username | xargs -I {} sed -i.bak 's|__ANALYTICS_USERNAME__|{}|' airflow_settings.yaml
-	cat creds.json | jq .host | xargs -I {} sed -i.bak 's|__ANALYTICS_HOST__|{}|' airflow_settings.yaml
-	cat creds.json | jq .password | xargs -I {} sed -i.bak 's|__ANALYTICS_PASSWORD__|{}|' airflow_settings.yaml
-	cat creds.json | jq .port | xargs -I {} sed -i.bak 's|__ANALYTICS_PORT__|{}|' airflow_settings.yaml
-	rm *.bak
+	docker run -v ${PWD}:/root/ hairyhenderson/gomplate \
+		-d creds=file:///root/creds.json \
+		-f /root/airflow_settings.tmpl \
+		-o /root/airflow_settings.yaml
 
 fill-secret: download-secret replace-secret delete-secret
+
+build-local: fill-secret
+	astro dev start
