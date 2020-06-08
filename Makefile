@@ -12,5 +12,12 @@ replace-secret:
 
 fill-secret: download-secret replace-secret delete-secret
 
-build-local: fill-secret
+run-local: fill-secret
 	astro dev start
+
+stop-local:
+	astro dev stop
+	rm airflow_settings.yaml
+
+deploy: fill-secret
+	astro deployment create data-airflow --executor=k8s
