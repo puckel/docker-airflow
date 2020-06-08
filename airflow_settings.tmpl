@@ -10,11 +10,11 @@ airflow:
   connections:
     - conn_id: analyticsvpc
       conn_type: postgres
-      conn_host: __ANALYTICS_HOST__
+      conn_host: {{(datasource "creds").host}}
       conn_schema: analytics
-      conn_login: __ANALYTICS_USERNAME__
-      conn_password: __ANALYTICS_PASSWORD__
-      conn_port: __ANALYTICS_PORT__
+      conn_login: {{(datasource "creds").username}}
+      conn_password: {{(datasource "creds").password}}
+      conn_port: {{(datasource "creds").port}}
       conn_extra:
   pools:
     - pool_name: data_pool

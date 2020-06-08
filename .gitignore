@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# actual filled in yaml file for creds
+airflow_settings.yaml
