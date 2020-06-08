@@ -20,4 +20,4 @@ stop-local:
 	rm airflow_settings.yaml
 
 deploy: fill-secret
-	astro deployment create data-airflow --executor=k8s
+	astro deploy
