@@ -1,0 +1,25 @@
+# This feature is in Beta.
+
+# Please report any bugs to support@astronomer.io
+
+# NOTE: If putting a dict in conn_extra, please wrap in single quotes.
+
+# More details you can find https://github.com/astronomer/docs/blob/master/v0.10/cli-airflow-configuration.md
+
+airflow:
+  connections:
+    - conn_id: analyticsvpc
+      conn_type: postgres
+      conn_host: __ANALYTICS_HOST__
+      conn_schema: analytics
+      conn_login: __ANALYTICS_USERNAME__
+      conn_password: __ANALYTICS_PASSWORD__
+      conn_port: __ANALYTICS_PORT__
+      conn_extra:
+  pools:
+    - pool_name: data_pool
+      pool_slot: 5
+      pool_description: Pool for the data group
+  variables:
+    - variable_name:
+      variable_value:
