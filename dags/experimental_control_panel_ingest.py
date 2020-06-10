@@ -46,5 +46,5 @@ with DAG('experimental_control_panel_ingest',
         python_callable=get_control_panel_values,
     )
 
-    start_task >> get_control_panel_values
+    start_task >> get_control_panel_task
     pass
