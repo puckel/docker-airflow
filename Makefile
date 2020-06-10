@@ -19,5 +19,5 @@ stop-local:
 	astro dev stop
 	rm airflow_settings.yaml
 
-deploy: fill-secret
-	astro deploy blazing-nova-0116 -f
+deploy:
+	astro deploy blazing-nova-0116
