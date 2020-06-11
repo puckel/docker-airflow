@@ -7,7 +7,7 @@ import pathlib
 import gspread
 
 service_account_path = pathlib.Path(
-    '../extras/analytics-google-service-account.json')
+    './extras/analytics-google-service-account.json')
 
 spreadsheet_id = '1oTdca4ldaEFXaye6Kxu8iPmyWU0NZTjTIgIBjZ6ddbk'
 
