@@ -44,6 +44,7 @@ with DAG('experimental_control_panel_ingest',
     get_control_panel_task = PythonOperator(
         task_id='get_control_panel_values',
         python_callable=get_control_panel_values,
+        provide_context=True
     )
 
     start_task >> get_control_panel_task
