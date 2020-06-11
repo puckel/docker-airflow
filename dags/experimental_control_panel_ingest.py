@@ -3,6 +3,7 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
 
+import os
 import pathlib
 import gspread
 
@@ -13,6 +14,7 @@ spreadsheet_id = '1oTdca4ldaEFXaye6Kxu8iPmyWU0NZTjTIgIBjZ6ddbk'
 
 
 def get_control_panel_values(ts, **kwargs):
+    print(os.getcwd())
     gc = gspread.service_account(filename=service_account_path.as_posix())
     sh = gc.open_by_key(spreadsheet_id)
 
