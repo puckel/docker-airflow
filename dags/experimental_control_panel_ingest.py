@@ -1,6 +1,7 @@
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
+from airflow.hooks import PostgresHook
 from datetime import datetime, timedelta
 
 import pathlib
@@ -34,6 +35,7 @@ def get_control_panel_values(ts, **kwargs):
         # Get column names from the first record
         example_record = records[0]
         columns = example_record.keys()
+        print(columns)
         task_instance = kwargs['task_instance']
         task_instance.xcom_push(
             key='experiment_platform_columns', value=columns)
@@ -43,6 +45,7 @@ def get_control_panel_values(ts, **kwargs):
 
 def form_control_panel_query(ts, **kwargs):
     task_instance = kwargs['task_instance']
+    #pg_hook = PostgresHook()
     columns = task_instance.xcom_pull(key='experiment_platform_columns')
 
     l = []
@@ -90,6 +93,7 @@ with DAG('experimental_control_panel_ingest',
     form_control_panel_query_task = PythonOperator(
         task_id='form_control_panel_query',
         python_callable=form_control_panel_query,
+        op_kwargs={"conn_id": ""}
         provide_context=True
     )
 
