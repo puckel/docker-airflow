@@ -19,5 +19,7 @@ stop-local:
 	astro dev stop
 	rm airflow_settings.yaml
 
+restart-local: stop-local run-local
+
 deploy:
 	astro deploy blazing-nova-0116

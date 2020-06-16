@@ -8,7 +8,7 @@
 
 airflow:
   connections:
-    - conn_id: analyticsvpc
+    - conn_id: analytics_redshift
       conn_type: postgres
       conn_host: {{(datasource "creds").host}}
       conn_schema: analytics
