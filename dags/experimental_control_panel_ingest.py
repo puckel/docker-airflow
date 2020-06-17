@@ -21,13 +21,22 @@ column_definitions = {
     'duration': 'INT',
     'archived': 'BOOLEAN DEFAULT false',
     'archivedat': 'TIMESTAMP',
-    'createdat': 'TIMESTAMP DEFAULT sysdate'
 }
 
-additional_columns = ['archived', 'archivedat', 'createdat']
+additional_columns = ['archived', 'archivedat']
 
 # Order matters here
 sort_keys = ['start_date']
+
+
+def _get_column_mapping(columns):
+    d = {}
+
+    for column in columns:
+        endIndex = column.find('(') if column.find('(') != -1 else len(column)
+        new_column = column[:endIndex].strip().lower().replace(' ', '_')
+        d[column] = new_column
+    return d
 
 
 def get_control_panel_values(ts, **kwargs):
@@ -41,30 +50,23 @@ def get_control_panel_values(ts, **kwargs):
         # Get column names from the first record
         example_record = records[0]
         columns = list(example_record.keys())
+        column_mapping = _get_column_mapping(columns)
+
         task_instance = kwargs['task_instance']
         task_instance.xcom_push(
-            key='experiment_platform_columns', value=columns)
+            key='experiment_platform_column_mapping', value=column_mapping)
 
     return records
-
-
-def _format_columns(columns):
-    l = []
-    for column in columns:
-        endIndex = column.find('(') if column.find('(') != -1 else len(column)
-        column = column[:endIndex].strip().lower()
-        column = column.replace(' ', '_')
-        l.append(column)
-    return l
 
 
 def form_control_panel_query(conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
     pg_hook = PostgresHook(conn_id)
-    raw_columns = task_instance.xcom_pull(key='experiment_platform_columns')
+    column_mapping = task_instance.xcom_pull(
+        key='experiment_platform_column_mapping')
 
     # Format the columns from the spreadsheet, add additional columns
-    columns = _format_columns(raw_columns) + additional_columns
+    columns = list(column_mapping.values()) + additional_columns
     task_instance.xcom_push(
         key='experiment_platform_formatted_columns', value=columns)
 
@@ -110,6 +112,87 @@ def sync_control_panel_shape(conn_id, ts, **kwargs):
         pg_hook.run(q)
 
 
+def sort_records(conn_id, ts, **kwargs):
+    task_instance = kwargs['task_instance']
+    pg_hook = PostgresHook(conn_id)
+    records = task_instance.xcom_pull(task_ids='get_control_panel_values')
+    id_name = 'Experiment ID (AUTO)'
+
+    ids = [record[id_name] for record in records]
+    query = '''
+    SELECT
+        experiment_id
+    FROM ab_platform.experiment_control_panel
+    '''
+    experiment_records = pg_hook.get_records(query)
+    experiment_ids = [record[0] for record in experiment_records]
+    missing_ids = set(ids) - set(experiment_ids)
+    deactivated_ids = set(experiment_ids) - set(ids)
+    active_existing_ids = set(ids) - set(missing_ids) - set(deactivated_ids)
+
+    task_instance.xcom_push(
+        key="missing_experiment_ids", value=missing_ids)
+    task_instance.xcom_push(
+        key="deactivated_experiment_ids", value=deactivated_ids)
+    task_instance.xcom_push(
+        key="active_existing_experiment_ids", value=active_existing_ids)
+
+
+def _get_insert_query(record, column_mapping):
+    column_names = []
+    values = []
+    for k, v in record.items():
+        column = column_mapping[k]
+        column_names.append(column)
+        values.append(str(v) if type(v) != str else "'%s'" % v)
+
+    value_str = ','.join(values)
+    insert_query = '''
+    INSERT INTO ab_platform.experiment_control_panel (%s)
+    values (%s)
+    ''' % (','.join(column_names), value_str)
+    return insert_query
+
+
+def insert_new_records(conn_id, ts, **kwargs):
+    task_instance = kwargs['task_instance']
+    pg_hook = PostgresHook(conn_id)
+    records = task_instance.xcom_pull(task_ids='get_control_panel_values')
+    id_name = 'Experiment ID (AUTO)'
+    column_mapping = task_instance.xcom_pull(
+        key='experiment_platform_column_mapping')
+
+    missing_ids = task_instance.xcom_pull(
+        key="missing_experiment_ids")
+    missing_records = [
+        r for r in records if r[id_name] in missing_ids]
+
+    for r in missing_records:
+        experiment_id = r[id_name]
+        insert_query = _get_insert_query(r, column_mapping)
+        try:
+            pg_hook.run(insert_query)
+        except Exception as e:
+            print("Could not insert id: %s" % experiment_id)
+            print(e)
+            continue
+
+
+def archive_deleted_records(conn_id, ts, **kwargs):
+    task_instance = kwargs['task_instance']
+    pg_hook = PostgresHook(conn_id)
+
+    deactivated_ids = task_instance.xcom_push(
+        key="deactivated_experiment_ids")
+
+    for i in deactivated_ids:
+        update_query = '''
+        UPDATE ab_platform.experiment_control_panel SET archived=true, archivedat=getdate()
+        WHERE experiment_id=%s
+        ''' % (i)
+        pg_hook.run(update_query)
+
+
 # Default settings applied to all tasks
 default_args = {
     'owner': 'airflow',
@@ -152,5 +235,26 @@ with DAG('experimental_control_panel_ingest',
         provide_context=True
     )
 
-    start_task >> get_control_panel_task >> form_control_panel_query_task >> sync_control_panel_shape_task
-    pass
+    sort_records_task = PythonOperator(
+        task_id='sort_records',
+        python_callable=sort_records,
+        op_kwargs={'conn_id': 'analytics_redshift'},
+        provide_context=True
+    )
+
+    insert_new_record_task = PythonOperator(
+        task_id='insert_new_records',
+        python_callable=insert_new_records,
+        op_kwargs={'conn_id': 'analytics_redshift'},
+        provide_context=True
+    )
+
+    archive_deleted_record_task = PythonOperator(
+        task_id='archive_deleted_records',
+        python_callable=archive_deleted_records,
+        op_kwargs={'conn_id': 'analytics_redshift'},
+        provide_context=True
+    )
+
+    start_task >> get_control_panel_task >> form_control_panel_query_task >> sync_control_panel_shape_task >> insert_new_records_task
+    sort_records_task >> [insert_new_record_task, archive_deleted_records]
