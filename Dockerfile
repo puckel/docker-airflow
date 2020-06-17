@@ -45,6 +45,7 @@ RUN set -ex \
         freetds-bin \
         build-essential \
         default-libmysqlclient-dev \
+        postgresql-client \
         apt-utils \
         curl \
         rsync \
