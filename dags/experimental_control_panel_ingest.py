@@ -3,6 +3,7 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.hooks import PostgresHook
 from datetime import datetime, timedelta
+from dateutil import parser
 
 import pathlib
 import gspread
@@ -18,7 +19,8 @@ column_definitions = {
     'experiment_id': 'VARCHAR(36) ENCODE ZSTD DISTKEY',
     'description': 'VARCHAR(600) ENCODE ZSTD',
     'hypothesis': 'VARCHAR(600) ENCODE ZSTD',
-    'duration': 'INT',
+    'duration': 'INT DEFAULT 0',
+    'end_result_calculation': 'INT DEFAULT 0',
     'archived': 'BOOLEAN DEFAULT false',
     'archivedat': 'TIMESTAMP',
 }
@@ -59,7 +61,7 @@ def get_control_panel_values(ts, **kwargs):
     return records
 
 
-def form_control_panel_query(conn_id, ts, **kwargs):
+def create_control_panel_table(conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
     pg_hook = PostgresHook(conn_id)
     column_mapping = task_instance.xcom_pull(
@@ -116,7 +118,13 @@ def sort_records(conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
     pg_hook = PostgresHook(conn_id)
     records = task_instance.xcom_pull(task_ids='get_control_panel_values')
+
+    # Sheet keys
     id_name = 'Experiment ID (AUTO)'
+    start_date_key = 'Start Date'
+    duration_key = 'Duration'
+    extra_days_key = 'End Result Calculation'
+    decision_key = 'Decision'
 
     ids = [record[id_name] for record in records]
     query = '''
@@ -128,12 +136,13 @@ def sort_records(conn_id, ts, **kwargs):
     experiment_ids = [record[0] for record in experiment_records]
     missing_ids = set(ids) - set(experiment_ids)
     deactivated_ids = set(experiment_ids) - set(ids)
-    active_existing_ids = set(ids) - set(missing_ids) - set(deactivated_ids)
+    active_existing_ids = set(ids) - set(missing_ids) - \
+        set(deactivated_ids)
 
     task_instance.xcom_push(
         key="missing_experiment_ids", value=missing_ids)
     task_instance.xcom_push(
-        key="deactivated_experiment_ids", value=deactivated_ids)
+        key="to_archive_experiment_ids", value=deactivated_ids)
     task_instance.xcom_push(
         key="active_existing_experiment_ids", value=active_existing_ids)
 
@@ -144,7 +153,12 @@ def _get_insert_query(record, column_mapping):
     for k, v in record.items():
         column = column_mapping[k]
         column_names.append(column)
-        values.append(str(v) if type(v) != str else "'%s'" % v)
+        if not v:
+            values.append('null')
+        elif type(v) == str:
+            values.append("'%s'" % v)
+        else:
+            values.append(str(v))
 
     value_str = ','.join(values)
     insert_query = '''
@@ -178,19 +192,67 @@ def insert_new_records(conn_id, ts, **kwargs):
             continue
 
 
-def archive_deleted_records(conn_id, ts, **kwargs):
+def archive_records(conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
     pg_hook = PostgresHook(conn_id)
 
-    deactivated_ids = task_instance.xcom_push(
-        key="deactivated_experiment_ids")
+    to_archive_ids = task_instance.xcom_pull(
+        key="to_archive_experiment_ids")
 
-    for i in deactivated_ids:
+    for i in to_archive_ids:
         update_query = '''
         UPDATE ab_platform.experiment_control_panel SET archived=true, archivedat=getdate()
-        WHERE experiment_id=%s
+        WHERE experiment_id='%s' and archived = false
         ''' % (i)
         pg_hook.run(update_query)
+
+
+# For now just delete and reinsert all of these
+def update_existing_records(conn_id, ts, **kwargs):
+    task_instance = kwargs['task_instance']
+    pg_hook = PostgresHook(conn_id)
+    records = task_instance.xcom_pull(
+        task_ids='get_control_panel_values')
+    id_name = 'Experiment ID (AUTO)'
+    column_mapping = task_instance.xcom_pull(
+        key='experiment_platform_column_mapping')
+
+    existing_ids = task_instance.xcom_pull(
+        key="active_existing_experiment_ids")
+    existing_records = [
+        r for r in records if r[id_name] in existing_ids]
+
+    # Avoid udpates where we can
+    for r in existing_records:
+        experiment_id = r[id_name]
+        delete_query = '''
+        DELETE FROM ab_platform.experiment_control_panel WHERE experiment_id = '%s'
+        ''' % (experiment_id)
+        insert_query = _get_insert_query(r, column_mapping)
+        full_query = '''
+        begin;
+        %s;
+        %s;
+        commit;
+        ''' % (delete_query, insert_query)
+
+        pg_hook.run(full_query)
+
+
+def finish_experiments(conn_id, ts, **kwargs):
+    pg_hook = PostgresHook(conn_id)
+
+    update_query = '''
+    UPDATE ab_platform.experiment_control_panel
+    SET
+        archived=true,
+        archivedat=getdate()
+    WHERE
+        archived = false
+        AND getdate() > DATEADD('days', COALESCE(duration, 0) + COALESCE(end_result_calculation, 0), start_date)
+        AND decision is not null AND decision != ''
+    '''
+    pg_hook.run(update_query)
 
 
 # Default settings applied to all tasks
@@ -221,9 +283,9 @@ with DAG('experimental_control_panel_ingest',
         provide_context=True
     )
 
-    form_control_panel_query_task = PythonOperator(
-        task_id='form_control_panel_query',
-        python_callable=form_control_panel_query,
+    create_control_panel_table_task = PythonOperator(
+        task_id='create_control_panel_table',
+        python_callable=create_control_panel_table,
         op_kwargs={'conn_id': 'analytics_redshift'},
         provide_context=True
     )
@@ -249,12 +311,28 @@ with DAG('experimental_control_panel_ingest',
         provide_context=True
     )
 
-    archive_deleted_record_task = PythonOperator(
+    archive_record_task = PythonOperator(
         task_id='archive_deleted_records',
-        python_callable=archive_deleted_records,
+        python_callable=archive_records,
         op_kwargs={'conn_id': 'analytics_redshift'},
         provide_context=True
     )
 
-    start_task >> get_control_panel_task >> form_control_panel_query_task >> sync_control_panel_shape_task >> insert_new_records_task
-    sort_records_task >> [insert_new_record_task, archive_deleted_records]
+    update_existing_record_task = PythonOperator(
+        task_id='update_existing_records',
+        python_callable=update_existing_records,
+        op_kwargs={'conn_id': 'analytics_redshift'},
+        provide_context=True
+    )
+
+    finish_experiments_task = PythonOperator(
+        task_id='finish_experiments',
+        python_callable=finish_experiments,
+        op_kwargs={'conn_id': 'analytics_redshift'},
+        provide_context=True
+    )
+
+    start_task >> get_control_panel_task >> create_control_panel_table_task >> sync_control_panel_shape_task >> sort_records_task
+    sort_records_task >> [insert_new_record_task,
+                          archive_record_task,
+                          update_existing_record_task] >> finish_experiments_task
