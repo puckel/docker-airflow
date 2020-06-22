@@ -8,6 +8,8 @@ from dateutil import parser
 import pathlib
 import gspread
 
+CONTROL_PANEL_TABLE = 'ab_platform.experiment_control_panel'
+
 service_account_path = pathlib.Path(
     './extras/analytics-google-service-account.json')
 
@@ -76,11 +78,11 @@ def create_control_panel_table(conn_id, ts, **kwargs):
         column, column_definitions['default'])) for column in columns]
 
     query = '''
-    CREATE TABLE IF NOT EXISTS ab_platform.experiment_control_panel (
+    CREATE TABLE IF NOT EXISTS %s (
         %s
     )
     COMPOUND SORTKEY (%s)
-    ''' % (','.join(formatted_columns), ','.join(sort_keys))
+    ''' % (CONTROL_PANEL_TABLE, ','.join(formatted_columns), ','.join(sort_keys))
 
     pg_hook.run(query)
     return query
@@ -121,10 +123,6 @@ def sort_records(conn_id, ts, **kwargs):
 
     # Sheet keys
     id_name = 'Experiment ID (AUTO)'
-    start_date_key = 'Start Date'
-    duration_key = 'Duration'
-    extra_days_key = 'End Result Calculation'
-    decision_key = 'Decision'
 
     ids = [record[id_name] for record in records]
     query = '''
