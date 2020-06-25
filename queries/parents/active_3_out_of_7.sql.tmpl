@@ -17,7 +17,7 @@ WITH results AS (
 SELECT
   experiment_id
 , variant
-, 'active_3_out_of_7_days_during_trial' AS metric_name
+, '%(metric_name)s' AS metric_name
 , 'RATIO' AS metric_type
 , 'any' AS segment
 , '%(ds)s'::TIMESTAMP AS day
