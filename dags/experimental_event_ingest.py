@@ -12,7 +12,7 @@ import uuid
 CONTROL_PANEL_TABLE = 'ab_platform.experiment_control_panel'
 EXPERIMENTAL_METADATA_TABLE = 'ab_platform.ingestion_run'
 AUDIENCE_METADATA_TABLE = 'ab_platform.audience_run'
-AUDIENCE_MAPPING_TABLE = 'ab_platform.experiment_to_audience_map'
+AUDIENCE_MAPPING_TABLE = 'ab_platform.experiment_to_population_map'
 
 
 def generate_run_uuid(**kwargs):
