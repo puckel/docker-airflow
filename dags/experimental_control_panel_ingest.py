@@ -1,9 +1,8 @@
 from airflow import DAG
+from airflow.hooks import PostgresHook
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
-from airflow.hooks import PostgresHook
 from datetime import datetime, timedelta
-from dateutil import parser
 
 import pathlib
 import gspread

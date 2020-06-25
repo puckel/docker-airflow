@@ -12,7 +12,7 @@ import uuid
 CONTROL_PANEL_TABLE = 'ab_platform.experiment_control_panel'
 EXPERIMENTAL_METADATA_TABLE = 'ab_platform.ingestion_run'
 AUDIENCE_METADATA_TABLE = 'ab_platform.audience_run'
-AUDIENCE_MAPPING_TABLE = 'ab_platform.experiment_to_table_map'
+AUDIENCE_MAPPING_TABLE = 'ab_platform.experiment_to_audience_map'
 
 
 def generate_run_uuid(**kwargs):
@@ -148,7 +148,6 @@ def create_mapping_table(conn_id, ts, **kwargs):
     query = '''
     CREATE TABLE IF NOT EXISTS %s (
         experiment_id VARCHAR(36) ENCODE ZSTD DISTKEY,
-        table_type VARCHAR(36) ENCODE ZSTD,
         table_name VARCHAR(256) ENCODE ZSTD
     );
     ''' % AUDIENCE_MAPPING_TABLE
@@ -349,3 +348,5 @@ with DAG('experimental_event_ingest',
         generate_automatic_audience_task, get_manually_mapped_tables_task] >> write_mappings_task
 
     [create_audience_run_metadata_task, write_mappings_task] >> tag_population_run_task
+
+    # DAG for results calculation
