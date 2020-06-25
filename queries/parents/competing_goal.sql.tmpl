@@ -1,0 +1,30 @@
+WITH results AS (
+  SELECT
+    pop.experiment_id
+  , pop.entity_id
+  , pop.variant
+  , pop.entered_at
+  , CASE WHEN COUNT(create_goal.day) > 0 THEN 1 ELSE 0 END AS outcome
+  FROM %(table_name)s AS pop
+  LEFT JOIN frog.parent_create_goal_daily AS create_goal
+    ON create_goal.parentid = pop.entity_id
+   -- Make sure the trial actually started after the Parent entered the experiment
+   AND create_goal.day >= DATE_TRUNC('day', pop.entered_at)
+  -- Only include parents that have been in the experiment for more than 7 days
+  WHERE DATEDIFF(day, pop.entered_at, '%(ds)s'::TIMESTAMP) >= 7
+  GROUP BY 1,2,3,4
+)
+
+SELECT
+  experiment_id
+, variant
+, 'completing_goal' AS metric_name
+, 'RATIO' AS metric_type
+, 'any' AS segment
+, '%(ds)s'::TIMESTAMP AS day
+, SUM(outcome) AS numerator
+, COUNT(entity_id) AS denominator
+, SUM(outcome)::FLOAT / COUNT(entity_id) AS mean
+, STDDEV(outcome) AS standard_deviation
+FROM results
+GROUP BY 1,2,3,4,5,6

@@ -349,5 +349,3 @@ with DAG('experimental_event_ingest',
         generate_automatic_audience_task, get_manually_mapped_tables_task] >> write_mappings_task
 
     [create_audience_run_metadata_task, write_mappings_task] >> tag_population_run_task
-
-    # DAG for results calculation
