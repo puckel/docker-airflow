@@ -62,7 +62,7 @@ def create_results_run_table(conn_id, ts, **kwargs):
     CREATE TABLE IF NOT EXISTS %s (
         run_id VARCHAR(36) ENCODE ZSTD distkey,
         status VARCHAR(128) ENCODE ZSTD,
-        createdat TIMESTAMP DEFAULT systdate
+        createdat TIMESTAMP DEFAULT sysdate
     )
     COMPOUND SORTKEY(createdat)
     ;
@@ -73,7 +73,7 @@ def create_results_run_table(conn_id, ts, **kwargs):
 def calculate_intermediate_results(conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
     experiment_to_population_map = task_instance.xcom_pull(
-        task_ids=get_active_experiment_and_population_map
+        task_ids='get_active_experiment_and_population_map'
     )
 
     population_types = set([population_metadata['population_type']
