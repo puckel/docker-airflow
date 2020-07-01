@@ -5,7 +5,7 @@ WITH results AS (
   , pop.variant
   , pop.entered_at
   , CASE WHEN trial.is_active_three_days THEN 1 ELSE 0 END AS outcome
-  FROM %(tablename)s AS pop
+  FROM %(table_name)s AS pop
   LEFT JOIN frog.parent_free_trial_active_three_days AS trial
     ON trial.parentid = pop.entity_id
    -- Make sure the trial actually started after the Parent entered the experiment
