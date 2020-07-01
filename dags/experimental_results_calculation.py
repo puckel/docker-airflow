@@ -78,7 +78,6 @@ def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
     # Get the last days worth of stuff
     # Use this instead of the provided 'ds' so we can do some date operations
     yesterday = dt.date() - timedelta(days=1)
-    print(yesterday)
     task_instance.xcom_push(key='most_recent_date', value=yesterday)
 
     experiment_to_population_map = task_instance.xcom_pull(
@@ -188,6 +187,7 @@ def calculate_results(frontend_conn_id, ts, **kwargs):
             'mean': mean,
             'standard_deviation': standard_deviation
         }
+        grouped_records[(experiment_id, metric_name, metric_type)] = variants
 
     print(grouped_records)
 
