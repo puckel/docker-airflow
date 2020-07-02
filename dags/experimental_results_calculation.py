@@ -116,6 +116,7 @@ def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
         template_map = population_templates.get(
             population_metadata['population_type'], {})
         for metric_name, template in template_map.items():
+            print(metric_name)
             s = template % {
                 'metric_name': metric_name,
                 'table_name': '%s.%s' % (population_metadata['population_schema_name'],

@@ -5,7 +5,7 @@ WITH results AS (
   , pop.variant
   , pop.entered_at
   , COUNT(DISTINCT CONCAT(to_char(active_days.day, 'YYYY-MM-DD'), active_days.teacherid)) AS outcome
-  FROM %(table_name) AS pop
+  FROM %(table_name)s AS pop
   LEFT JOIN temp.tiger_team_dact_events_by_day AS active_days
     ON active_days.teacherid = pop.entity_id
    AND active_days.day BETWEEN pop.entered_at AND '%(ds)s'::TIMESTAMP
