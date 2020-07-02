@@ -5,13 +5,18 @@ from airflow.operators.python_operator import PythonOperator
 
 from datetime import datetime, timedelta
 from dateutil import parser
+from scipy.stats import ttest_ind_from_stats
+from statsmodels.stats.proportion import proportions_chisquare
 
-import pathlib
 import os
+import pathlib
+import pandas
+import sqlalchemy
 
 CONTROL_PANEL_TABLE = 'ab_platform.experiment_control_panel'
 POPULATION_MAPPING_TABLE = 'ab_platform.experiment_to_population_map'
 EXPERIMENT_INTERMEDIATE_RESULTS_TABLE = 'ab_platform.experiment_results_intermediate'
+EXPERIMENT_INTERMEDIATE_RESULTS_TABLE_ONLY = 'experiment_results_intermediate'
 RESULTS_METADATA_TABLE = 'ab_platform.results_run'
 
 
@@ -57,6 +62,10 @@ def create_intermediate_results_table(frontend_conn_id, ts, **kwargs):
     pg_hook.run(query)
 
 
+def create_final_results_table(frontend_conn_id, ts, **kwargs):
+    pass
+
+
 def create_results_run_table(analytics_conn_id, ts, **kwargs):
     pg_hook = PostgresHook(analytics_conn_id)
     query = '''
@@ -78,7 +87,6 @@ def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
     # Get the last days worth of stuff
     # Use this instead of the provided 'ds' so we can do some date operations
     yesterday = dt.date() - timedelta(days=1)
-    task_instance.xcom_push(key='most_recent_date', value=yesterday)
 
     experiment_to_population_map = task_instance.xcom_pull(
         task_ids='get_active_experiment_and_population_map'
@@ -159,37 +167,47 @@ def insert_intermediate_records(frontend_conn_id, ts, **kwargs):
         pg_hook.run(query)
 
 
+def _calculate_p_value(x):
+    p_value = None
+    if x['variant'] == x['variant_compared']:
+        pass
+
+    elif x['metric_type'].lower() == 'ratio':
+        result = ttest_ind_from_stats(
+            mean1=x['mean'],
+            std1=x['standard_deviation'],
+            nobs1=x['denominator'],
+            mean2=x['mean_compared'],
+            std2=x['standard_deviation_compared'],
+            nobs2=x['denominator_compared']
+        )
+        p_value = result.p_value
+    elif x['metric_type'].lower() == 'proportional':
+        numerators = (x['numerators'], x['numerators_compared'])
+        denominators = (x['denominators'], x['denominators_compared'])
+        result = proportions_chisquare(numerators, denominators)
+        p_value = result[1]
+
+    return p_value
+
+
 def calculate_results(frontend_conn_id, ts, **kwargs):
-    task_instance = kwargs['task_instance']
+    # Take the whole table and replace
+    # Naturally idempotent, we can use the pandas helper methods
     pg_hook = PostgresHook(frontend_conn_id)
-    most_recent_date = task_instance.xcom_pull(
-        key='most_recent_date'
+
+    results_intermediate = pandas.read_sql_table(EXPERIMENT_INTERMEDIATE_RESULTS_TABLE_ONLY,
+                                                 pg_hook.get_sqlalchemy_engine(), schema='ab_platform')
+
+    results_intermediate.set_index(
+        ['experiment_id', 'metric_name', 'metric_type', 'segment', 'day'], inplace=True)
+
+    results_expanded = results_intermediate.join(
+        results_intermediate, rsuffix='compared'
     )
-
-    query = '''
-    SELECT * FROM %s WHERE day = '%s'::TIMESTAMP
-    ''' % (EXPERIMENT_INTERMEDIATE_RESULTS_TABLE, most_recent_date.isoformat())
-
-    records = pg_hook.get_records(query)
-
-    grouped_records = {}
-    for experiment_id, variant, metric_name, metric_type, \
-            segment, day, numerator, denominator, mean, \
-            standard_deviation in records:
-
-        variants = grouped_records.get(
-            (experiment_id, metric_name, metric_type), {})
-        variants[variant] = {
-            'segment': segment,
-            'day': day,
-            'numerator': numerator,
-            'denominator': denominator,
-            'mean': mean,
-            'standard_deviation': standard_deviation
-        }
-        grouped_records[(experiment_id, metric_name, metric_type)] = variants
-
-    print(grouped_records)
+    results_expanded['p_value'] = results_expanded.apply(
+        _calculate_p_value, axis=1)
+    print(results_expanded)
 
 
 # Default settings applied to all tasks
@@ -202,7 +220,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5)
 }
 
-with DAG('experimental_results_calculation',
+with DAG('experimental_results_calculator',
          start_date=datetime(2020, 6, 25, 17),  # Starts at 5pm PST
          max_active_runs=1,
          catchup=True,
