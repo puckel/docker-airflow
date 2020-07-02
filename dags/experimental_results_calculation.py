@@ -320,7 +320,7 @@ with DAG('experimental_results_calculator',
         provide_context=True
     )
 
-    caluclate_results_task = PythonOperator(
+    calculate_results_task = PythonOperator(
         task_id='caculate_results',
         python_callable=calculate_results,
         op_kwargs=default_task_kwargs,
@@ -339,6 +339,6 @@ with DAG('experimental_results_calculator',
                    create_results_run_table_task]
 
     [get_active_experiment_and_population_map_task,
-        create_intermediate_results_table_task] >> calculate_intermediate_results_task >> insert_intermediate_records_task >> caluclate_results_task
+        create_intermediate_results_table_task] >> calculate_intermediate_results_task >> insert_intermediate_records_task >> calculate_results_task
 
     [create_results_run_table_task, calculate_results_task] >> tag_calculate_run_task
