@@ -181,7 +181,7 @@ def _calculate_p_value(x):
             std2=x['standard_deviation_compared'],
             nobs2=x['denominator_compared']
         )
-        p_value = result.p_value
+        p_value = result.pvalue
     elif x['metric_type'].lower() == 'proportional':
         numerators = (x['numerators'], x['numerators_compared'])
         denominators = (x['denominators'], x['denominators_compared'])
@@ -203,8 +203,7 @@ def calculate_results(frontend_conn_id, ts, **kwargs):
         ['experiment_id', 'metric_name', 'metric_type', 'segment', 'day'], inplace=True)
 
     results_expanded = results_intermediate.join(
-        results_intermediate, rsuffix='compared'
-    )
+        results_intermediate, rsuffix='_compared').reset_index()
     results_expanded['p_value'] = results_expanded.apply(
         _calculate_p_value, axis=1)
     print(results_expanded)
@@ -223,7 +222,7 @@ default_args = {
 with DAG('experimental_results_calculator',
          start_date=datetime(2020, 6, 25, 17),  # Starts at 5pm PST
          max_active_runs=1,
-         catchup=True,
+         catchup=False,
          schedule_interval=timedelta(days=1),
          default_args=default_args,
          ) as dag:
