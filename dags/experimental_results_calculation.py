@@ -189,8 +189,8 @@ def _calculate_p_value(x):
         )
         p_value = result.pvalue
     elif x['metric_type'].lower() == 'proportional':
-        numerators = (x['numerators'], x['numerators_compared'])
-        denominators = (x['denominators'], x['denominators_compared'])
+        numerators = (x['numerator'], x['numerator_compared'])
+        denominators = (x['denominator'], x['denominator_compared'])
         result = proportions_chisquare(numerators, denominators)
         p_value = result[1]
 
