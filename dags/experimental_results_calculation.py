@@ -12,6 +12,7 @@ import os
 import pathlib
 import pandas
 import sqlalchemy
+import uuid
 
 CONTROL_PANEL_TABLE = 'ab_platform.experiment_control_panel'
 POPULATION_MAPPING_TABLE = 'ab_platform.experiment_to_population_map'
@@ -72,6 +73,7 @@ def create_results_run_table(analytics_conn_id, ts, **kwargs):
     CREATE TABLE IF NOT EXISTS %s (
         run_id VARCHAR(36) ENCODE ZSTD distkey,
         status VARCHAR(128) ENCODE ZSTD,
+        intermediate_results_date TIMESTAMP,
         createdat TIMESTAMP DEFAULT sysdate
     )
     COMPOUND SORTKEY(createdat)
@@ -87,6 +89,8 @@ def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
     # Get the last days worth of stuff
     # Use this instead of the provided 'ds' so we can do some date operations
     yesterday = dt.date() - timedelta(days=1)
+    task_instance.xcom_push(
+        key='intermediate_results_run_date', value=yesterday)
 
     experiment_to_population_map = task_instance.xcom_pull(
         task_ids='get_active_experiment_and_population_map'
@@ -199,6 +203,8 @@ def calculate_results(frontend_conn_id, ts, **kwargs):
     results_intermediate = pandas.read_sql_table(EXPERIMENT_INTERMEDIATE_RESULTS_TABLE_ONLY,
                                                  pg_hook.get_sqlalchemy_engine(), schema='ab_platform')
 
+    print("Found {} intermediate results in intermediate table".format(
+        len(results_intermediate)))
     results_intermediate.set_index(
         ['experiment_id', 'metric_name', 'metric_type', 'segment', 'day'], inplace=True)
 
@@ -206,7 +212,50 @@ def calculate_results(frontend_conn_id, ts, **kwargs):
         results_intermediate, rsuffix='_compared').reset_index()
     results_expanded['p_value'] = results_expanded.apply(
         _calculate_p_value, axis=1)
-    print(results_expanded)
+
+    print("Writing {} results to RDS".format(len(results_expanded)))
+
+    results_expanded.to_sql(
+        name='experiment_results',
+        con=pg_hook.get_sqlalchemy_engine(),
+        schema='ab_platform',
+        if_exists='replace',
+        index=False,
+        dtype={
+            "experiment_id": sqlalchemy.types.VARCHAR(36),
+            "variant": sqlalchemy.types.VARCHAR(128),
+            "metric_name": sqlalchemy.types.VARCHAR(128),
+            "metric_type": sqlalchemy.types.VARCHAR(128),
+            "segment": sqlalchemy.types.VARCHAR(128),
+            "day": sqlalchemy.types.DateTime,
+            "numerator": sqlalchemy.types.Integer,
+            "denominator": sqlalchemy.types.Integer,
+            "mean": sqlalchemy.types.Float,
+            "standard_deviation": sqlalchemy.types.Float,
+            "p_value": sqlalchemy.types.Float,
+            "variant_compared": sqlalchemy.types.VARCHAR(128),
+            "numerator_compared": sqlalchemy.types.Integer,
+            "denominator_compared": sqlalchemy.types.Integer,
+            "mean_compared": sqlalchemy.types.Float,
+            "standard_deviation_compared": sqlalchemy.types.Float,
+        }
+    )
+    print("Done writing results to RDS")
+
+
+def tag_calculate_run(analytics_conn_id, ts, **kwargs):
+    task_instance = kwargs['task_instance']
+    pg_hook = PostgresHook(analytics_conn_id)
+    intermediate_results_run_date = task_instance.xcom_pull(
+        key='intermediate_results_run_date'
+    )
+    run_id = uuid.uuid4()
+
+    query = '''
+    INSERT INTO {} (run_id, status, intermediate_results_date) VALUES
+    ('{}', 'success', '{}'::TIMESTAMP)
+    '''.format(RESULTS_METADATA_TABLE, run_id, intermediate_results_run_date.isoformat())
+    pg_hook.run(query)
 
 
 # Default settings applied to all tasks
@@ -278,9 +327,18 @@ with DAG('experimental_results_calculator',
         provide_context=True,
     )
 
+    tag_calculate_run_task = PythonOperator(
+        task_id='tag_results_run',
+        python_callable=tag_calculate_run,
+        op_kwargs=default_task_kwargs,
+        provide_context=True,
+    )
+
     start_task >> [get_active_experiment_and_population_map_task,
                    create_intermediate_results_table_task,
                    create_results_run_table_task]
 
     [get_active_experiment_and_population_map_task,
         create_intermediate_results_table_task] >> calculate_intermediate_results_task >> insert_intermediate_records_task >> caluclate_results_task
+
+    [create_results_run_table_task, calculate_results_task] >> tag_calculate_run_task
