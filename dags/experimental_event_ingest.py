@@ -181,9 +181,9 @@ def write_mappings(conn_id, ts, **kwargs):
         query = '''
         begin;
         DELETE FROM %(mapping_table)s
-        WHERE experiment_id='%(experiment_id)s' and table_type='population';
-        INSERT INTO %(mapping_table)s (experiment_id, table_name, table_type)
-        VALUES ('%(experiment_id)s', '%(table_name)s', 'population');
+        WHERE experiment_id='%(experiment_id)s';
+        INSERT INTO %(mapping_table)s (experiment_id, table_name)
+        VALUES ('%(experiment_id)s', '%(table_name)s');
         commit;
         ''' % {
             'mapping_table': AUDIENCE_MAPPING_TABLE,

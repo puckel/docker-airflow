@@ -111,7 +111,8 @@ def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
                 population_templates[population_type][metric_name] = s
 
     all_records = []
-    for _, population_metadata in experiment_to_population_map.items():
+    for experiment_id, population_metadata in experiment_to_population_map.items():
+        print('Getting the intermediate results for {}'.format(experiment_id))
         template_map = population_templates.get(
             population_metadata['population_type'], {})
         for metric_name, template in template_map.items():
