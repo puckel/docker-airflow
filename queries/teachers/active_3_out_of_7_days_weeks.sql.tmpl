@@ -1,0 +1,29 @@
+WITH results AS (
+  SELECT
+    pop.experiment_id
+  , pop.entity_id
+  , pop.variant
+  , pop.entered_at
+  , COUNT(DISTINCT CONCAT(to_char(_3d7_wact_weeks.week, 'YYYY-MM-DD'), _3d7_wact_weeks.teacherid)) AS outcome
+  FROM %(table_name)s AS pop
+  LEFT JOIN temp.tiger_team_wact_events_by_week AS _3d7_wact_weeks
+    ON _3d7_wact_weeks.teacherid = pop.entity_id
+   AND _3d7_wact_weeks.week BETWEEN pop.entered_at AND '%(ds)s'::TIMESTAMP
+   AND _3d7_wact_weeks.is_3d7_wact
+  WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
+  GROUP BY 1,2,3,4
+)
+
+SELECT
+  experiment_id
+, variant
+, '%(metric_name)s' AS metric_name
+, 'RATIO' AS metric_type
+, 'any' AS segment
+, '%(ds)s'::TIMESTAMP AS day
+, SUM(outcome) AS numerator
+, COUNT(entity_id) AS denominator
+, SUM(outcome)::FLOAT / COUNT(entity_id) AS mean
+, STDDEV(outcome) AS standard_deviation
+FROM results
+GROUP BY 1,2,3,4,5,6

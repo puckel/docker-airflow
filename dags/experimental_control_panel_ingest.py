@@ -6,8 +6,11 @@ from datetime import datetime, timedelta
 
 import pathlib
 import gspread
+import pandas
+import sqlalchemy
 
 CONTROL_PANEL_TABLE = 'ab_platform.experiment_control_panel'
+CONTROL_PANEL_TABLE_ONLY = 'experiment_control_panel'
 
 service_account_path = pathlib.Path(
     './extras/analytics-google-service-account.json')
@@ -24,6 +27,18 @@ column_definitions = {
     'end_result_calculation': 'INT DEFAULT 0',
     'archived': 'BOOLEAN DEFAULT false',
     'archivedat': 'TIMESTAMP',
+}
+
+column_definitions_sqlalchemy = {
+    'default': sqlalchemy.types.VARCHAR(128),
+    'start_date': sqlalchemy.types.DateTime,
+    'experiment_id': sqlalchemy.types.VARCHAR(36),
+    'description': sqlalchemy.types.VARCHAR(600),
+    'hypothesis': sqlalchemy.types.VARCHAR(600),
+    'duration': sqlalchemy.types.Integer,
+    'end_result_calculation': sqlalchemy.types.Integer,
+    'archived': sqlalchemy.types.Boolean,
+    'archivedat': sqlalchemy.types.DateTime,
 }
 
 additional_columns = ['archived', 'archivedat']
@@ -62,9 +77,9 @@ def get_control_panel_values(ts, **kwargs):
     return records
 
 
-def create_control_panel_table(conn_id, ts, **kwargs):
+def create_control_panel_table(analytics_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
-    pg_hook = PostgresHook(conn_id)
+    pg_hook = PostgresHook(analytics_conn_id)
     column_mapping = task_instance.xcom_pull(
         key='experiment_platform_column_mapping')
 
@@ -87,9 +102,9 @@ def create_control_panel_table(conn_id, ts, **kwargs):
     return query
 
 
-def sync_control_panel_shape(conn_id, ts, **kwargs):
+def sync_control_panel_shape(analytics_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
-    pg_hook = PostgresHook(conn_id)
+    pg_hook = PostgresHook(analytics_conn_id)
     described_columns = task_instance.xcom_pull(
         key='experiment_platform_formatted_columns')
 
@@ -115,9 +130,9 @@ def sync_control_panel_shape(conn_id, ts, **kwargs):
         pg_hook.run(q)
 
 
-def sort_records(conn_id, ts, **kwargs):
+def sort_records(analytics_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
-    pg_hook = PostgresHook(conn_id)
+    pg_hook = PostgresHook(analytics_conn_id)
     records = task_instance.xcom_pull(task_ids='get_control_panel_values')
 
     # Sheet keys
@@ -165,9 +180,9 @@ def _get_insert_query(record, column_mapping):
     return insert_query
 
 
-def insert_new_records(conn_id, ts, **kwargs):
+def insert_new_records(analytics_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
-    pg_hook = PostgresHook(conn_id)
+    pg_hook = PostgresHook(analytics_conn_id)
     records = task_instance.xcom_pull(task_ids='get_control_panel_values')
     id_name = 'Experiment ID (AUTO)'
     column_mapping = task_instance.xcom_pull(
@@ -189,9 +204,9 @@ def insert_new_records(conn_id, ts, **kwargs):
             continue
 
 
-def archive_records(conn_id, ts, **kwargs):
+def archive_records(analytics_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
-    pg_hook = PostgresHook(conn_id)
+    pg_hook = PostgresHook(analytics_conn_id)
 
     to_archive_ids = task_instance.xcom_pull(
         key="to_archive_experiment_ids")
@@ -205,9 +220,9 @@ def archive_records(conn_id, ts, **kwargs):
 
 
 # For now just delete and reinsert all of these
-def update_existing_records(conn_id, ts, **kwargs):
+def update_existing_records(analytics_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
-    pg_hook = PostgresHook(conn_id)
+    pg_hook = PostgresHook(analytics_conn_id)
     records = task_instance.xcom_pull(
         task_ids='get_control_panel_values')
     id_name = 'Experiment ID (AUTO)'
@@ -236,8 +251,8 @@ def update_existing_records(conn_id, ts, **kwargs):
         pg_hook.run(full_query)
 
 
-def finish_experiments(conn_id, ts, **kwargs):
-    pg_hook = PostgresHook(conn_id)
+def finish_experiments(analytics_conn_id, ts, **kwargs):
+    pg_hook = PostgresHook(analytics_conn_id)
 
     update_query = '''
     UPDATE ab_platform.experiment_control_panel
@@ -250,6 +265,34 @@ def finish_experiments(conn_id, ts, **kwargs):
         AND decision is not null AND decision != ''
     '''
     pg_hook.run(update_query)
+
+
+def copy_to_frontend(analytics_conn_id, frontend_conn_id, ts, **kwargs):
+    task_instance = kwargs['task_instance']
+    columns = task_instance.xcom_pull(
+        key='experiment_platform_formatted_columns'
+    )
+    analytics_hook = PostgresHook(analytics_conn_id)
+    frontend_hook = PostgresHook(frontend_conn_id)
+
+    experiments = pandas.read_sql_table(CONTROL_PANEL_TABLE_ONLY,
+                                        analytics_hook.get_sqlalchemy_engine(), schema='ab_platform')
+    dtypes = dict([
+        (column, column_definitions_sqlalchemy.get(
+            column, column_definitions_sqlalchemy['default']))
+        for column in columns
+    ])
+
+    experiments.to_sql(
+        name=CONTROL_PANEL_TABLE_ONLY,
+        con=frontend_hook.get_sqlalchemy_engine(),
+        schema='ab_platform',
+        if_exists='replace',
+        index=False,
+        dtype=dtypes
+    )
+
+    print('Done copying {} experiments to RDS'.format(len(experiments)))
 
 
 # Default settings applied to all tasks
@@ -270,6 +313,11 @@ with DAG('experimental_control_panel_ingest',
          default_args=default_args,
          ) as dag:
 
+    default_task_kwargs = {
+        'analytics_conn_id': 'analytics_redshift',
+        'frontend_conn_id': 'ab_platform_frontend',
+    }
+
     start_task = DummyOperator(
         task_id='start'
     )
@@ -283,53 +331,60 @@ with DAG('experimental_control_panel_ingest',
     create_control_panel_table_task = PythonOperator(
         task_id='create_control_panel_table',
         python_callable=create_control_panel_table,
-        op_kwargs={'conn_id': 'analytics_redshift'},
+        op_kwargs=default_task_kwargs,
         provide_context=True
     )
 
     sync_control_panel_shape_task = PythonOperator(
         task_id='sync_control_panel_shape',
         python_callable=sync_control_panel_shape,
-        op_kwargs={'conn_id': 'analytics_redshift'},
+        op_kwargs=default_task_kwargs,
         provide_context=True
     )
 
     sort_records_task = PythonOperator(
         task_id='sort_records',
         python_callable=sort_records,
-        op_kwargs={'conn_id': 'analytics_redshift'},
+        op_kwargs=default_task_kwargs,
         provide_context=True
     )
 
     insert_new_record_task = PythonOperator(
         task_id='insert_new_records',
         python_callable=insert_new_records,
-        op_kwargs={'conn_id': 'analytics_redshift'},
+        op_kwargs=default_task_kwargs,
         provide_context=True
     )
 
     archive_record_task = PythonOperator(
         task_id='archive_deleted_records',
         python_callable=archive_records,
-        op_kwargs={'conn_id': 'analytics_redshift'},
+        op_kwargs=default_task_kwargs,
         provide_context=True
     )
 
     update_existing_record_task = PythonOperator(
         task_id='update_existing_records',
         python_callable=update_existing_records,
-        op_kwargs={'conn_id': 'analytics_redshift'},
+        op_kwargs=default_task_kwargs,
         provide_context=True
     )
 
     finish_experiments_task = PythonOperator(
         task_id='finish_experiments',
         python_callable=finish_experiments,
-        op_kwargs={'conn_id': 'analytics_redshift'},
+        op_kwargs=default_task_kwargs,
         provide_context=True
+    )
+
+    copy_to_frontend_task = PythonOperator(
+        task_id='copy_to_frontend',
+        python_callable=copy_to_frontend,
+        op_kwargs=default_task_kwargs,
+        provide_context=True,
     )
 
     start_task >> get_control_panel_task >> create_control_panel_table_task >> sync_control_panel_shape_task >> sort_records_task
     sort_records_task >> [insert_new_record_task,
                           archive_record_task,
-                          update_existing_record_task] >> finish_experiments_task
+                          update_existing_record_task] >> finish_experiments_task >> copy_to_frontend_task
