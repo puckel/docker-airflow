@@ -98,19 +98,6 @@ def write_mappings(conn_id, ts, **kwargs):
         pg_hook.run(query)
 
 
-event_task_sensor = SqlSensor(
-    task_id='event_task_sensor',
-    conn_id='airflow_db',
-    sql='''
-    SELECT count(*)
-    FROM dag_run
-    WHERE
-        execution_date > getdate() - interval '10 minutes' and
-        dag_id = 'experimental_event_ingest' and
-        state = 'success'
-    '''
-)
-
 # Default settings applied to all tasks
 default_args = {
     'owner': 'airflow',
@@ -126,7 +113,7 @@ with DAG('experimental_population_creation',
          start_date=datetime(2020, 6, 10),
          max_active_runs=1,
          catchup=False,
-         schedule_interval=timedelta(minutes=10),
+         schedule_interval=None,
          default_args=default_args,
          on_success_callback=success_callback,
          on_failure_callback=failure_callback,
@@ -163,5 +150,5 @@ with DAG('experimental_population_creation',
     )
 
     # DAG for the population ingestion
-    event_task_sensor >> start_task >> create_mapping_table_task >> [
+    start_task >> create_mapping_table_task >> [
         generate_automatic_population_task, get_manually_mapped_tables_task] >> write_mappings_task
