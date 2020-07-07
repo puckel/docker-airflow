@@ -26,7 +26,7 @@ def _create_population_run_metadata_table(conn_id):
     pg_hook.run(query)
 
 
-def success_callback(ctx):
+def _callback(state, ctx):
     conn_id = 'analytics_redshift'
     pg_hook = PostgresHook(conn_id)
     run_uuid = uuid.uuid4()
@@ -35,23 +35,17 @@ def success_callback(ctx):
     _create_population_run_metadata_table(conn_id)
 
     query = '''
-    INSERT INTO {} (run_id, status) VALUES ('{}', 'success')
-    '''.format(POPULATION_METADATA_TABLE, run_uuid)
+    INSERT INTO {} (run_id, status) VALUES ('{}', '{}')
+    '''.format(POPULATION_METADATA_TABLE, run_uuid, state)
     pg_hook.run(query)
+
+
+def success_callback(ctx):
+    _callback('success', ctx)
 
 
 def failure_callback(ctx):
-    conn_id = 'analytics_redshift'
-    pg_hook = PostgresHook(conn_id)
-    run_uuid = uuid.uuid4()
-
-    # Create metadata table if it doesn't exist
-    _create_population_run_metadata_table(conn_id)
-
-    query = '''
-    INSERT INTO {} (run_id, status) VALUES ('{}', 'failure')
-    '''.format(POPULATION_METADATA_TABLE, run_uuid)
-    pg_hook.run(query)
+    _callback('failure', ctx)
 
 
 def create_mapping_table(conn_id, ts, **kwargs):
