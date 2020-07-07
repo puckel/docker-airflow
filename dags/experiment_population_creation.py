@@ -101,7 +101,6 @@ def write_mappings(conn_id, ts, **kwargs):
 event_task_sensor = ExternalTaskSensor(
     task_id='event_task_sensor',
     external_dag_id='experimental_event_ingest',
-    external_task_id='end',
     check_existence=True
 )
 
