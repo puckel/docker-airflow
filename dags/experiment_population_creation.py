@@ -2,7 +2,7 @@ from airflow import DAG
 from airflow.hooks import PostgresHook
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
-from airflow.sensors.external_task_sensor import ExternalTaskSensor
+from airflow.sensors.sql_sensor import SqlSensor
 
 from datetime import datetime, timedelta
 
@@ -98,10 +98,17 @@ def write_mappings(conn_id, ts, **kwargs):
         pg_hook.run(query)
 
 
-event_task_sensor = ExternalTaskSensor(
+event_task_sensor = SqlSensor(
     task_id='event_task_sensor',
-    external_dag_id='experimental_event_ingest',
-    check_existence=True
+    conn_id='airflow_db',
+    sql='''
+    SELECT count(*)
+    FROM dag_run
+    WHERE
+        execution_date > getdate() - interval '10 minutes' and
+        dag_id = 'experimental_event_ingest' and
+        state = 'success'
+    '''
 )
 
 # Default settings applied to all tasks

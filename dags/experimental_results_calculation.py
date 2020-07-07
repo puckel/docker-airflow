@@ -21,6 +21,47 @@ EXPERIMENT_INTERMEDIATE_RESULTS_TABLE_ONLY = 'experiment_results_intermediate'
 RESULTS_METADATA_TABLE = 'ab_platform.results_run'
 
 
+def _create_results_run_table(conn_id):
+    pg_hook = PostgresHook(conn_id)
+    query = '''
+    CREATE TABLE IF NOT EXISTS {} (
+        run_id VARCHAR(36) ENCODE ZSTD distkey,
+        status VARCHAR(128) ENCODE ZSTD,
+        intermediate_results_date TIMESTAMP,
+        createdat TIMESTAMP DEFAULT sysdate
+    )
+    COMPOUND SORTKEY(createdat)
+    ;
+    '''.format(RESULTS_METADATA_TABLE)
+    pg_hook.run(query)
+
+
+def _callback(state, ctx):
+    task_instance = ctx['task_instance']
+    conn_id = 'analytics_redshift'
+    pg_hook = PostgresHook(conn_id)
+    intermediate_results_run_date = task_instance.xcom_pull(
+        key='intermediate_results_run_date'
+    )
+    run_id = uuid.uuid4()
+
+    _create_results_run_table(conn_id)
+
+    query = '''
+    INSERT INTO {} (run_id, status, intermediate_results_date) VALUES
+    ('{}', '{}', '{}'::TIMESTAMP)
+    '''.format(RESULTS_METADATA_TABLE, run_id, state, intermediate_results_run_date.isoformat())
+    pg_hook.run(query)
+
+
+def success_callback(ctx):
+    _callback('success', ctx)
+
+
+def failure_callback(ctx):
+    _callback('failure', ctx)
+
+
 def get_active_experiment_and_population_map(analytics_conn_id, ts, **kwargs):
     pg_hook = PostgresHook(analytics_conn_id)
     query = '''
@@ -65,21 +106,6 @@ def create_intermediate_results_table(frontend_conn_id, ts, **kwargs):
 
 def create_final_results_table(frontend_conn_id, ts, **kwargs):
     pass
-
-
-def create_results_run_table(analytics_conn_id, ts, **kwargs):
-    pg_hook = PostgresHook(analytics_conn_id)
-    query = '''
-    CREATE TABLE IF NOT EXISTS %s (
-        run_id VARCHAR(36) ENCODE ZSTD distkey,
-        status VARCHAR(128) ENCODE ZSTD,
-        intermediate_results_date TIMESTAMP,
-        createdat TIMESTAMP DEFAULT sysdate
-    )
-    COMPOUND SORTKEY(createdat)
-    ;
-    ''' % RESULTS_METADATA_TABLE
-    pg_hook.run(query)
 
 
 def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
@@ -245,21 +271,6 @@ def calculate_results(frontend_conn_id, ts, **kwargs):
     print("Done writing results to RDS")
 
 
-def tag_calculate_run(analytics_conn_id, ts, **kwargs):
-    task_instance = kwargs['task_instance']
-    pg_hook = PostgresHook(analytics_conn_id)
-    intermediate_results_run_date = task_instance.xcom_pull(
-        key='intermediate_results_run_date'
-    )
-    run_id = uuid.uuid4()
-
-    query = '''
-    INSERT INTO {} (run_id, status, intermediate_results_date) VALUES
-    ('{}', 'success', '{}'::TIMESTAMP)
-    '''.format(RESULTS_METADATA_TABLE, run_id, intermediate_results_run_date.isoformat())
-    pg_hook.run(query)
-
-
 # Default settings applied to all tasks
 default_args = {
     'owner': 'airflow',
@@ -276,6 +287,8 @@ with DAG('experimental_results_calculator',
          catchup=False,
          schedule_interval=timedelta(days=1),
          default_args=default_args,
+         on_failure_callback=failure_callback,
+         on_success_callback=success_callback,
          ) as dag:
 
     default_task_kwargs = {
@@ -301,13 +314,6 @@ with DAG('experimental_results_calculator',
         provide_context=True
     )
 
-    create_results_run_table_task = PythonOperator(
-        task_id='create_results_run',
-        python_callable=create_results_run_table,
-        op_kwargs=default_task_kwargs,
-        provide_context=True
-    )
-
     calculate_intermediate_results_task = PythonOperator(
         task_id='calculate_intermediate_results',
         python_callable=calculate_intermediate_results,
@@ -329,18 +335,8 @@ with DAG('experimental_results_calculator',
         provide_context=True,
     )
 
-    tag_calculate_run_task = PythonOperator(
-        task_id='tag_results_run',
-        python_callable=tag_calculate_run,
-        op_kwargs=default_task_kwargs,
-        provide_context=True,
-    )
-
     start_task >> [get_active_experiment_and_population_map_task,
-                   create_intermediate_results_table_task,
-                   create_results_run_table_task]
+                   create_intermediate_results_table_task]
 
     [get_active_experiment_and_population_map_task,
         create_intermediate_results_table_task] >> calculate_intermediate_results_task >> insert_intermediate_records_task >> calculate_results_task
-
-    [create_results_run_table_task, calculate_results_task] >> tag_calculate_run_task
