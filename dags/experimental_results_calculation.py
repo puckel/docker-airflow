@@ -118,6 +118,8 @@ def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
         task_ids='get_active_experiment_and_population_map'
     )
 
+    # Get metric templates from ../queries
+    # This is basically a query cache so we don't have to constantly open and close files
     population_types = set([population_metadata['population_type']
                             for population_metadata in experiment_to_population_map.values()])
 
@@ -132,6 +134,8 @@ def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
                 s = f.read()
                 population_templates[population_type][metric_name] = s
 
+    # Fill out the template with variables and get the records
+    # Inserts happen in the next step.
     all_records = []
     for experiment_id, population_metadata in experiment_to_population_map.items():
         print('Getting the intermediate results for {}'.format(experiment_id))
@@ -332,8 +336,6 @@ with DAG('experimental_results_calculator',
     )
 
     start_task >> [get_active_experiment_and_population_map_task,
-                   create_intermediate_results_table_task]
-
-    [get_active_experiment_and_population_map_task, create_intermediate_results_table_task] >> \
+                   create_intermediate_results_table_task] >> \
         calculate_intermediate_results_task >> insert_intermediate_records_task >> \
         calculate_results_task
