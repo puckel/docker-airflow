@@ -86,7 +86,7 @@ def get_active_experiment_and_population_map(analytics_conn_id, ts, **kwargs):
 def create_intermediate_results_table(frontend_conn_id, ts, **kwargs):
     pg_hook = PostgresHook(frontend_conn_id)
     query = '''
-    create table if not exists %s
+    create table if not exists {}
     (
         experiment_id varchar(36) not null,
         variant varchar(128) not null,
@@ -100,12 +100,8 @@ def create_intermediate_results_table(frontend_conn_id, ts, **kwargs):
         standard_deviation double precision,
         primary key(experiment_id, variant, metric_name, metric_type, segment, day)
     );
-    ''' % EXPERIMENT_INTERMEDIATE_RESULTS_TABLE
+    '''.format(EXPERIMENT_INTERMEDIATE_RESULTS_TABLE)
     pg_hook.run(query)
-
-
-def create_final_results_table(frontend_conn_id, ts, **kwargs):
-    pass
 
 
 def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
