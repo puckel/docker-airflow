@@ -329,7 +329,7 @@ with DAG('experimental_results_calculator',
     )
 
     calculate_results_task = PythonOperator(
-        task_id='caculate_results',
+        task_id='calculate_results',
         python_callable=calculate_results,
         op_kwargs=default_task_kwargs,
         provide_context=True,
