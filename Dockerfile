@@ -30,6 +30,8 @@ ENV LC_MESSAGES en_US.UTF-8
 
 RUN set -ex \
     && buildDeps=' \
+        libldap2-dev \
+        python-dev \
         freetds-dev \
         libkrb5-dev \
         libsasl2-dev \
