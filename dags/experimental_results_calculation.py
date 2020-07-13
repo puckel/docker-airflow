@@ -5,19 +5,11 @@ from airflow.operators.python_operator import PythonOperator
 
 from datetime import datetime, timedelta
 from dateutil import parser
-from scipy.stats import ttest_ind_from_stats
-from statsmodels.stats.proportion import proportions_chisquare
+from experimental_platform_modules import result_calculator
 
 import os
-import pathlib
-import pandas
-import sqlalchemy
 import uuid
 
-CONTROL_PANEL_TABLE = 'ab_platform.experiment_control_panel'
-POPULATION_MAPPING_TABLE = 'ab_platform.experiment_to_population_map'
-EXPERIMENT_INTERMEDIATE_RESULTS_TABLE = 'ab_platform.experiment_results_intermediate'
-EXPERIMENT_INTERMEDIATE_RESULTS_TABLE_ONLY = 'experiment_results_intermediate'
 RESULTS_METADATA_TABLE = 'ab_platform.results_run'
 
 
@@ -63,50 +55,16 @@ def failure_callback(ctx):
 
 
 def get_active_experiment_and_population_map(analytics_conn_id, ts, **kwargs):
-    pg_hook = PostgresHook(analytics_conn_id)
-    query = '''
-    SELECT
-        a.experiment_id,
-        a.population_kind,
-        b.table_name
-    FROM %s a JOIN %s b ON a.experiment_id = b.experiment_id
-    WHERE getdate() > start_date and archived = false;
-    ''' % (CONTROL_PANEL_TABLE, POPULATION_MAPPING_TABLE)
-    records = pg_hook.get_records(query)
-    experiment_id_to_table_mapping = {}
-    for experiment_id, population_kind, table_name in records:
-        experiment_id_to_table_mapping[experiment_id] = {
-            'population_table_name': table_name,
-            'population_schema_name':  'ab_platform',
-            'population_type': population_kind,
-        }
-    return experiment_id_to_table_mapping
+    return result_calculator.get_active_experiment_and_population_map(
+        analytics_conn_id)
 
 
 def create_intermediate_results_table(frontend_conn_id, ts, **kwargs):
-    pg_hook = PostgresHook(frontend_conn_id)
-    query = '''
-    create table if not exists {}
-    (
-        experiment_id varchar(36) not null,
-        variant varchar(128) not null,
-        metric_name varchar(128) not null,
-        metric_type varchar(128) not null,
-        segment varchar(128) not null,
-        day timestamp not null,
-        numerator integer,
-        denominator integer,
-        mean double precision,
-        standard_deviation double precision,
-        primary key(experiment_id, variant, metric_name, metric_type, segment, day)
-    );
-    '''.format(EXPERIMENT_INTERMEDIATE_RESULTS_TABLE)
-    pg_hook.run(query)
+    result_calculator.create_intermediate_results_table(frontend_conn_id)
 
 
 def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
-    pg_hook = PostgresHook(analytics_conn_id)
     dt = parser.parse(ts)
     # Get the last days worth of stuff
     # Use this instead of the provided 'ds' so we can do some date operations
@@ -118,156 +76,20 @@ def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
         task_ids='get_active_experiment_and_population_map'
     )
 
-    # Get metric templates from ../queries
-    # This is basically a query cache so we don't have to constantly open and close files
-    population_types = set([population_metadata['population_type']
-                            for population_metadata in experiment_to_population_map.values()])
-
-    population_templates = {}
-    for population_type in population_types:
-        population_templates[population_type] = {}
-        parent_dir = os.path.join('./queries', population_type.lower())
-        for item in os.listdir(parent_dir):
-            item_path = os.path.join(parent_dir, item)
-            metric_name = item.split('.')[0]
-            with open(item_path, 'r') as f:
-                s = f.read()
-                population_templates[population_type][metric_name] = s
-
-    # Fill out the template with variables and get the records
-    # Inserts happen in the next step.
-    all_records = []
-    for experiment_id, population_metadata in experiment_to_population_map.items():
-        print('Getting the intermediate results for {}'.format(experiment_id))
-        template_map = population_templates.get(
-            population_metadata['population_type'], {})
-        for metric_name, template in template_map.items():
-            print(metric_name)
-            s = template % {
-                'metric_name': metric_name,
-                'table_name': '%s.%s' % (population_metadata['population_schema_name'],
-                                         population_metadata['population_table_name']),
-                'ds': yesterday.isoformat(),
-            }
-            records = pg_hook.get_records(s)
-            all_records += records
-
-    return all_records
+    return result_calculator.calculate_intermediate_result_for_day(analytics_conn_id, yesterday, experiment_to_population_map)
 
 
 def insert_intermediate_records(frontend_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
-    pg_hook = PostgresHook(frontend_conn_id)
     records = task_instance.xcom_pull(
         task_ids='calculate_intermediate_results'
     )
-    # We have to worry about double inserts if it runs on the same day
-    # So we delete records from the table with the same experiment_id, metric_name, and date
 
-    for experiment_id, variant, metric_name, metric_type, \
-            segment, day, numerator, denominator, mean, \
-            standard_deviation in records:
-
-        query = '''
-            begin;
-            DELETE FROM %(table_name)s
-            WHERE
-                experiment_id = '%(experiment_id)s' and
-                variant = '%(variant)s' and
-                metric_name = '%(metric_name)s' and
-                metric_type = '%(metric_type)s' and
-                segment = '%(segment)s' and
-                day = '%(day)s';
-
-            INSERT INTO %(table_name)s
-            (experiment_id, variant, metric_name, metric_type, segment, day, numerator, denominator, mean, standard_deviation) VALUES
-            ('%(experiment_id)s', '%(variant)s', '%(metric_name)s', '%(metric_type)s', '%(segment)s', '%(day)s', %(numerator)d, %(denominator)d, %(mean)f, %(standard_deviation)f);
-            commit;
-            ''' % {
-            'table_name': EXPERIMENT_INTERMEDIATE_RESULTS_TABLE,
-            'experiment_id': experiment_id,
-            'variant':  variant,
-            'metric_name': metric_name,
-            'metric_type': metric_type,
-            'segment': segment,
-            'day': day.date().isoformat(),
-            'numerator': numerator,
-            'denominator': denominator,
-            'mean': mean,
-            'standard_deviation': standard_deviation,
-        }
-        pg_hook.run(query)
-
-
-def _calculate_p_value(x):
-    p_value = None
-    if x['variant'] == x['variant_compared']:
-        pass
-
-    elif x['metric_type'].lower() == 'ratio':
-        result = ttest_ind_from_stats(
-            mean1=x['mean'],
-            std1=x['standard_deviation'],
-            nobs1=x['denominator'],
-            mean2=x['mean_compared'],
-            std2=x['standard_deviation_compared'],
-            nobs2=x['denominator_compared']
-        )
-        p_value = result.pvalue
-    elif x['metric_type'].lower() == 'proportional':
-        numerators = (x['numerator'], x['numerator_compared'])
-        denominators = (x['denominator'], x['denominator_compared'])
-        result = proportions_chisquare(numerators, denominators)
-        p_value = result[1]
-
-    return p_value
+    result_calculator.insert_intermediate_records(frontend_conn_id, records)
 
 
 def calculate_results(frontend_conn_id, ts, **kwargs):
-    # Take the whole table and replace
-    # Naturally idempotent, we can use the pandas helper methods
-    pg_hook = PostgresHook(frontend_conn_id)
-
-    results_intermediate = pandas.read_sql_table(EXPERIMENT_INTERMEDIATE_RESULTS_TABLE_ONLY,
-                                                 pg_hook.get_sqlalchemy_engine(), schema='ab_platform')
-
-    print("Found {} intermediate results in intermediate table".format(
-        len(results_intermediate)))
-    results_intermediate.set_index(
-        ['experiment_id', 'metric_name', 'metric_type', 'segment', 'day'], inplace=True)
-
-    results_expanded = results_intermediate.join(
-        results_intermediate, rsuffix='_compared').reset_index()
-    results_expanded['p_value'] = results_expanded.apply(
-        _calculate_p_value, axis=1)
-
-    print("Writing {} results to RDS".format(len(results_expanded)))
-
-    results_expanded.to_sql(
-        name='experiment_results',
-        con=pg_hook.get_sqlalchemy_engine(),
-        schema='ab_platform',
-        if_exists='replace',
-        index=False,
-        dtype={
-            "experiment_id": sqlalchemy.types.VARCHAR(36),
-            "variant": sqlalchemy.types.VARCHAR(128),
-            "metric_name": sqlalchemy.types.VARCHAR(128),
-            "metric_type": sqlalchemy.types.VARCHAR(128),
-            "segment": sqlalchemy.types.VARCHAR(128),
-            "day": sqlalchemy.types.DateTime,
-            "numerator": sqlalchemy.types.Integer,
-            "denominator": sqlalchemy.types.Integer,
-            "mean": sqlalchemy.types.Float,
-            "standard_deviation": sqlalchemy.types.Float,
-            "p_value": sqlalchemy.types.Float,
-            "variant_compared": sqlalchemy.types.VARCHAR(128),
-            "numerator_compared": sqlalchemy.types.Integer,
-            "denominator_compared": sqlalchemy.types.Integer,
-            "mean_compared": sqlalchemy.types.Float,
-            "standard_deviation_compared": sqlalchemy.types.Float,
-        }
-    )
+    result_calculator.calculate_results(frontend_conn_id)
     print("Done writing results to RDS")
 
 
