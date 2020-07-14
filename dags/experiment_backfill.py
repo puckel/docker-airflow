@@ -107,7 +107,7 @@ def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
             delta = (day - temp_date).days
             if delta:
                 extra_days = [temp_date +
-                              timedelta(days=i) for i in xrange(delta)]
+                              timedelta(days=i) for i in range(delta)]
                 missing_days + extra_days
 
             # Check if we're missing any metrics on this day
