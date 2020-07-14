@@ -103,6 +103,11 @@ default_args = {
     'retry_delay': timedelta(minutes=5)
 }
 
+default_task_kwargs = {
+    'analytics_conn_id': 'analytics_redshift',
+    'frontend_conn_id': 'ab_platform_frontend',
+}
+
 with DAG('experimental_results_calculator',
          start_date=datetime(2020, 6, 25, 17),  # Starts at 5pm PST
          max_active_runs=1,
@@ -112,11 +117,6 @@ with DAG('experimental_results_calculator',
          on_failure_callback=failure_callback,
          on_success_callback=success_callback,
          ) as dag:
-
-    default_task_kwargs = {
-        'analytics_conn_id': 'analytics_redshift',
-        'frontend_conn_id': 'ab_platform_frontend',
-    }
 
     start_task = DummyOperator(
         task_id='start'

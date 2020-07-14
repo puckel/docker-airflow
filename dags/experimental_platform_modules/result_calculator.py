@@ -56,6 +56,29 @@ def create_intermediate_results_table(conn_id):
     pg_hook.run(query)
 
 
+def get_metric_names(population_type):
+    parent_dir = os.path.join('./queries', population_type.lower())
+    l = []
+    for item in os.listdir(parent_dir):
+        metric_name = item.split('.')[0]
+        l.append(metric_name)
+
+    return l
+
+
+def get_templates(population_type):
+    d = {}
+    parent_dir = os.path.join('./queries', population_type.lower())
+    for item in os.listdir(parent_dir):
+        item_path = os.path.join(parent_dir, item)
+        metric_name = item.split('.')[0]
+        with open(item_path, 'r') as f:
+            s = f.read()
+            d[metric_name] = s
+
+    return d
+
+
 def calculate_intermediate_result_for_day(conn_id, dt, experiment_to_population_map):
     pg_hook = PostgresHook(conn_id)
     # Get metric templates from ../queries
@@ -65,14 +88,8 @@ def calculate_intermediate_result_for_day(conn_id, dt, experiment_to_population_
 
     population_templates = {}
     for population_type in population_types:
-        population_templates[population_type] = {}
-        parent_dir = os.path.join('./queries', population_type.lower())
-        for item in os.listdir(parent_dir):
-            item_path = os.path.join(parent_dir, item)
-            metric_name = item.split('.')[0]
-            with open(item_path, 'r') as f:
-                s = f.read()
-                population_templates[population_type][metric_name] = s
+        d = get_templates(population_type)
+        population_templates[population_type] = d
 
     # Fill out the template with variables and get the records
     # Inserts happen in the next step.

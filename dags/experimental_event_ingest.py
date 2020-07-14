@@ -1,8 +1,8 @@
 from airflow import DAG
 from airflow.hooks import PostgresHook
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
-from airflow.operators.dagrun_operator import TriggerDagRunOperator
 
 from datetime import datetime, timedelta
 from dateutil import parser
@@ -34,16 +34,15 @@ def _callback(state, ctx):
     task_instance = ctx['task_instance']
     conn_id = 'analytics_redshift'
     pg_hook = PostgresHook(conn_id)
-    run_uuid = uuid.uuid4()
     start_ts = task_instance.xcom_pull(key='start_ts')
     end_ts = task_instance.xcom_pull(key='end_ts')
     run_uuid = uuid.uuid4()
     _create_run_metadata_table(conn_id)
 
     query = '''
-    INSERT INTO %s (run_id, start_ts, end_ts, event_count, status)
-    VALUES('%s', '%s', '%s', 0, '%s')
-    ''' % (EXPERIMENTAL_METADATA_TABLE, run_uuid, start_ts, end_ts, state)
+    INSERT INTO {} (run_id, start_ts, end_ts, event_count, status)
+    VALUES('{}', '{}', '{}', 0, '{}')
+    '''.format(EXPERIMENTAL_METADATA_TABLE, run_uuid, start_ts, end_ts, state)
     pg_hook.run(query)
 
 
