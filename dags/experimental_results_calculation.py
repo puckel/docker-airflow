@@ -54,9 +54,22 @@ def failure_callback(ctx):
     _callback('failure', ctx)
 
 
+def get_date_to_calculate(ts, **kwargs):
+    # Get the last days worth of stuff
+    # Use this instead of the provided 'ds' so we can do some date operations
+    task_instance = kwargs['task_instance']
+    dt = parser.parse(ts)
+    yesterday = dt.date() - timedelta(days=1)
+    task_instance.xcom_push(
+        key='intermediate_results_run_date', value=yesterday)
+
+
 def get_active_experiment_and_population_map(analytics_conn_id, ts, **kwargs):
+    task_instance = kwargs['task_instance']
+    yesterday = task_instance.xcom_pull(
+        key='intermediate_results_run_date')
     return result_calculator.get_active_experiment_and_population_map(
-        analytics_conn_id)
+        analytics_conn_id, yesterday)
 
 
 def create_intermediate_results_table(frontend_conn_id, ts, **kwargs):
@@ -65,12 +78,8 @@ def create_intermediate_results_table(frontend_conn_id, ts, **kwargs):
 
 def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
-    dt = parser.parse(ts)
-    # Get the last days worth of stuff
-    # Use this instead of the provided 'ds' so we can do some date operations
-    yesterday = dt.date() - timedelta(days=1)
-    task_instance.xcom_push(
-        key='intermediate_results_run_date', value=yesterday)
+    yesterday = task_instance.xcom_pull(
+        key='intermediate_results_run_date')
 
     experiment_to_population_map = task_instance.xcom_pull(
         task_ids='get_active_experiment_and_population_map'
@@ -121,6 +130,12 @@ with DAG('experimental_results_calculator',
     start_task = DummyOperator(
         task_id='start'
     )
+    get_date_to_calculate_task = PythonOperator(
+        task_id='get_date_to_calculate',
+        python_callable=get_date_to_calculate,
+        op_kwargs=default_task_kwargs,
+        provide_context=True
+    )
 
     create_intermediate_results_table_task = PythonOperator(
         task_id='create_intermediate_results_table',
@@ -157,7 +172,8 @@ with DAG('experimental_results_calculator',
         provide_context=True,
     )
 
-    start_task >> [get_active_experiment_and_population_map_task,
+    start_task >> [get_date_to_calculate,
                    create_intermediate_results_table_task] >> \
+        get_active_experiment_and_population_map_task >> \
         calculate_intermediate_results_task >> insert_intermediate_records_task >> \
         calculate_results_task

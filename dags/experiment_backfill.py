@@ -58,7 +58,7 @@ def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
     missing_days = []
     query = '''
     SELECT * from ab_platform.{} WHERE archived = false
-    '''
+    '''.format(CONTROL_PANEL_TABLE_ONLY)
     experiments = pandas.read_sql_query(
         query, analytics_pg_hook.get_sqlalchemy_engine(),
         parse_dates=['start_date'])
@@ -83,12 +83,12 @@ def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
             experiment['experiment_id'],
             result_calculator.get_metric_names(experiment['population_kind'])
         )
-        for experiment in experiments
+        for _, experiment in experiments.iterrows()
     ])
 
     start_date_by_experiment_id = dict([
         (experiment['experiment_id'], experiment['start_date'])
-        for experiment in experiments
+        for _, experiment in experiments.iterrows()
     ])
 
     # Currently if we're missing any days for any experiment, we just rerun that entire day
@@ -97,7 +97,7 @@ def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
 
         temp_date = start_date
         metric_by_day = {}
-        for result in experiment_results_by_day:
+        for _, result in experiment_results_by_day.iterrows():
             if result['experiment_id'] != experiment_id:
                 continue
 
@@ -105,14 +105,14 @@ def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
             day = result['day']
             # This will give us the number of days difference between the two dates
             delta = (day - temp_date).days
-            if delta:
+            if delta > 0:
                 extra_days = [temp_date +
                               timedelta(days=i) for i in range(delta)]
-                missing_days + extra_days
+                missing_days += extra_days
 
             # Check if we're missing any metrics on this day
             metric_set = metric_by_day.get(day, set())
-            set.add(result['metric_name'])
+            metric_set.add(result['metric_name'])
             metric_by_day[day] = metric_set
             temp_date = day
 
@@ -124,31 +124,30 @@ def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
     # Return the missing_day_set
     # After deduping
     missing_day_set = set(missing_days)
+    print("Found %s missing days" % len(missing_day_set))
     return missing_day_set
 
 
-def get_active_experiment_and_population_map(analytics_conn_id, ts, **kwargs):
-    return result_calculator.get_active_experiment_and_population_map(analytics_conn_id)
-
-
-def backfill_intermediate_results(frontend_conn_id, ts, **kwargs):
+def backfill_intermediate_results(analytics_conn_id, frontend_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
 
-    experiment_to_population_map = task_instance.xcom_pull(
-        task_ids='get_active_experiment_and_population_map'
-    )
     backfill_dates = task_instance.xcom_pull(
         task_ids='get_backfill_dates'
     )
 
     # Do it all in one go instead of piecemeal like the result calculator graph
     for dt in backfill_dates:
+        # We have to get the list of active experiments on each particular date to be able to accurately
+        # Run the backfill
+        experiment_to_population_map = result_calculator.get_active_experiment_and_population_map(
+            analytics_conn_id, dt)
+
         records = result_calculator.calculate_intermediate_result_for_day(
-            frontend_conn_id, dt,
+            analytics_conn_id, dt,
             experiment_to_population_map
         )
-        result_calculator.insert_intermediate_records(
-            frontend_conn_id, records)
+        # result_calculator.insert_intermediate_records(
+        # frontend_conn_id, records)
 
 
 def calculate_results(frontend_conn_id, **kwargs):
@@ -207,29 +206,24 @@ with DAG('experimental_backfill',
         provide_context=True,
     )
 
-    get_active_experiment_and_population_map_task = PythonOperator(
-        task_id='get_active_experiment_and_population_map',
-        python_callable=get_active_experiment_and_population_map,
-        op_kwargs=default_task_kwargs,
-        provide_context=True,
-    )
-
     backfill_intermediate_results_task = PythonOperator(
         task_id='backfill_intermediate_results',
         python_callable=backfill_intermediate_results,
         op_kwargs=default_task_kwargs,
         provide_context=True
     )
+    # backfill_intermediate_results_task = DummyOperator(
+    #     task_id='backfill_intermediate_results')
 
-    calculate_results_task = PythonOperator(
-        task_id='calculate_results',
-        python_callable=calculate_results,
-        op_kwargs=default_task_kwargs,
-        provide_context=True
-
-    )
+    # calculate_results_task = PythonOperator(
+    # task_id='calculate_results',
+    # python_callable=calculate_results,
+    # op_kwargs=default_task_kwargs,
+    # provide_context=True
+    # )
+    calculate_results_task = DummyOperator(task_id='calculate_results')
 
     start_task >> trigger_control_panel_sync_task >> \
-        trigger_event_ingest_task >> [
-            get_backfill_dates_task, get_active_experiment_and_population_map_task] >> \
+        trigger_event_ingest_task >> trigger_population_creation_task >> \
+        get_backfill_dates_task >> \
         backfill_intermediate_results_task >> calculate_results_task

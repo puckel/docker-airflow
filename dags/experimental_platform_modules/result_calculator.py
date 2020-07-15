@@ -14,7 +14,7 @@ EXPERIMENT_INTERMEDIATE_RESULTS_TABLE = 'ab_platform.experiment_results_intermed
 EXPERIMENT_INTERMEDIATE_RESULTS_TABLE_ONLY = 'experiment_results_intermediate'
 
 
-def get_active_experiment_and_population_map(conn_id):
+def get_active_experiment_and_population_map(conn_id, target_date):
     pg_hook = PostgresHook(conn_id)
     query = '''
     SELECT
@@ -22,8 +22,8 @@ def get_active_experiment_and_population_map(conn_id):
         a.population_kind,
         b.table_name
     FROM %s a JOIN %s b ON a.experiment_id = b.experiment_id
-    WHERE getdate() > start_date and archived = false;
-    ''' % (CONTROL_PANEL_TABLE, POPULATION_MAPPING_TABLE)
+    WHERE '%s' >= start_date and archived = false;
+    ''' % (CONTROL_PANEL_TABLE, POPULATION_MAPPING_TABLE, target_date.isoformat())
     records = pg_hook.get_records(query)
     experiment_to_population_map = {}
     for experiment_id, population_kind, table_name in records:
