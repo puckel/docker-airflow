@@ -139,15 +139,18 @@ def backfill_intermediate_results(analytics_conn_id, frontend_conn_id, ts, **kwa
     for dt in backfill_dates:
         # We have to get the list of active experiments on each particular date to be able to accurately
         # Run the backfill
+        print("Running backfill for {}".format(dt.isoformat()))
         experiment_to_population_map = result_calculator.get_active_experiment_and_population_map(
             analytics_conn_id, dt)
+        print("Found active {} active experiments {}".format(
+            len(experiment_to_population_map), experiment_to_population_map.keys()))
 
         records = result_calculator.calculate_intermediate_result_for_day(
             analytics_conn_id, dt,
             experiment_to_population_map
         )
-        # result_calculator.insert_intermediate_records(
-        # frontend_conn_id, records)
+        result_calculator.insert_intermediate_records(
+            frontend_conn_id, records)
 
 
 def calculate_results(frontend_conn_id, **kwargs):
@@ -215,13 +218,13 @@ with DAG('experimental_backfill',
     # backfill_intermediate_results_task = DummyOperator(
     #     task_id='backfill_intermediate_results')
 
-    # calculate_results_task = PythonOperator(
-    # task_id='calculate_results',
-    # python_callable=calculate_results,
-    # op_kwargs=default_task_kwargs,
-    # provide_context=True
-    # )
-    calculate_results_task = DummyOperator(task_id='calculate_results')
+    calculate_results_task = PythonOperator(
+        task_id='calculate_results',
+        python_callable=calculate_results,
+        op_kwargs=default_task_kwargs,
+        provide_context=True
+    )
+    # calculate_results_task = DummyOperator(task_id='calculate_results')
 
     start_task >> trigger_control_panel_sync_task >> \
         trigger_event_ingest_task >> trigger_population_creation_task >> \
