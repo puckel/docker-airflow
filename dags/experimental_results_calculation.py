@@ -172,7 +172,7 @@ with DAG('experimental_results_calculator',
         provide_context=True,
     )
 
-    start_task >> [get_date_to_calculate,
+    start_task >> [get_date_to_calculate_task,
                    create_intermediate_results_table_task] >> \
         get_active_experiment_and_population_map_task >> \
         calculate_intermediate_results_task >> insert_intermediate_records_task >> \
