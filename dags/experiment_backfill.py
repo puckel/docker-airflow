@@ -192,14 +192,10 @@ with DAG('experimental_backfill',
     )
 
     # We'll eventually split this dag apart
+    # This will trigger the population creation dag
     trigger_event_ingest_task = TriggerDagRunOperator(
         task_id='trigger_event_ingest',
         trigger_dag_id='experimental_event_ingest'
-    )
-
-    trigger_population_creation_task = TriggerDagRunOperator(
-        task_id='trigger_population_creation',
-        trigger_dag_id='experimental_population_creation'
     )
 
     get_backfill_dates_task = PythonOperator(
@@ -227,6 +223,6 @@ with DAG('experimental_backfill',
     # calculate_results_task = DummyOperator(task_id='calculate_results')
 
     start_task >> trigger_control_panel_sync_task >> \
-        trigger_event_ingest_task >> trigger_population_creation_task >> \
+        trigger_event_ingest_task >> \
         get_backfill_dates_task >> \
         backfill_intermediate_results_task >> calculate_results_task
