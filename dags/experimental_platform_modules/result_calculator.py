@@ -169,7 +169,7 @@ def _calculate_p_value(x):
             )
             p_value = result.pvalue
         except ZeroDivisionError as err:
-            print("Got an ZeroDivisionError %s" % err)
+            print("Got a ZeroDivisionError calculating ratio %s" % err)
             print("Row is %s" % x)
             print("Setting p_value to None")
             p_value = None  # Shouldn't really ever get here, but just in case
@@ -181,7 +181,7 @@ def _calculate_p_value(x):
             result = proportions_chisquare(numerators, denominators)
             p_value = result[1]
         except ZeroDivisionError:
-            print("Got an ZeroDivisionError %s" % err)
+            print("Got a ZeroDivisionError calculating proportion %s" % err)
             print("Row is %s" % x)
             print("Setting p_value to None")
             p_value = None  # Shouldn't really ever get here, but just in case
