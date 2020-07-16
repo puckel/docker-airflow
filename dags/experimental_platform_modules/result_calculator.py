@@ -144,10 +144,10 @@ def insert_intermediate_records(conn_id, records):
             'metric_type': metric_type,
             'segment': segment,
             'day': day.date().isoformat(),
-            'numerator': numerator,
-            'denominator': denominator,
-            'mean': mean,
-            'standard_deviation': standard_deviation,
+            'numerator': numerator or 0,
+            'denominator': denominator or 0,
+            'mean': mean or 0,
+            'standard_deviation': standard_deviation or 0,
         }
         pg_hook.run(query)
 
@@ -158,20 +158,33 @@ def _calculate_p_value(x):
         pass
 
     elif x['metric_type'].lower() == 'ratio':
-        result = ttest_ind_from_stats(
-            mean1=x['mean'],
-            std1=x['standard_deviation'],
-            nobs1=x['denominator'],
-            mean2=x['mean_compared'],
-            std2=x['standard_deviation_compared'],
-            nobs2=x['denominator_compared']
-        )
-        p_value = result.pvalue
+        try:
+            result = ttest_ind_from_stats(
+                mean1=x['mean'],
+                std1=x['standard_deviation'],
+                nobs1=x['denominator'],
+                mean2=x['mean_compared'],
+                std2=x['standard_deviation_compared'],
+                nobs2=x['denominator_compared']
+            )
+            p_value = result.pvalue
+        except ZeroDivisionError as err:
+            print("Got an ZeroDivisionError %s" % err)
+            print("Row is %s" % x)
+            print("Setting p_value to None")
+            p_value = None  # Shouldn't really ever get here, but just in case
+
     elif x['metric_type'].lower() == 'proportional':
         numerators = (x['numerator'], x['numerator_compared'])
         denominators = (x['denominator'], x['denominator_compared'])
-        result = proportions_chisquare(numerators, denominators)
-        p_value = result[1]
+        try:
+            result = proportions_chisquare(numerators, denominators)
+            p_value = result[1]
+        except ZeroDivisionError:
+            print("Got an ZeroDivisionError %s" % err)
+            print("Row is %s" % x)
+            print("Setting p_value to None")
+            p_value = None  # Shouldn't really ever get here, but just in case
 
     return p_value
 
