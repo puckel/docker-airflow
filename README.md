@@ -30,4 +30,3 @@ Dags for astronomer data org
 1. Pyenv believes aws to not be installed correctly
     - Install the aws cli via ui
     - `ln -s /usr/local/aws-cli/aws ~/.pyenv/shims/aws`
-2.
