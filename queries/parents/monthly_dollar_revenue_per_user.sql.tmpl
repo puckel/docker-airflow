@@ -1,0 +1,55 @@
+WITH results_raw AS (
+  SELECT
+    pop.experiment_id
+  , pop.entity_id
+  , pop.variant
+  -- Flag determines if entity_id has ever converted from free trial to paid on iOS.
+  , COUNT(CASE WHEN history.converted_to_paid THEN 1 END) > 0 AS converted_to_paid 
+  FROM %(table_name)s AS pop
+  LEFT JOIN frog.purchases
+    ON purchases.entityid = pop.entity_id
+   AND purchases.createdat BETWEEN pop.entered_at AND '%(ds)s'::TIMESTAMP
+   AND purchases.effectivedate IS NOT NULL
+   AND purchases.effectivedate BETWEEN pop.entered_at AND '%(ds)s'::TIMESTAMP
+   AND purchases.servicename = 'appleIAP'
+  LEFT JOIN cache.parent_paid_product_history_ios_new AS history
+    ON history.entityid = pop.entity_id
+  WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
+  GROUP BY 1,2,3
+)
+
+, results AS (
+  SELECT
+    pop.experiment_id
+  , pop.entity_id
+  , pop.variant
+  , SUM(
+      CASE
+        -- Using right since wildcard usage with like throws errors when using sqlalchemy
+        WHEN converted_to_paid and right(purchases.productname, 10) = 'Monthly799' THEN 7.99
+        WHEN converted_to_paid and right(purchases.productname, 10) = 'Monthly299' THEN 5.99
+        WHEN converted_to_paid and right(purchases.productname, 10) = 'Annual5999' THEN 59.99 / 12.0
+        WHEN converted_to_paid and right(purchases.productname, 12) = 'BiAnnual3999' THEN 39.99 / 6.0
+        ELSE 0.0
+      END
+    ) AS outcome
+  FROM results_raw AS pop
+  LEFT JOIN frog.purchases AS purchases
+    ON purchases.entityid = pop.entity_id
+  GROUP BY 1,2,3
+)
+
+SELECT
+  experiment_id
+, variant
+, '%(metric_name)s' AS metric_name
+, 'RATIO' AS metric_type
+, 'any' AS segment
+, '%(ds)s'::TIMESTAMP AS day
+, SUM(outcome) AS numerator
+, COUNT(entity_id) AS denominator
+, SUM(outcome)::FLOAT / COUNT(entity_id) AS mean
+, STDDEV(outcome) AS standard_deviation
+FROM results
+GROUP BY 1,2,3,4,5,6
+
