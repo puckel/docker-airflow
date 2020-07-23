@@ -26,8 +26,8 @@ create table ab_platform.experiment_populations_0599f61de2a74131b3d0be337de98627
   JOIN cache.teacher AS teachers
     ON teachers.teacherid = events.entityid
   WHERE events.eventname IN ('launchpad.new_user_communication_nux.seen.onboardingValues', 'launchpad.new_user_communication_nux.seen.welcomeMessage')
-    AND events.createdat BETWEEN '2020-07-01'::DATE AND '2020-07-01'::DATE + INTERVAL '13 days'
-    AND teachers.createdat BETWEEN '2020-07-01'::DATE AND '2020-07-01'::DATE + INTERVAL '13 days'
+    AND events.createdat >= '2020-07-01'::DATE
+    AND teachers.createdat >= '2020-07-01'::DATE
   GROUP BY 1,2,3,4,6
 );
 
