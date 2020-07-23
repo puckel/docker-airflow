@@ -4,7 +4,7 @@ WITH results AS (
   , pop.entity_id
   , pop.variant
   , pop.entered_at
-  , COUNT(DISTINCT CASE WHEN setup.activated THEN teacherid END) AS outcome
+  , COUNT(DISTINCT CASE WHEN setup.activated THEN pop.entity_id END) AS outcome
   FROM %(table_name)s AS pop
   LEFT JOIN (
     SELECT
@@ -18,7 +18,6 @@ WITH results AS (
     WHERE g.teacherstudentcreatedat BETWEEN t.createdat AND t.createdat + INTERVAL '7 days'
       AND g.teacherparentcreatedat BETWEEN t.createdat AND t.createdat + INTERVAL '7 days'
       AND t.is_tester IS FALSE
-      AND t.createdat BETWEEN pop.entered_at AND '%(ds)s'::TIMESTAMP
     GROUP BY 1
   ) AS setup
     ON setup.teacherid = pop.entity_id
