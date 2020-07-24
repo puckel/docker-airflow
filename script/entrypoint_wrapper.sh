@@ -7,11 +7,13 @@ fi
 
 case "$1" in
   webserver|worker|flower)
-    # Give the scheduler time to run initdb.
-    sleep 10
+    # Give the scheduler time to run upgradedb.
+    sleep 20
     exec /entrypoint "$@"
     ;;
   scheduler)
+    # Give postgres time to come up.
+    sleep 10
     airflow upgradedb
     exec /entrypoint "$@"
     ;;

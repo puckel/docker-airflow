@@ -12,7 +12,7 @@ services:
 
     webserver:
         extends:
-            file: docker-compose.airflow.yml
+            file: docker-compose.airflow.local.yml
             service: airflow
         container_name: af_webserver
         command: webserver
@@ -46,7 +46,7 @@ services:
 
     scheduler:
         extends:
-            file: docker-compose.airflow.yml
+            file: docker-compose.airflow.local.yml
             service: airflow
         container_name: af_scheduler
         command: scheduler
@@ -57,7 +57,7 @@ services:
 #            # Reduce how often DAGs are reloaded to dramatically reduce CPU use
 #            - AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL=${AF_MIN_FILE_PROCESS_INTERVAL-60}
 #            - AIRFLOW__SCHEDULER__MAX_THREADS=${AF_THREADS-1}
-#
+
 #networks:
 #    proxy:
 #        external: true
