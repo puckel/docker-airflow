@@ -10,7 +10,7 @@ This repository contains **Dockerfile** of [apache-airflow](https://github.com/a
 
 ## Informations
 
-* Based on Python (3.7-slim-buster) official Image [python:3.7-slim-buster](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
+* Based on Python (3.7-slim-buster) official Image [apache/airflow:1.10.11](https://hub.docker.com/r/apache/airflow) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
 * Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/apache-airflow)
@@ -163,7 +163,7 @@ it explicitly:
 | `REDIS_PROTO`     | `redis://`    | Protocol                       |
 | `REDIS_HOST`      | `redis`       | Redis server host              |
 | `REDIS_PORT`      | `6379`        | Redis server port              |
-| `REDIS_PASSWORD`  | empty         | If Redis is password protected |
+| `REDIS_PASSWORD`  | `redispass`   | If Redis is password protected |
 | `REDIS_DBNUM`     | `1`           | Database number                |
 
 You can also use those variables to adapt your compose file to match an existing Redis instance managed elsewhere.
