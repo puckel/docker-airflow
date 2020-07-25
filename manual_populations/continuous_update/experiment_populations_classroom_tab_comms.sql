@@ -10,16 +10,13 @@ create table ab_platform.experiment_populations_classroom_tab_comms_temp distkey
   FROM logs.classroom_tab_comms_experiment_event events
   WHERE
     /* REPLACE THIS WITH YOUR EXPERIMENT EXPOSURE EVENT */
-    eventname in (
-      'teacher.classroom.comms_experiment.control.exposure', 
-      'teacher.classroom.comms_experiment.treatment.exposure'
-    )
+    eventname = 'ios.teacher.classroom.comms_experiment.exposure'
 
     /* REPLACE THIS WITH YOUR EXPERIMENT START AND END DATE */
     AND events.createdat >= '2020-07-20' --Experiment start date
     and events.createdat < '2020-07-20'::timestamp + interval '30 days'
-/*    AND events.eventvalue != 'off'
-    AND events.eventvalue is not null */
+    AND events.eventvalue != 'off'
+    AND events.eventvalue is not null
   GROUP BY 
     entityid, 
     experiment_id, 
