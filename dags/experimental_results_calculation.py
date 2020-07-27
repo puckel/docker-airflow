@@ -1,7 +1,7 @@
 from airflow import DAG
 from airflow.hooks import PostgresHook
-from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
+from airflow.operators.sensors import ExternalTaskSensor
 
 from datetime import datetime, timedelta
 from dateutil import parser
@@ -118,18 +118,23 @@ default_task_kwargs = {
 }
 
 with DAG('experimental_results_calculator',
-         start_date=datetime(2020, 6, 25, 17),  # Starts at 5pm PST
+         start_date=datetime(2020, 6, 25, 0),
          max_active_runs=1,
          catchup=False,
-         schedule_interval=timedelta(days=1),
+         schedule_interval='@daily',
          default_args=default_args,
          on_failure_callback=failure_callback,
          on_success_callback=success_callback,
          ) as dag:
 
-    start_task = DummyOperator(
-        task_id='start'
+    start_task = ExternalTaskSensor(
+        task_id="start",
+        external_dag_id="experiment_population_creation"
     )
+
+    # start_task = DummyOperator(
+    #     task_id='start'
+    # )
     get_date_to_calculate_task = PythonOperator(
         task_id='get_date_to_calculate',
         python_callable=get_date_to_calculate,

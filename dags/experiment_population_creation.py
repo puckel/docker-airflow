@@ -126,10 +126,10 @@ default_args = {
 
 # Note this is a "dummy" DAG for now.
 with DAG('experimental_population_creation',
-         start_date=datetime(2020, 6, 10),
+         start_date=datetime(2020, 6, 25, 17),  # Starts at 5pm PST
          max_active_runs=1,
          catchup=False,
-         schedule_interval=None,
+         schedule_interval='@daily',
          default_args=default_args,
          on_success_callback=success_callback,
          on_failure_callback=failure_callback,
