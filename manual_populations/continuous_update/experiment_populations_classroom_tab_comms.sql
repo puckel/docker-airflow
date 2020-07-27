@@ -25,6 +25,7 @@ create table ab_platform.experiment_populations_classroom_tab_comms_temp distkey
 
 begin;
 grant all on ab_platform.experiment_populations_classroom_tab_comms_temp to group team;
+grant all on ab_platform.experiment_populations_classroom_tab_comms_temp to astronomer;
 drop table if exists ab_platform.experiment_populations_classroom_tab_comms cascade;
 alter table ab_platform.experiment_populations_classroom_tab_comms_temp rename to experiment_populations_classroom_tab_comms;
 commit;

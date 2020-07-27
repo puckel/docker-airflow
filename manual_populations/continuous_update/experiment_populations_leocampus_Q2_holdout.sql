@@ -22,3 +22,4 @@ create table ab_platform.experiment_populations_leocampus_Q2_holdout
 );
 
 grant all on ab_platform.experiment_populations_leocampus_Q2_holdout to group team;
+grant all on ab_platform.experiment_populations_leocampus_Q2_holdout to astronomer;

@@ -1,8 +1,9 @@
+import os
+
 from airflow import DAG
 from airflow.hooks import PostgresHook
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
-from airflow.sensors.sql_sensor import SqlSensor
 
 from datetime import datetime, timedelta
 
@@ -57,6 +58,21 @@ def create_mapping_table(conn_id, ts, **kwargs):
     );
     '''.format(POPULATION_MAPPING_TABLE)
     pg_hook.run(query)
+
+
+def generate_manual_population(conn_id, ts, **kwargs):
+    pg_hook = PostgresHook(conn_id)
+    parent_dir = './manual_populations/continuous_update'
+    for item in os.listdir(parent_dir):
+        item_path = os.path.join(parent_dir, item)
+        with open(item_path, 'r') as f:
+            query = f.read()
+            print("Running query found in {}".format(item))
+            try:
+                pg_hook.run(query)
+                print("Success!")
+            except Exception as e:
+                print("Error: {}".format(e))
 
 
 def get_manually_mapped_tables(conn_id, ts, **kwargs):
@@ -135,6 +151,13 @@ with DAG('experimental_population_creation',
         task_id='generate_automatic_population'
     )
 
+    generate_manual_population_task = PythonOperator(
+        task_id='generate_manual_population',
+        python_callable=generate_manual_population,
+        op_kwargs = {'conn_id': 'analytics_redshift'},
+        provide_context=True
+    )
+
     get_manually_mapped_tables_task = PythonOperator(
         task_id='get_manually_mapped_tables',
         python_callable=get_manually_mapped_tables,
@@ -150,5 +173,7 @@ with DAG('experimental_population_creation',
     )
 
     # DAG for the population ingestion
-    start_task >> create_mapping_table_task >> [
-        generate_automatic_population_task, get_manually_mapped_tables_task] >> write_mappings_task
+    start_task >> \
+    create_mapping_table_task >> \
+    [generate_automatic_population_task, generate_manual_population_task, get_manually_mapped_tables_task] >> \
+    write_mappings_task

@@ -23,5 +23,6 @@ create table ab_platform.experiment_populations_aa25a1b51194404d8e6e4eee49deed33
 );
 
 grant all on ab_platform.experiment_populations_aa25a1b51194404d8e6e4eee49deed33 to group team;
+grant all on ab_platform.experiment_populations_aa25a1b51194404d8e6e4eee49deed33 to astronomer;
 
 
