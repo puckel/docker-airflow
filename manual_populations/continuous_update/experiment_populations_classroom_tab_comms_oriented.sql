@@ -3,7 +3,7 @@ drop table if exists ab_platform.experiment_populations_classroom_tab_comms_orie
 create table ab_platform.experiment_populations_classroom_tab_comms_oriented_temp distkey(entity_id) sortkey(entity_id) as (
   select
     '0bad1983-344c-452d-a911-91bb44d986f4' as experiment_id,
-    min(eventname)          as variant,
+    min(eventvalue)          as variant,
     entityid as entity_id,
     'Teachers' as entity_type,
     min(createdat)          as entered_at
