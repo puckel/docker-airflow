@@ -215,6 +215,7 @@ def calculate_results(conn_id):
         schema='ab_platform',
         if_exists='replace',
         index=False,
+        method='multi',
         dtype={
             "experiment_id": sqlalchemy.types.VARCHAR(36),
             "variant": sqlalchemy.types.VARCHAR(128),
