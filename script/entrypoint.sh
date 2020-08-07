@@ -115,6 +115,7 @@ case "$1" in
       airflow scheduler &
     fi
     exec airflow webserver
+    exec airflow create_user -r Admin -u airflow -e airflow@example.com -f air -l flow -p airflow123
     ;;
   worker|scheduler)
     # Give the webserver time to run initdb.
