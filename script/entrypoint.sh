@@ -116,20 +116,26 @@ fi
 
 case "$1" in
   webserver)
+    echo "555$AIRFLOW__CORE__SQL_ALCHEMY_CONN" >> a.log
+    echo "$1" >> a.log
+    echo webserver >> a.log
     airflow initdb
     if [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ] || [ "$AIRFLOW__CORE__EXECUTOR" = "SequentialExecutor" ]; then
       # With the "Local" and "Sequential" executors it should all run in one container.
       airflow scheduler &
     fi
+    echo "666$AIRFLOW__CORE__EXECUTOR" >> a.log
     exec airflow webserver
     ;;
   worker|scheduler)
     # Give the webserver time to run initdb.
     sleep 10
+    echo "777$AIRFLOW__CORE__EXECUTOR" >> a.log
     exec airflow "$@"
     ;;
   flower)
     sleep 10
+    echo "888$AIRFLOW__CORE__EXECUTOR" >> a.log
     exec airflow "$@"
     ;;
   version)
