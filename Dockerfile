@@ -28,8 +28,8 @@ ENV LC_MESSAGES en_US.UTF-8
 # Disable noisy "Handling signal" log messages:
 # ENV GUNICORN_CMD_ARGS --log-level WARNING
 # use source internal
-COPY debian.tsinghua.source.txt .
-RUN cat ./debian.source.txt > /etc/apt/sources.list
+COPY debian.tsinghua.source.txt /user/local/debian.tsinghua.source.txt
+RUN cat /user/local/debian.tsinghua.source.txt > /etc/apt/sources.list
 
 RUN set -ex \
     && buildDeps=' \
