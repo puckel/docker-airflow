@@ -28,9 +28,8 @@ ENV LC_MESSAGES en_US.UTF-8
 # Disable noisy "Handling signal" log messages:
 # ENV GUNICORN_CMD_ARGS --log-level WARNING
 # use source internal
-#COPY debian.source.txt /user/local/debian.ource.txt
-#RUN cat /user/local/debian.source.txt > /etc/apt/sources.list
-RUN cat debian.source.txt > /etc/apt/sources.list
+COPY debian.source.txt /user/local/debian.ource.txt
+RUN cat /user/local/debian.source.txt > /etc/apt/sources.list
 
 RUN set -ex \
     && buildDeps=' \
