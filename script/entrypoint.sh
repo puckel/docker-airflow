@@ -12,6 +12,10 @@ TRY_LOOP="20"
 : "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}}"
 : "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR}Executor}"
 
+echo $AIRFLOW__CORE__EXECUTOR >> a.log
+echo AIRFLOW__CORE__FERNET_KEY >> a.log
+echo AIRFLOW__CORE__LOAD_EXAMPLES >> a.log
+
 # Load DAGs examples (default: Yes)
 if [[ -z "$AIRFLOW__CORE__LOAD_EXAMPLES" && "${LOAD_EX:=n}" == n ]]; then
   AIRFLOW__CORE__LOAD_EXAMPLES=False
