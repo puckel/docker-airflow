@@ -6,7 +6,7 @@ on:
       - master
   pull_request:
     branches:
-    - master
+      - master
 
 jobs:
   ci:
@@ -14,5 +14,5 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: docker build -t "${PWD##*/}" .
-      - run: docker run "${PWD##*/}" python -V
-      - run: docker run "${PWD##*/}" version
+      - run: docker run "${PWD##*/}" python -V | grep '3.6'
+      - run: docker run "${PWD##*/}" version | grep '1.10.11'

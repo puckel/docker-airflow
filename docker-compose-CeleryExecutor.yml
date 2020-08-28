@@ -1,12 +1,12 @@
 version: '2.1'
 services:
     redis:
-        image: 'redis:5.0.5'
+        image: redis:latest
         container_name: af_redis
         command: redis-server --requirepass redispass
 
     postgres:
-        image: postgres:9.6
+        image: postgres:latest
         container_name: af_postgres
         environment:
             - POSTGRES_USER=airflow
@@ -75,7 +75,7 @@ services:
             - postgres
             - redis
 #        environment:
-#            # Performance Tweaks
+#            # Scheduler Performance Tweaks
 #            # Reduce how often DAGs are reloaded to dramatically reduce CPU use
 #            - AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL=${AF_MIN_FILE_PROCESS_INTERVAL-60}
 #            - AIRFLOW__SCHEDULER__MAX_THREADS=${AF_THREADS-1}

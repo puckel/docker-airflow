@@ -1,7 +1,7 @@
 version: '2.1'
 services:
     postgres:
-        image: postgres:9.6
+        image: postgres:latest
         container_name: af_postgres
         environment:
             - POSTGRES_USER=airflow
@@ -10,12 +10,12 @@ services:
 #        ports:
 #            -  5432:5432
 
-    webserver:
+    scheduler:
         extends:
             file: docker-compose.airflow.local.yml
             service: airflow
-        container_name: af_webserver
-        command: webserver
+        container_name: af_scheduler
+        command: scheduler
         depends_on:
             - postgres
         ports:
@@ -34,6 +34,11 @@ services:
 #            - AIRFLOW__WEBSERVER__WORKERS=5
 #            # Restart workers every 30min instead of 30seconds
 #            - AIRFLOW__WEBSERVER__WORKER_REFRESH_INTERVAL=1800
+#
+#            # Scheduler Performance Tweaks
+#            # Reduce how often DAGs are reloaded to dramatically reduce CPU use
+#            - AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL=${AF_MIN_FILE_PROCESS_INTERVAL-60}
+#            - AIRFLOW__SCHEDULER__MAX_THREADS=${AF_THREADS-1}
 #        labels:
 #            - "traefik.enable=true"
 #            - "traefik.http.routers.airflow.rule=Host(`af.example.com`)"
@@ -43,20 +48,6 @@ services:
             interval: 30s
             timeout: 30s
             retries: 3
-
-    scheduler:
-        extends:
-            file: docker-compose.airflow.local.yml
-            service: airflow
-        container_name: af_scheduler
-        command: scheduler
-        depends_on:
-            - postgres
-#        environment:
-#            # Performance Tweaks
-#            # Reduce how often DAGs are reloaded to dramatically reduce CPU use
-#            - AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL=${AF_MIN_FILE_PROCESS_INTERVAL-60}
-#            - AIRFLOW__SCHEDULER__MAX_THREADS=${AF_THREADS-1}
 
 #networks:
 #    proxy:

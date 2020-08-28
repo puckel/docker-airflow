@@ -8,13 +8,19 @@ fi
 case "$1" in
   webserver|worker|flower)
     # Give the scheduler time to run upgradedb.
-    sleep 20
+    sleep 10
     exec /entrypoint "$@"
     ;;
   scheduler)
-    # Give postgres time to come up.
-    sleep 10
+    echo "Attempting upgradedb command.."
+    # In upgradedb default connections are not populated. Use "airflow initdb" instead for default connections.
     airflow upgradedb
+    if [[ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ]] || [[ "$AIRFLOW__CORE__EXECUTOR" = "SequentialExecutor" ]];
+    then
+      # Running webserver in scheduler instead of reverse to maintain consistency in Makefile.
+      # With the "Local" and "Sequential" executors it should all run in one container.
+      airflow webserver &
+    fi
     exec /entrypoint "$@"
     ;;
   bash|python)

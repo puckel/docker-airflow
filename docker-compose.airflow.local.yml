@@ -1,11 +1,8 @@
 version: '2.1'
 services:
     airflow:
-#        image: apache/airflow:1.10.11
         build:
             context: .
-#            args:
-#                - DOCKER_UID=${DOCKER_UID-1000}
             dockerfile: Dockerfile
         restart: always
         environment:

@@ -1,1 +1,6 @@
 .git
+.github
+*.yml
+Makefile
+README.md
+LICENSE
