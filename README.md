@@ -6,7 +6,8 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/swapniel99/docker-airflow.svg)]()
 [![Docker Stars](https://img.shields.io/docker/stars/swapniel99/docker-airflow.svg)]()
 
-(Readme not fully updated.q)
+(Readme not fully updated.)
+
 This repository contains **Dockerfile** of [apache-airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/swapniel99/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
 ## Informations
