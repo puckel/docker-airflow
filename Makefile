@@ -53,13 +53,13 @@ conf:
 	docker-compose -f $(FILE) config
 
 initdb:
-	docker-compose -f $(FILE) run --rm $(SERVICE) airflow initdb
+	docker-compose -f $(FILE) run --rm $(SERVICE) initdb
 
 upgradedb:
-	docker-compose -f $(FILE) run --rm $(SERVICE) airflow upgradedb
+	docker-compose -f $(FILE) run --rm $(SERVICE) upgradedb
 
 resetdb:
-	docker-compose -f $(FILE) run --rm $(SERVICE) airflow resetdb
+	docker-compose -f $(FILE) run --rm $(SERVICE) resetdb
 
 rbacadmin:
 	# Change user details and password after login if using RBAC mode.
