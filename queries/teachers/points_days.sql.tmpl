@@ -26,7 +26,7 @@ SELECT
   experiment_id
 , variant
 , '%(metric_name)s' AS metric_name
-, 'PROPORTIONAL' AS metric_type
+, 'RATIO' AS metric_type
 , 'any' AS segment
 , '%(ds)s'::TIMESTAMP AS day
 , SUM(outcome) AS numerator
