@@ -1,0 +1,21 @@
+version: '2.1'
+services:
+    airflow:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        restart: always
+        environment:
+            - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+            - AIRFLOW__CORE__FERNET_KEY=KPr56n1SCB9uoco1cjT0Nyr-dKopjaRsNK0K_bBYpZQ=
+            - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+            - AIRFLOW__CORE__DEFAULT_TIMEZONE=system
+            - AIRFLOW__CORE__LOAD_EXAMPLES=True
+            - AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS=True
+            - AIRFLOW__CELERY__BROKER_URL=redis://:redispass@redis:6379/0
+            - AIRFLOW__CELERY__RESULT_BACKEND=db+postgresql://airflow:airflow@postgres:5432/airflow
+        volumes:
+            - ./dags:/opt/airflow/dags:z
+#            - ./plugins:/opt/airflow/plugins:z
+#            - ./volumes/airflow_data_dump:/opt/airflow/data_dump:z
+#            - ./volumes/airflow_logs:/opt/airflow/logs:z
