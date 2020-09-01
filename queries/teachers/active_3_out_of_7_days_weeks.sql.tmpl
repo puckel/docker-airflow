@@ -4,12 +4,14 @@ WITH results AS (
   , pop.entity_id
   , pop.variant
   , pop.entered_at
-  , COUNT(DISTINCT CONCAT(to_char(_3d7_wact_weeks.week, 'YYYY-MM-DD'), _3d7_wact_weeks.teacherid)) AS outcome
+  , COUNT(DISTINCT CONCAT(to_char(twa.week, 'YYYY-MM-DD'), twa.teacherid)) AS outcome
   FROM %(table_name)s AS pop
-  LEFT JOIN temp.tiger_team_wact_events_by_week AS _3d7_wact_weeks
-    ON _3d7_wact_weeks.teacherid = pop.entity_id
-   AND _3d7_wact_weeks.week BETWEEN pop.entered_at AND '%(ds)s'::TIMESTAMP
-   AND _3d7_wact_weeks.is_3d7_wact
+  LEFT JOIN cache.teacher_weekly_active AS twa
+    ON twa.teacherid = pop.entity_id
+   AND twa.week >= pop.entered_at
+   AND twa.week = date_trunc('week', '%(ds)s'::TIMESTAMP)
+   /*Need to figure out how to best remove weeks with just a day or so*/
+   AND twa.is3d7wact
   WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
   GROUP BY 1,2,3,4
 )
