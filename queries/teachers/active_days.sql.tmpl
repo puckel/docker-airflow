@@ -4,11 +4,13 @@ WITH results AS (
   , pop.entity_id
   , pop.variant
   , pop.entered_at
-  , COUNT(DISTINCT CONCAT(to_char(active_days.day, 'YYYY-MM-DD'), active_days.teacherid)) AS outcome
+  , COUNT(DISTINCT CONCAT(to_char(tda.day, 'YYYY-MM-DD'), tda.teacherid)) AS outcome
   FROM %(table_name)s AS pop
-  LEFT JOIN temp.tiger_team_dact_events_by_day AS active_days
-    ON active_days.teacherid = pop.entity_id
-   AND active_days.day BETWEEN pop.entered_at AND '%(ds)s'::TIMESTAMP
+  LEFT JOIN cache.teacher_daily_active AS tda
+    ON tda.teacherid = pop.entity_id
+   AND tda.day >= pop.entered_at
+   AND tda.day <= '%(ds)s'::TIMESTAMP
+   AND tda.day >= '%(ds)s'::TIMESTAMP - interval '6 days'
   WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
   GROUP BY 1,2,3,4
 )
