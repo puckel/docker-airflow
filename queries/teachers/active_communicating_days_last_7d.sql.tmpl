@@ -11,7 +11,7 @@ WITH results AS (
    AND tda.day >= pop.entered_at
    AND tda.day <= '%(ds)s'::TIMESTAMP
    AND tda.day >= '%(ds)s'::TIMESTAMP - interval '6 days'
-   AND tds.isdact
+   AND tda.isdact
   WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
   GROUP BY 1,2,3,4
 )
