@@ -1,3 +1,6 @@
+/*Note, need to figure out how to best remove weeks with just a day or so of teacherstudentcreatedat
+but think this might be best done in upstream tables*/
+
 WITH results AS (
   SELECT
     pop.experiment_id
@@ -10,7 +13,6 @@ WITH results AS (
     ON twa.teacherid = pop.entity_id
    AND twa.week >= pop.entered_at
    AND twa.week = date_trunc('week', '%(ds)s'::TIMESTAMP)
-   /*Need to figure out how to best remove weeks with just a day or so*/
    AND twa.is3d7wact
   WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
   GROUP BY 1,2,3,4
