@@ -120,6 +120,7 @@ case "$1" in
     echo "$1" >> a.log
     echo webserver >> a.log
     airflow initdb
+    airflow create_user -r Admin -u airflow -e airflow@example.com -f air -l flow -p airflow123
     if [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ] || [ "$AIRFLOW__CORE__EXECUTOR" = "SequentialExecutor" ]; then
       # With the "Local" and "Sequential" executors it should all run in one container.
       airflow scheduler &
