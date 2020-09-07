@@ -109,7 +109,7 @@ This can be used to scale to a multi node setup using docker swarm.
 
 or use command force:
 
-docker-compose -f docker-compose-CeleryExecutor.yml up --scale worker=2 --force-recreate --build
+    docker-compose -f docker-compose-CeleryExecutor.yml up --scale worker=3 --force-recreate --build
 
 ## Running other airflow commands
 
