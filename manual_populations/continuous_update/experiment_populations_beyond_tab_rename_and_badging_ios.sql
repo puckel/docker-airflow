@@ -1,8 +1,11 @@
-/* Ben's hello world population
+/* Beyond tab rename and Beyond badging experiment
+(variants: control, tab rename, tab rename + badging)
+
+Moneyfrog BTS 2020 experiment.
 */
 
-drop table if exists ab_platform.experiment_populations_beyond_tab_rename_and_badging_ios;
-create table ab_platform.experiment_populations_beyond_tab_rename_and_badging_ios
+drop table if exists ab_platform.experiment_populations_beyond_tab_rename_and_badging_ios_temp;
+create table ab_platform.experiment_populations_beyond_tab_rename_and_badging_ios_temp
   distkey(entity_id)
   sortkey(entity_id)
   as (
@@ -20,5 +23,9 @@ create table ab_platform.experiment_populations_beyond_tab_rename_and_badging_io
   GROUP BY 1,2,3,4
 );
 
-grant all on ab_platform.experiment_populations_beyond_tab_rename_and_badging_ios to group team;
-grant all on ab_platform.experiment_populations_beyond_tab_rename_and_badging_ios to astronomer;
+begin;
+grant all on ab_platform.experiment_populations_beyond_tab_rename_and_badging_ios_temp to group team;
+grant all on ab_platform.experiment_populations_beyond_tab_rename_and_badging_ios_temp to astronomer;
+drop table if exists ab_platform.experiment_populations_beyond_tab_rename_and_badging_ios cascade;
+alter table ab_platform.experiment_populations_beyond_tab_rename_and_badging_ios_temp rename to experiment_populations_beyond_tab_rename_and_badging_ios;
+commit;
