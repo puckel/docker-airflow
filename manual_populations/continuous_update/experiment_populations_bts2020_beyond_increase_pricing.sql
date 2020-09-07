@@ -9,7 +9,7 @@ create table ab_platform.experiment_populations_bts2020_beyond_increase_pricing_
     entityid                                                                     as entity_id,
     'Parents'                                                                    as entity_type,
     min(createdat)                                                               as entered_at
-  from logs.product_event_raw
+  from logs.product_event_no_pii
   where
     eventname = 'ios.parent.paid_product.sales_page.exposure'
     and createdat >= '2020-09-02'
