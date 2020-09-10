@@ -107,6 +107,10 @@ Easy scaling using docker-compose:
 
 This can be used to scale to a multi node setup using docker swarm.
 
+or use command force:
+
+    docker-compose -f docker-compose-CeleryExecutor.yml up --scale worker=3 --force-recreate --build
+
 ## Running other airflow commands
 
 If you want to run other airflow sub-commands, such as `list_dags` or `clear` you can do so like this:

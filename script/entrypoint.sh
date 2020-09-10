@@ -10,7 +10,11 @@ TRY_LOOP="20"
 # Global defaults and back-compat
 : "${AIRFLOW_HOME:="/usr/local/airflow"}"
 : "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}}"
-: "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR:-Sequential}Executor}"
+: "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR}Executor}"
+
+echo $AIRFLOW__CORE__EXECUTOR >> a.log
+echo $AIRFLOW__CORE__FERNET_KEY >> a.log
+echo $AIRFLOW__CORE__LOAD_EXAMPLES >> a.log
 
 # Load DAGs examples (default: Yes)
 if [[ -z "$AIRFLOW__CORE__LOAD_EXAMPLES" && "${LOAD_EX:=n}" == n ]]; then
@@ -44,8 +48,10 @@ wait_for_port() {
 
 # Other executors than SequentialExecutor drive the need for an SQL database, here PostgreSQL is used
 if [ "$AIRFLOW__CORE__EXECUTOR" != "SequentialExecutor" ]; then
+  echo "111$AIRFLOW__CORE__LOAD_EXAMPLES" >> a.log
   # Check if the user has provided explicit Airflow configuration concerning the database
   if [ -z "$AIRFLOW__CORE__SQL_ALCHEMY_CONN" ]; then
+    echo "222$AIRFLOW__CORE__SQL_ALCHEMY_CONN" >> a.log
     # Default values corresponding to the default compose files
     : "${POSTGRES_HOST:="postgres"}"
     : "${POSTGRES_PORT:="5432"}"
@@ -56,7 +62,7 @@ if [ "$AIRFLOW__CORE__EXECUTOR" != "SequentialExecutor" ]; then
 
     AIRFLOW__CORE__SQL_ALCHEMY_CONN="postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}${POSTGRES_EXTRAS}"
     export AIRFLOW__CORE__SQL_ALCHEMY_CONN
-
+    echo "333$AIRFLOW__CORE__SQL_ALCHEMY_CONN" >> a.log
     # Check if the user has provided explicit Airflow configuration for the broker's connection to the database
     if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
       AIRFLOW__CELERY__RESULT_BACKEND="db+postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}${POSTGRES_EXTRAS}"
@@ -97,6 +103,7 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
 
     AIRFLOW__CELERY__BROKER_URL="${REDIS_PROTO}${REDIS_PREFIX}${REDIS_HOST}:${REDIS_PORT}/${REDIS_DBNUM}"
     export AIRFLOW__CELERY__BROKER_URL
+    echo "444$AIRFLOW__CORE__SQL_ALCHEMY_CONN" >> a.log
   else
     # Derive useful variables from the AIRFLOW__ variables provided explicitly by the user
     REDIS_ENDPOINT=$(echo -n "$AIRFLOW__CELERY__BROKER_URL" | cut -d '/' -f3 | sed -e 's,.*@,,')
@@ -109,20 +116,27 @@ fi
 
 case "$1" in
   webserver)
+    echo "555$AIRFLOW__CORE__SQL_ALCHEMY_CONN" >> a.log
+    echo "$1" >> a.log
+    echo webserver >> a.log
     airflow initdb
+    airflow create_user -r Admin -u airflow -e airflow@example.com -f air -l flow -p airflow123
     if [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ] || [ "$AIRFLOW__CORE__EXECUTOR" = "SequentialExecutor" ]; then
       # With the "Local" and "Sequential" executors it should all run in one container.
       airflow scheduler &
     fi
+    echo "666$AIRFLOW__CORE__EXECUTOR" >> a.log
     exec airflow webserver
     ;;
   worker|scheduler)
     # Give the webserver time to run initdb.
     sleep 10
+    echo "777$AIRFLOW__CORE__EXECUTOR" >> a.log
     exec airflow "$@"
     ;;
   flower)
     sleep 10
+    echo "888$AIRFLOW__CORE__EXECUTOR" >> a.log
     exec airflow "$@"
     ;;
   version)
