@@ -17,9 +17,6 @@ services:
 
     webserver:
         image: movingheart/docker-airflow:1.10.12
-        build:
-            context: .
-            dockerfile: Dockerfile
         restart: always
         depends_on:
             - postgres
@@ -47,9 +44,6 @@ services:
 
     flower:
         image: movingheart/docker-airflow:1.10.12
-        build:
-            context: .
-            dockerfile: Dockerfile
         restart: always
         depends_on:
             - redis
@@ -62,9 +56,6 @@ services:
 
     scheduler:
         image: movingheart/docker-airflow:1.10.12
-        build:
-            context: .
-            dockerfile: Dockerfile
         restart: always
         depends_on:
             - webserver
@@ -84,9 +75,6 @@ services:
 
     worker:
         image: movingheart/docker-airflow:1.10.12
-        build:
-            context: .
-            dockerfile: Dockerfile
         restart: always
         depends_on:
             - scheduler
