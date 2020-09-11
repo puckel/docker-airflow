@@ -13,7 +13,7 @@ create table ab_platform.experiment_populations_bts2020_beyond_increase_pricing_
   where
     eventname = 'ios.parent.paid_product.sales_page.exposure'
     and createdat >= '2020-09-02'
-    and createdat <= getdate()
+    and createdat < '2020-09-11 22:00:00'
     and json_extract_path_text(metadata, 'iOS_parentPricingExperimentBTS2020', TRUE) != 'off'
     and json_extract_path_text(metadata, 'iOS_parentPricingExperimentBTS2020', TRUE) != ''
   group by
