@@ -12,7 +12,13 @@ services:
                 max-file: "3"
 
     webserver:
-        image: puckel/docker-airflow:1.10.9
+        image: eduardofernandezvillazon/docker-airflow-uk-hydro:latest
+        build:
+            context: https://github.com/EduardoFernandezVillazon/Docker_Airflow_Setup_UK_HDE.git
+            dockerfile: Dockerfile
+            args:
+                AIRFLOW_DEPS: "datadog,dask"
+                PYTHON_DEPS: "flask_oauthlib>=0.9"
         restart: always
         depends_on:
             - postgres
