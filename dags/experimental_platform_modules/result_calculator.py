@@ -6,6 +6,7 @@ from statsmodels.stats.proportion import proportions_chisquare
 import os
 import pandas
 import sqlalchemy
+import time
 
 
 CONTROL_PANEL_TABLE = 'ab_platform.experiment_control_panel'
@@ -79,7 +80,7 @@ def get_templates(population_type):
     return d
 
 
-def calculate_intermediate_result_for_day(conn_id, dt, experiment_to_population_map):
+def calculate_intermediate_result_for_day(conn_id, dt, experiment_to_population_map, timeout=None):
     pg_hook = PostgresHook(conn_id)
     # Get metric templates from ../queries
     # This is basically a query cache so we don't have to constantly open and close files
@@ -108,6 +109,8 @@ def calculate_intermediate_result_for_day(conn_id, dt, experiment_to_population_
             }
             records = pg_hook.get_records(s)
             all_records += records
+            if timeout:
+                time.sleep(1.0)
 
     return all_records
 

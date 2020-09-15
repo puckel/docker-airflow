@@ -11,6 +11,7 @@ from experimental_platform_modules import result_calculator
 
 import pandas
 import uuid
+import time
 
 CONTROL_PANEL_TABLE_ONLY = 'experiment_control_panel'
 EXPERIMENTAL_METADATA_TABLE = 'ab_platform.backfill_run'
@@ -137,20 +138,26 @@ def backfill_intermediate_results(analytics_conn_id, frontend_conn_id, ts, **kwa
 
     # Do it all in one go instead of piecemeal like the result calculator graph
     for dt in backfill_dates:
-        # We have to get the list of active experiments on each particular date to be able to accurately
-        # Run the backfill
-        print("Running backfill for {}".format(dt.isoformat()))
-        experiment_to_population_map = result_calculator.get_active_experiment_and_population_map(
-            analytics_conn_id, dt)
-        print("Found active {} active experiments {}".format(
-            len(experiment_to_population_map), experiment_to_population_map.keys()))
+        try:
+            # We have to get the list of active experiments on each particular date to be able to accurately
+            # Run the backfill
+            print("Running backfill for {}".format(dt.isoformat()))
+            experiment_to_population_map = result_calculator.get_active_experiment_and_population_map(
+                analytics_conn_id, dt)
+            print("Found active {} active experiments {}".format(
+                len(experiment_to_population_map), experiment_to_population_map.keys()))
 
-        records = result_calculator.calculate_intermediate_result_for_day(
-            analytics_conn_id, dt,
-            experiment_to_population_map
-        )
-        result_calculator.insert_intermediate_records(
-            frontend_conn_id, records)
+            records = result_calculator.calculate_intermediate_result_for_day(
+                analytics_conn_id, dt,
+                experiment_to_population_map
+            )
+            result_calculator.insert_intermediate_records(
+                frontend_conn_id, records)
+            time.sleep(1.0)
+        except Exception as e:
+            print("Got error {}".format(e))
+            print ("Continuing to next date")
+            continue
 
 
 def calculate_results(frontend_conn_id, **kwargs):

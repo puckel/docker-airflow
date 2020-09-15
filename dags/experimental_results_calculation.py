@@ -87,7 +87,7 @@ def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
         task_ids='get_active_experiment_and_population_map'
     )
 
-    return result_calculator.calculate_intermediate_result_for_day(analytics_conn_id, yesterday, experiment_to_population_map)
+    return result_calculator.calculate_intermediate_result_for_day(analytics_conn_id, yesterday, experiment_to_population_map, timeout=True)
 
 
 def insert_intermediate_records(frontend_conn_id, ts, **kwargs):
