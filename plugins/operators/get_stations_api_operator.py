@@ -1,6 +1,7 @@
 import requests
 import os
 from pandas import DataFrame
+from sqlalchemy import  create_engine
 # from pyspark.sql import SparkSession
 # from airflow.hooks.postgres_hook import PostgresHook
 # from airflow.hooks.S3_hook import S3Hook
@@ -100,13 +101,13 @@ class GetStationsAPIOperator(BaseOperator):
         user = "airflow"
         password = "airflow"
 
-        sql_connection = ""
+        sql_connection = create_engine(f"postgresql://{user}:{password}@postgres:5432/{database}".format(user=user, password=password, database=database))
 
-        stations_df.to_sql(name="stations", con=sql_connection, schema=None, if_exists='replace')
+        stations_df.to_sql(name=table, con=sql_connection, schema=None, if_exists='replace')
 
         # stations_df.write.mode("overwrite") \
         #     .format("jdbc") \
-        #     .option("url", f"jdbc:sqlserver://localhost:5432;databaseName={database};") \
+        #     .option("url", f"jdbc:sqlserver://0.0.0.0:5432;databaseName={database};") \
         #     .option("dbtable", table) \
         #     .option("user", user) \
         #     .option("password", password) \
