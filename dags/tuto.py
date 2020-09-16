@@ -4,6 +4,7 @@ http://airflow.readthedocs.org/en/latest/tutorial.html
 """
 from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
+from operators.get_stations_api_operator import GetStationsAPIOperator
 from datetime import datetime, timedelta
 
 
@@ -22,10 +23,10 @@ default_args = {
     # 'end_date': datetime(2016, 1, 1),
 }
 
-dag = DAG("tutorial", default_args=default_args, schedule_interval=timedelta(1))
+dag = DAG("tutorial", default_args=default_args) #, schedule_interval=timedelta(1)
 
 # t1, t2 and t3 are examples of tasks created by instantiating operators
-t1 = BashOperator(task_id="print_date", bash_command="date", dag=dag)
+t1 = GetStationsAPIOperator(task_id="Get_Stations_from_API", dag=dag)
 
 t2 = BashOperator(task_id="sleep", bash_command="sleep 5", retries=3, dag=dag)
 
