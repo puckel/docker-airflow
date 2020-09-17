@@ -219,6 +219,7 @@ def calculate_results(conn_id):
         if_exists='replace',
         index=False,
         method='multi',
+        chunksize=10000,
         dtype={
             "experiment_id": sqlalchemy.types.VARCHAR(36),
             "variant": sqlalchemy.types.VARCHAR(128),
