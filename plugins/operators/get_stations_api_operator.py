@@ -21,7 +21,7 @@ class GetStationsAPIOperator(BaseOperator):
     def execute(self, context):
 
         # Call REST API:
-        API_endpoint = "https://environment.data.gov.uk/hydrology/id/stations.json?"
+        API_endpoint = "https://environment.data.gov.uk/hydrology/id/stations.json?_limit=5"
         response = requests.get(API_endpoint)
         stations = response.json()["items"]
 
