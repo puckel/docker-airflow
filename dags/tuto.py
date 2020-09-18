@@ -12,7 +12,7 @@ default_args = {
     "owner": "airflow",
     "depends_on_past": False,
     "max_active_runs": 1,
-    "start_date": datetime(2020, 9, 15),
+    "start_date": datetime(2020, 9, 16),
     "email": ["airflow@airflow.com"],
     "email_on_failure": False,
     "email_on_retry": False,

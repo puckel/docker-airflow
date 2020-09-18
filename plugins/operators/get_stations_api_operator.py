@@ -1,6 +1,8 @@
 import requests
 import os
 from pandas import DataFrame
+from io import StringIO
+import psycopg2
 from sqlalchemy import  create_engine
 # from pyspark.sql import SparkSession
 # from airflow.hooks.postgres_hook import PostgresHook
@@ -49,40 +51,6 @@ class GetStationsAPIOperator(BaseOperator):
 
     def execute(self, context):
 
-        # S3_hook = S3Hook(self.aws_credentials_id)
-        # credentials = S3_hook.get_credentials()
-        # redshift = PostgresHook(postgres_conn_id=self.postgres_conn_id)
-        #
-        # self.log.info("Clearing data from destination Redshift table")
-        # redshift.run("DELETE FROM {}".format(self.table))
-        #
-        # self.log.info("Copying data from S3 to Redshift")
-        # rendered_key = self.s3_key.format(**context)
-        # s3_path = "s3://{}/{}".format(self.s3_bucket, rendered_key)
-        #
-        # formatted_sql = GetStationsAPIOperator.copy_sql.format(
-        #     self.table,
-        #     s3_path,
-        #     credentials.access_key,
-        #     credentials.secret_key,
-        #     self.json_path,
-        #     self.ignore_header,
-        #     self.delimiter
-        # )
-        #
-        # redshift.run(formatted_sql)
-        # Call REST API:
-        # Set spark environments
-        # os.environ['PYSPARK_PYTHON'] = '/usr/bin/python3'
-        # os.environ['PYSPARK_DRIVER_PYTHON'] = '/usr/bin/python3'
-        #
-        # spark = SparkSession \
-        #     .builder \
-        #     .appName("Get Stations From API") \
-        #     .getOrCreate()
-        #
-        # sc = spark.sparkContext
-
         # Call REST API:
         API_endpoint = "https://environment.data.gov.uk/hydrology/id/stations.json?"
         response = requests.get(API_endpoint)
@@ -101,15 +69,14 @@ class GetStationsAPIOperator(BaseOperator):
         user = "airflow"
         password = "airflow"
 
-        sql_connection = create_engine(f"postgresql://{user}:{password}@postgres:5432/{database}".format(user=user, password=password, database=database))
+        sql_connection = create_engine(f"postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(user=user, password=password, database=database))
 
-        stations_df.to_sql(name=table, con=sql_connection, schema=None, if_exists='replace')
+        stations_df.head(0).to_sql(name=table, con=sql_connection, if_exists='replace', index=False)
 
-        # stations_df.write.mode("overwrite") \
-        #     .format("jdbc") \
-        #     .option("url", f"jdbc:sqlserver://0.0.0.0:5432;databaseName={database};") \
-        #     .option("dbtable", table) \
-        #     .option("user", user) \
-        #     .option("password", password) \
-        #     .save()
-            # .option("driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver") \
+        conn = sql_connection.raw_connection()
+        cur = conn.cursor()
+        output = StringIO()
+        stations_df.to_csv(output, sep='\t', header=False, index=False)
+        output.seek(0)
+        cur.copy_from(output, table, null="", sep='\t')
+        conn.commit()
