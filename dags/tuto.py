@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 
 default_args = {
     "owner": "airflow",
-    "depends_on_past": False,
+    "depends_on_past": True,
     "max_active_runs": 1,
-    "start_date": datetime(2020, 9, 17),
+    "start_date": datetime(2020, 9, 19),
     "email": ["airflow@airflow.com"],
     "email_on_failure": False,
     "email_on_retry": False,
@@ -30,7 +30,10 @@ dag = DAG("tutorial", default_args=default_args) #, schedule_interval=timedelta(
 # t1, t2 and t3 are examples of tasks created by instantiating operators
 t1 = GetStationsAPIOperator(task_id="Get_Stations_from_API", dag=dag)
 
-t2 = GetHydrologyAPIOperator(task_id="Get_Hydrology_Measures_from_API", dag=dag)
+t2 = GetHydrologyAPIOperator(task_id="Get_Hydrology_Measures_from_API",
+                             provide_context=True,
+                             date='{{ds}}',
+                             dag=dag)
 
 templated_command = """
     {% for i in range(5) %}
