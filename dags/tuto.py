@@ -13,7 +13,7 @@ default_args = {
     "owner": "airflow",
     "depends_on_past": True,
     "max_active_runs": 1,
-    "start_date": datetime(2020, 9, 19),
+    "start_date": datetime(2020, 9, 10),
     "email": ["airflow@airflow.com"],
     "email_on_failure": False,
     "email_on_retry": False,
@@ -33,6 +33,7 @@ t1 = GetStationsAPIOperator(task_id="Get_Stations_from_API", dag=dag)
 t2 = GetHydrologyAPIOperator(task_id="Get_Hydrology_Measures_from_API",
                              provide_context=True,
                              date='{{ds}}',
+                             s3_key = "",
                              dag=dag)
 
 templated_command = """

@@ -4,7 +4,9 @@ from pandas import read_sql_query
 from io import StringIO
 from sqlalchemy import create_engine
 from airflow.models import BaseOperator
+from airflow.models import Variable
 from airflow.utils.decorators import apply_defaults
+from airflow.hooks.S3_hook import S3Hook
 
 
 class GetHydrologyAPIOperator(BaseOperator):
@@ -25,6 +27,8 @@ class GetHydrologyAPIOperator(BaseOperator):
                  destination_password="airflow",
                  physical_quantity="waterFlow",
                  date="",
+                 aws_conn_id='aws_credentials',
+                 s3_key="",
                  *args, **kwargs):
 
         super(GetHydrologyAPIOperator, self).__init__(*args, **kwargs)
@@ -39,6 +43,8 @@ class GetHydrologyAPIOperator(BaseOperator):
         self.destination_password = destination_password
         self.physical_quantity = physical_quantity
         self.date = date
+        self.aws_conn_id = aws_conn_id
+        self.s3_key = s3_key
 
     def execute(self, context):
 
@@ -66,7 +72,8 @@ class GetHydrologyAPIOperator(BaseOperator):
 
 
         self.log.info(print(station_reference_df))
-        for station_reference, lat, long in zip(station_reference_df["stationReference"], station_reference_df["lat"], station_reference_df["long"]):
+        for station_reference, lat, long in zip(station_reference_df["stationReference"], station_reference_df["lat"],
+                                                station_reference_df["long"]):
             self.log.info(print(station_reference))
             # Call REST API:
             API_endpoint = "https://environment.data.gov.uk/hydrology/data/readings.json?period={period}&station.stationReference={station_reference}&date={date}".format(period=900, station_reference=station_reference, date=self.date)
@@ -95,3 +102,13 @@ class GetHydrologyAPIOperator(BaseOperator):
                 conn.commit()
             except:
                 self.log.info(print("station may not have this type of measure"))
+
+            try:
+                hook = S3Hook(aws_conn_id=self.aws_conn_id)
+                credentials = hook.get_credentials()
+                bucket = Variable.get('s3_bucket')
+                rendered_key = self.s3_key.format(**context)
+                s3_path="s3://{}/{}".format(bucket, rendered_key)
+                measures_df.write.partitionBy("date", "stationReference").parquet(s3_path)
+            except:
+                self.log.info(print("Loading to AWS S3 failed"))
