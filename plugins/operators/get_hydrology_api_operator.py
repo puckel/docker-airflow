@@ -7,7 +7,8 @@ from airflow.models import BaseOperator
 from airflow.models import Variable
 from airflow.utils.decorators import apply_defaults
 from airflow.hooks.S3_hook import S3Hook
-import fastparquet
+import boto3
+
 
 
 class GetHydrologyAPIOperator(BaseOperator):
@@ -29,11 +30,11 @@ class GetHydrologyAPIOperator(BaseOperator):
                  destination_password="airflow",
                  destination_sql_connection="",
                  physical_quantity="waterFlow",
-                 measures_df=DataFrame([]),
+                 measures_df=DataFrame([]).empty,
                  general_API_endpoint="https://environment.data.gov.uk/hydrology/data/readings.json?period={period}&station.stationReference={station_reference}&date={date}",
                  date="",
                  aws_conn_id='aws_credentials',
-                 s3_key="",
+                 file_key="",
                  *args, **kwargs):
 
         super(GetHydrologyAPIOperator, self).__init__(*args, **kwargs)
@@ -49,7 +50,7 @@ class GetHydrologyAPIOperator(BaseOperator):
         self.physical_quantity = physical_quantity
         self.date = date
         self.aws_conn_id = aws_conn_id
-        self.s3_key = s3_key
+        self.file_key = file_key
         self.origin_sql_connection = origin_sql_connection
         self.destination_sql_connection = destination_sql_connection
         self.measures_df = measures_df
@@ -70,13 +71,37 @@ class GetHydrologyAPIOperator(BaseOperator):
                                                                                       )
         )
 
-    def save_locally(self, station_reference):
+    def save_locally(self):
         try:
-            self.measures_df.to_parquet(fname=str(self.date) + "/" + str(station_reference) + ".parquet",
-                                   partition_cols=["date", "stationReference"])
+            self.measures_df.to_parquet(
+                                        fname=self.file_key,
+                                        partition_cols=["date", "stationReference"],
+                                        compression='gzip'
+                                        )
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to save parquet file locally"))
+
+    def save_to_s3(self):
+        try:
+            hook = S3Hook(aws_conn_id=self.aws_conn_id)
+            self.log.info(print(hook))
+            credentials = hook.get_credentials()
+            bucket = Variable.get('s3_bucket')
+            client = boto3.client(
+                's3',
+                aws_access_key_id=credentials.access_key,
+                aws_secret_access_key=credentials.secret_key,
+            )
+            client.put_object(
+                Bucket=bucket,
+                Key=self.file_key,
+                Body=self.file_key,
+            )
+        except Exception as e:
+            self.log.info(print(e))
+            self.log.info(print("Failure to save parquet file in s3"))
+            raise ValueError
 
     def read_json(self, station_reference):
         try:
@@ -89,11 +114,11 @@ class GetHydrologyAPIOperator(BaseOperator):
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to read JSON from the API"))
+            raise ValueError
 
     def process_dataframe(self, station_reference, lat, long):
         try:
-            columns_to_drop = ["measure"]  # , "date"]
-            # self.log.info(print(measures_df))
+            columns_to_drop = ["measure"]
             self.measures_df.drop(columns=columns_to_drop, inplace=True)
             self.measures_df["stationReference"] = station_reference
             self.measures_df["lat"] = lat
@@ -103,6 +128,7 @@ class GetHydrologyAPIOperator(BaseOperator):
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to process the dataframe"))
+            raise ValueError
 
     def write_to_local_sql(self):
         try:
@@ -135,21 +161,12 @@ class GetHydrologyAPIOperator(BaseOperator):
             try:
                 self.read_json(station_reference=station_reference)
                 self.process_dataframe(station_reference=station_reference, lat=lat, long=long)
-                self.write_to_local_sql()
-                self.save_locally(station_reference)
             except:
                 self.log.info(print("Station may not have this type of measure"))
+                continue
+            self.file_key = self.destination_table + "/" + self.physical_quantity + "/"
+            + str(self.date) + "/" + str(station_reference) + ".parquet.gzip"
 
-            # try:
-            #     hook = S3Hook(aws_conn_id=self.aws_conn_id)
-            #     self.log.info(print(hook))
-            #     credentials = hook.get_credentials()
-            #     bucket = Variable.get('s3_bucket')
-            #     self.log.info(print(bucket))
-            #     rendered_key = self.s3_key.format(**context)
-            #     s3_path="s3://{access}:{secret}@{bucket}/{rendered_key}".format(access=credentials.access_key, secret=credentials.secret_key, bucket=bucket, rendered_key=rendered_key)
-            #     self.log.info(print(s3_path))
-            #
-            #     #  .to_csv(s3_path+str(self.date)+str(station_reference)+".csv")
-            # except Exception as e:
-            #     self.log.info(print(e))
+            self.write_to_local_sql()
+            self.save_locally()
+            self.save_to_s3()
