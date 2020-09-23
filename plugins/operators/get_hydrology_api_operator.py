@@ -22,10 +22,12 @@ class GetHydrologyAPIOperator(BaseOperator):
                  origin_table="stations",
                  origin_user="airflow",
                  origin_password="airflow",
+                 origin_sql_connection="",
                  destination_database="airflow",
                  destination_table="measures",
                  destination_user="airflow",
                  destination_password="airflow",
+                 destination_sql_connection="",
                  physical_quantity="waterFlow",
                  date="",
                  aws_conn_id='aws_credentials',
@@ -46,26 +48,31 @@ class GetHydrologyAPIOperator(BaseOperator):
         self.date = date
         self.aws_conn_id = aws_conn_id
         self.s3_key = s3_key
+        self.origin_sql_connection = origin_sql_connection
+        self.destination_sql_connection = destination_sql_connection
 
-    def execute(self, context):
-
-        origin_sql_connection = create_engine(
+    def create_connections(self):
+        self.origin_sql_connection = create_engine(
             "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(user=self.origin_user,
                                                                                       password=self.origin_password,
                                                                                       database=self.origin_database
                                                                                       )
         )
 
-        destination_sql_connection = create_engine(
+        self.destination_sql_connection = create_engine(
             "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(user=self.destination_user,
                                                                                       password=self.destination_password,
                                                                                       database=self.destination_database
                                                                                       )
         )
 
+    def execute(self, context):
+
+        self.create_connections()
+        
         station_reference_df = read_sql_query(
             'SELECT label, "stationReference", lat, long FROM {table};'.format(
-                table=self.origin_table), con=origin_sql_connection
+                table=self.origin_table), con=self.origin_sql_connection
         )
 
 
@@ -88,10 +95,10 @@ class GetHydrologyAPIOperator(BaseOperator):
                 measures_df["physicalQuantity"] = self.physical_quantity
                 measures_df.reset_index(drop=True, inplace=True)
                 # self.log.info(print(measures_df))
-                measures_df.head(0).to_sql(name=self.destination_table, con=destination_sql_connection,
+                measures_df.head(0).to_sql(name=self.destination_table, con=self.destination_sql_connection,
                                            if_exists='append', index=False)
 
-                conn = destination_sql_connection.raw_connection()
+                conn = self.destination_sql_connection.raw_connection()
                 cur = conn.cursor()
                 output = StringIO()
                 measures_df.to_csv(output, sep='\t', header=False, index=False)
