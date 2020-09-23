@@ -7,6 +7,7 @@ from airflow.models import BaseOperator
 from airflow.models import Variable
 from airflow.utils.decorators import apply_defaults
 from airflow.hooks.S3_hook import S3Hook
+import fastparquet
 
 
 class GetHydrologyAPIOperator(BaseOperator):
@@ -55,9 +56,6 @@ class GetHydrologyAPIOperator(BaseOperator):
                                                                                       )
         )
 
-        # DATA FROM THE COMPOSE FILE
-        destination_table = "measures"
-
         destination_sql_connection = create_engine(
             "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(user=self.destination_user,
                                                                                       password=self.destination_password,
@@ -71,10 +69,10 @@ class GetHydrologyAPIOperator(BaseOperator):
         )
 
 
-        self.log.info(print(station_reference_df))
+        # self.log.info(print(station_reference_df))
         for station_reference, lat, long in zip(station_reference_df["stationReference"], station_reference_df["lat"],
                                                 station_reference_df["long"]):
-            self.log.info(print(station_reference))
+            # self.log.info(print(station_reference))
             # Call REST API:
             API_endpoint = "https://environment.data.gov.uk/hydrology/data/readings.json?period={period}&station.stationReference={station_reference}&date={date}".format(period=900, station_reference=station_reference, date=self.date)
             try:
@@ -82,14 +80,14 @@ class GetHydrologyAPIOperator(BaseOperator):
                 measures = response.json()["items"]
                 measures_df = DataFrame.from_dict(measures)
                 columns_to_drop = ["measure"]#, "date"]
-                self.log.info(print(measures_df))
+                # self.log.info(print(measures_df))
                 measures_df.drop(columns=columns_to_drop, inplace=True)
                 measures_df["stationReference"] = station_reference
                 measures_df["lat"] = lat
                 measures_df["long"] = long
                 measures_df["physicalQuantity"] = self.physical_quantity
                 measures_df.reset_index(drop=True, inplace=True)
-                self.log.info(print(measures_df))
+                # self.log.info(print(measures_df))
                 measures_df.head(0).to_sql(name=self.destination_table, con=destination_sql_connection,
                                            if_exists='append', index=False)
 
@@ -105,10 +103,14 @@ class GetHydrologyAPIOperator(BaseOperator):
 
             try:
                 hook = S3Hook(aws_conn_id=self.aws_conn_id)
+                self.log.info(print(hook))
                 credentials = hook.get_credentials()
                 bucket = Variable.get('s3_bucket')
+                self.log.info(print(bucket))
                 rendered_key = self.s3_key.format(**context)
-                s3_path="s3://{}/{}".format(bucket, rendered_key)
-                measures_df.write.partitionBy("date", "stationReference").parquet(s3_path)
-            except:
-                self.log.info(print("Loading to AWS S3 failed"))
+                s3_path="s3://{access}:{secret}@{bucket}/{rendered_key}".format(access=credentials.access_key, secret=credentials.secret_key, bucket=bucket, rendered_key=rendered_key)
+                self.log.info(print(s3_path))
+                measures_df.to_parquet(fname=str(self.date)+"/"+str(station_reference)+".parquet", partition_cols=["date", "stationReference"])
+                #  .to_csv(s3_path+str(self.date)+str(station_reference)+".csv")
+            except Exception as e:
+                self.log.info(print(e))

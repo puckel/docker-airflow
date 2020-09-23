@@ -1,2 +1,2 @@
-pip install psycopg2
-pip install botocore
+fastparquet
+s3fs

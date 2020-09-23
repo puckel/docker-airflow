@@ -7,6 +7,7 @@ from airflow.operators.bash_operator import BashOperator
 from operators.get_stations_api_operator import GetStationsAPIOperator
 from operators.get_hydrology_api_operator import GetHydrologyAPIOperator
 from datetime import datetime, timedelta
+import botocore
 
 
 default_args = {
@@ -25,7 +26,7 @@ default_args = {
     # 'end_date': datetime(2016, 1, 1),
 }
 
-dag = DAG("tutorial", default_args=default_args) #, schedule_interval=timedelta(1)
+dag = DAG("Hydrology-Data-Project", default_args=default_args) #, schedule_interval=timedelta(1)
 
 # t1, t2 and t3 are examples of tasks created by instantiating operators
 t1 = GetStationsAPIOperator(task_id="Get_Stations_from_API", dag=dag)
@@ -33,7 +34,7 @@ t1 = GetStationsAPIOperator(task_id="Get_Stations_from_API", dag=dag)
 t2 = GetHydrologyAPIOperator(task_id="Get_Hydrology_Measures_from_API",
                              provide_context=True,
                              date='{{ds}}',
-                             s3_key = "",
+                             #s3_key="hydrology_measures/{ds}/",
                              dag=dag)
 
 templated_command = """
