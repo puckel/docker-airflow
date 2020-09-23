@@ -37,6 +37,7 @@ RUN set -ex \
         libffi-dev \
         libpq-dev \
         git \
+        awscli \
     ' \
     && apt-get update -yqq \
     && apt-get upgrade -yqq \
