@@ -4,7 +4,7 @@ WITH results as (
   SELECT
     pop.experiment_id
   , pop.entity_id
-  , pop.variant,
+  , pop.variant
   , pop.entered_at
   CASE WHEN COUNT(distinct events.eventday) > 0 THEN 1 ELSE 0 END AS outcome
   FROM %(table_name)s AS pop
