@@ -8,8 +8,8 @@ WITH results AS (
   FROM %(table_name)s AS pop
   LEFT JOIN frog.parent_paid_product_action_daily AS actions
     ON actions.parentid = pop.entity_id
-   AND DATE_DIFF('days', pop.entered_at, actions.day) >= 0
-   AND DATE_DIFF('days', pop.entered_at, actions.day) <= 7
+   and actions.day >= date_trunc('day', pop.entered_at)
+   AND actions.day >= '%(ds)s'::timestamp - interval '6 days'
    AND actions.completed_goal
   WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
   GROUP BY 1,2,3,4
