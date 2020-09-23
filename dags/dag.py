@@ -3,11 +3,9 @@ Code that goes along with the Airflow located at:
 http://airflow.readthedocs.org/en/latest/tutorial.html
 """
 from airflow import DAG
-from airflow.operators.bash_operator import BashOperator
 from operators.get_stations_api_operator import GetStationsAPIOperator
 from operators.get_hydrology_api_operator import GetHydrologyAPIOperator
 from datetime import datetime, timedelta
-import botocore
 
 
 default_args = {
@@ -40,25 +38,21 @@ t1 = GetStationsAPIOperator(
     dag=dag)
 
 t2 = GetHydrologyAPIOperator(task_id="Get_Hydrology_Measures_from_API",
+                             source_database={
+                                 "database": "airflow",
+                                 "table": "stations",
+                                 "user": "airflow",
+                                 "password": "airflow"
+                             },
+                             target_database={
+                                 "database": "airflow",
+                                 "table": "measures",
+                                 "user": "airflow",
+                                 "password": "airflow"
+                             },
                              provide_context=True,
                              date='{{ds}}',
-                             #s3_key="hydrology_measures/{ds}/",
                              dag=dag)
 
-templated_command = """
-    {% for i in range(5) %}
-        echo "{{ ds }}"
-        echo "{{ macros.ds_add(ds, 7)}}"
-        echo "{{ params.my_param }}"
-    {% endfor %}
-"""
-
-t3 = BashOperator(
-    task_id="templated",
-    bash_command=templated_command,
-    params={"my_param": "Parameter I passed in"},
-    dag=dag,
-)
-
 t2.set_upstream(t1)
-t3.set_upstream(t1)
+

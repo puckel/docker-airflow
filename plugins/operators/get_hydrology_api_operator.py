@@ -19,15 +19,9 @@ class GetHydrologyAPIOperator(BaseOperator):
     @apply_defaults
     def __init__(self,
                  postgres_conn_id="",
-                 origin_database="airflow",
-                 origin_table="stations",
-                 origin_user="airflow",
-                 origin_password="airflow",
+                 source_database={},
+                 target_database={},
                  origin_sql_connection="",
-                 destination_database="airflow",
-                 destination_table="measures",
-                 destination_user="airflow",
-                 destination_password="airflow",
                  destination_sql_connection="",
                  physical_quantity="waterFlow",
                  measures_df=DataFrame([]).empty,
@@ -39,14 +33,8 @@ class GetHydrologyAPIOperator(BaseOperator):
 
         super(GetHydrologyAPIOperator, self).__init__(*args, **kwargs)
         self.postgres_conn_id = postgres_conn_id
-        self.origin_database = origin_database
-        self.origin_table = origin_table
-        self.origin_user = origin_user
-        self.origin_password = origin_password
-        self.destination_database = destination_database
-        self.destination_table = destination_table
-        self.destination_user = destination_user
-        self.destination_password = destination_password
+        self.source_database = source_database
+        self.target_database = target_database
         self.physical_quantity = physical_quantity
         self.date = date
         self.aws_conn_id = aws_conn_id
@@ -58,16 +46,16 @@ class GetHydrologyAPIOperator(BaseOperator):
 
     def create_connections(self):
         self.origin_sql_connection = create_engine(
-            "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(user=self.origin_user,
-                                                                                      password=self.origin_password,
-                                                                                      database=self.origin_database
+            "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(user=self.source_database['user'],
+                                                                                      password=self.source_database['password'],
+                                                                                      database=self.source_database['database']
                                                                                       )
         )
 
         self.destination_sql_connection = create_engine(
-            "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(user=self.destination_user,
-                                                                                      password=self.destination_password,
-                                                                                      database=self.destination_database
+            "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(user=self.target_database['user'],
+                                                                                      password=self.target_database['password'],
+                                                                                      database=self.target_database['database']
                                                                                       )
         )
 
@@ -132,7 +120,7 @@ class GetHydrologyAPIOperator(BaseOperator):
 
     def write_to_local_sql(self):
         try:
-            self.measures_df.head(0).to_sql(name=self.destination_table, con=self.destination_sql_connection,
+            self.measures_df.head(0).to_sql(name=self.target_database['table'], con=self.destination_sql_connection,
                                        if_exists='append', index=False)
 
             conn = self.destination_sql_connection.raw_connection()
@@ -140,7 +128,7 @@ class GetHydrologyAPIOperator(BaseOperator):
             output = StringIO()
             self.measures_df.to_csv(output, sep='\t', header=False, index=False)
             output.seek(0)
-            cur.copy_from(output, self.destination_table, null="", sep='\t')
+            cur.copy_from(output, self.target_database['table'], null="", sep='\t')
             conn.commit()
         except Exception as e:
             self.log.info(print(e))
@@ -152,7 +140,7 @@ class GetHydrologyAPIOperator(BaseOperator):
 
         station_reference_df = read_sql_query(
             'SELECT label, "stationReference", lat, long FROM {table};'.format(
-                table=self.origin_table), con=self.origin_sql_connection
+                table=self.source_database["table"]), con=self.origin_sql_connection
         )
 
         for station_reference, lat, long in zip(station_reference_df["stationReference"], station_reference_df["lat"],
@@ -164,7 +152,7 @@ class GetHydrologyAPIOperator(BaseOperator):
             except:
                 self.log.info(print("Station may not have this type of measure"))
                 continue
-            self.file_key = self.destination_table + "/" + self.physical_quantity + "/"
+            self.file_key = self.target_database['table'] + "/" + self.physical_quantity + "/"
             + str(self.date) + "/" + str(station_reference) + ".parquet.gzip"
 
             self.write_to_local_sql()
