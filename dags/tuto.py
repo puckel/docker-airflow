@@ -29,7 +29,15 @@ default_args = {
 dag = DAG("Hydrology-Data-Project", default_args=default_args) #, schedule_interval=timedelta(1)
 
 # t1, t2 and t3 are examples of tasks created by instantiating operators
-t1 = GetStationsAPIOperator(task_id="Get_Stations_from_API", dag=dag)
+t1 = GetStationsAPIOperator(
+    task_id="Get_Stations_from_API",
+    target_database={
+        "database": "airflow",
+        "table": "stations",
+        "user": "airflow",
+        "password": "airflow"
+    },
+    dag=dag)
 
 t2 = GetHydrologyAPIOperator(task_id="Get_Hydrology_Measures_from_API",
                              provide_context=True,
