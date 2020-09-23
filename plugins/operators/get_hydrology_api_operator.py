@@ -138,7 +138,7 @@ class GetHydrologyAPIOperator(BaseOperator):
                 self.write_to_local_sql()
                 self.save_locally(station_reference)
             except:
-                self.log.info(print("station may not have this type of measure"))
+                self.log.info(print("Station may not have this type of measure"))
 
             # try:
             #     hook = S3Hook(aws_conn_id=self.aws_conn_id)
