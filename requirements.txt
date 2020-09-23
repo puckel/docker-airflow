@@ -1,2 +1,6 @@
 fastparquet
 s3fs
+requests
+pandas
+sqlalchemy
+boto3

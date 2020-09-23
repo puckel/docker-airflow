@@ -10,7 +10,6 @@ from airflow.hooks.S3_hook import S3Hook
 import boto3
 
 
-
 class GetHydrologyAPIOperator(BaseOperator):
     ui_color = '#358140'
 
@@ -152,8 +151,8 @@ class GetHydrologyAPIOperator(BaseOperator):
             except:
                 self.log.info(print("Station may not have this type of measure"))
                 continue
-            self.file_key = self.target_database['table'] + "/" + self.physical_quantity + "/"
-            + str(self.date) + "/" + str(station_reference) + ".parquet.gzip"
+            self.file_key = self.target_database['table'] + "/" + self.physical_quantity + "/" + str(self.date) + "/" +\
+                            str(station_reference) + ".parquet.gzip"
 
             self.write_to_local_sql()
             self.save_locally()
