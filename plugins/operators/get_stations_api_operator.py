@@ -12,21 +12,27 @@ import boto3
 class GetStationsAPIOperator(BaseOperator):
     ui_color = '#358140'
 
+    sql_engine = "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}"
+
     @apply_defaults
     def __init__(self,
-                 aws_conn_id="aws_credentials",
-                 API_endpoint="https://environment.data.gov.uk/hydrology/id/stations.json?_limit=5",
+                 aws_conn_id="",
+                 API_endpoint="",
+                 observed_property="",
                  stations_df={},
                  target_database={},
                  file_key="",
+                 columns_to_drop = [],
                  *args, **kwargs):
 
         super(GetStationsAPIOperator, self).__init__(*args, **kwargs)
         self.aws_conn_id = aws_conn_id
-        self.API_endpoint = API_endpoint
+        self.API_endpoint = API_endpoint.format(observed_property=observed_property)
+        self.observed_property = observed_property
         self.stations_df = stations_df
         self.target_database = target_database
         self.file_key = file_key
+        self.columns_to_drop = columns_to_drop
 
     def read_json(self):
         try:
@@ -40,8 +46,9 @@ class GetStationsAPIOperator(BaseOperator):
 
     def process_dataframe(self):
         try:
-            columns_to_drop = ["easting", "northing", "notation", "type", "wiskiID", "RLOIid"]
-            self.stations_df.drop(columns=columns_to_drop, inplace=True)
+            self.stations_df["observedProperty"] = self.observed_property
+            self.stations_df.drop(columns=self.columns_to_drop, inplace=True)
+            self.stations_df = self.stations_df.reindex(sorted(self.stations_df.columns), axis=1)
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to process the dataframe"))
@@ -50,11 +57,17 @@ class GetStationsAPIOperator(BaseOperator):
     def write_to_local_sql(self):
         try:
             sql_connection = create_engine(
-                "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(user=self.target_database["user"],
-                                                                                           password=self.target_database["password"],
-                                                                                           database=self.target_database["database"]))
+                GetStationsAPIOperator.sql_engine.format(user=self.target_database["user"],
+                                                         password=self.target_database["password"],
+                                                         database=self.target_database["database"]
+                                                         )
+            )
 
-            self.stations_df.head(0).to_sql(name=self.target_database["table"], con=sql_connection, if_exists='replace', index=False)
+            self.stations_df.head(0).to_sql(name=self.target_database["table"], con=sql_connection,
+                                            if_exists='append', index=False
+                                            )
+
+            self.log.info(print(self.stations_df.head(0)))
 
             conn = sql_connection.raw_connection()
             cur = conn.cursor()
@@ -63,10 +76,11 @@ class GetStationsAPIOperator(BaseOperator):
             output.seek(0)
             cur.copy_from(output, self.target_database["table"], null="", sep='\t')
             conn.commit()
+
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to write to local database"))
-
+            raise ValueError
     def save_to_s3(self):
         try:
             hook = S3Hook(aws_conn_id=self.aws_conn_id)
@@ -92,16 +106,17 @@ class GetStationsAPIOperator(BaseOperator):
         try:
             self.stations_df.to_parquet(
                                         fname=self.file_key,
-                                        partition_cols=["date", "stationReference"],
+                                        partition_cols=["observedProperty"],
                                         compression='gzip'
                                         )
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to save parquet file locally"))
+            raise ValueError
 
     def execute(self, context):
 
-        self.file_key = self.target_database["table"] + ".parquet.gzip"
+        self.file_key = self.target_database["table"] + "/" + self.observed_property + ".parquet.gzip"
         self.read_json()
         self.process_dataframe()
         self.write_to_local_sql()

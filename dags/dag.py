@@ -28,7 +28,11 @@ dag = DAG("Hydrology-Data-Project", default_args=default_args) #, schedule_inter
 
 # t1, t2 and t3 are examples of tasks created by instantiating operators
 t1 = GetStationsAPIOperator(
-    task_id="Get_Stations_from_API",
+    task_id="Get_Hydrology_Stations_from_API",
+    aws_conn_id="aws_credentials",
+    API_endpoint="https://environment.data.gov.uk/hydrology/id/stations.json?observedProperty={observed_property}&_limit=10",
+    columns_to_drop = ["easting", "northing", "notation", "type", "wiskiID", "RLOIid"],
+    observed_property="waterFlow",
     target_database={
         "database": "airflow",
         "table": "stations",
@@ -54,5 +58,20 @@ t2 = GetHydrologyAPIOperator(task_id="Get_Hydrology_Measures_from_API",
                              date='{{ds}}',
                              dag=dag)
 
+t3 = GetStationsAPIOperator(
+    task_id="Get_Rainfall_Stations_from_API",
+    aws_conn_id="aws_credentials",
+    API_endpoint="https://environment.data.gov.uk/flood-monitoring/id/stations?parameter={observed_property}&_limit=5",
+    columns_to_drop=["easting", "northing", "notation", "wiskiID", "RLOIid", "town", "status", "catchmentName", "dateOpened", "stageScale", "datumOffset", "gridReference"],
+    observed_property="rainfall",
+    target_database={
+        "database": "airflow",
+        "table": "stations",
+        "user": "airflow",
+        "password": "airflow"
+    },
+    dag=dag)
+
 t2.set_upstream(t1)
+t3.set_upstream(t1)
 

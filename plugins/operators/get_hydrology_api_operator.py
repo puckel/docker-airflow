@@ -68,6 +68,7 @@ class GetHydrologyAPIOperator(BaseOperator):
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to save parquet file locally"))
+            raise ValueError
 
     def save_to_s3(self):
         try:
@@ -132,6 +133,7 @@ class GetHydrologyAPIOperator(BaseOperator):
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to write to local database"))
+            raise ValueError
 
     def execute(self, context):
 
