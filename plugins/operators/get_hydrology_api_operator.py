@@ -160,16 +160,26 @@ class GetHydrologyAPIOperator(BaseOperator):
             self.log.info(print(self.measures_df.head(0)))
             self.measures_df.head(0).to_sql(name=self.target_database['table'], con=self.destination_sql_connection,
                                             if_exists='append', index=False)
-            self.destination_sql_connection.execute(
-                """if NOT exists (select constraint_name from information_schema.table_constraints where table_name = "{table}" and constraint_type = 'PRIMARY KEY') then ALTER TABLE {table} ADD PRIMARY KEY ("stationReference", "observedProperty", "dateTime"); end if;""".format(
-                    table=self.target_database["table"]))
-            conn = self.destination_sql_connection.raw_connection()
-            cur = conn.cursor()
-            output = StringIO()
-            self.measures_df.to_csv(output, sep='\t', header=False, index=False)
-            output.seek(0)
-            cur.copy_from(output, self.target_database['table'], null="", sep='\t')
-            conn.commit()
+            try:
+                self.destination_sql_connection.execute(
+                    """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS ("stationReference", "observedProperty", "dateTime");""".format(table=self.target_database["table"]))
+                self.destination_sql_connection.execute("""ALTER TABLE {table} ADD PRIMARY KEY ("stationReference", "observedProperty", "dateTime");""".format(table=self.target_database["table"]))
+            except Exception as e:
+                self.log.info(print(e))
+                self.log.info(print("Primary key restriction already exists"))
+
+            try:
+                conn = self.destination_sql_connection.raw_connection()
+                cur = conn.cursor()
+                output = StringIO()
+                self.measures_df.to_csv(output, sep='\t', header=False, index=False)
+                output.seek(0)
+                cur.copy_from(output, self.target_database['table'], null="", sep='\t')
+                conn.commit()
+            except Exception as e:
+                self.log.info(print(e))
+                self.log.info(print("Failure to write to local database"))
+
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to write to local database"))
@@ -198,4 +208,4 @@ class GetHydrologyAPIOperator(BaseOperator):
 
             self.write_to_local_sql()
             self.save_locally()
-            self.save_to_s3()
+            # self.save_to_s3()
