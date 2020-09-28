@@ -66,7 +66,7 @@ class GetStationsAPIOperator(BaseOperator):
             self.stations_df.head(0).to_sql(name=self.target_database["table"], con=sql_connection,
                                             if_exists='append', index=False
                                             )
-
+            sql_connection.execute("""if NOT exists (select constraint_name from information_schema.table_constraints where table_name = "{table}" and constraint_type = 'PRIMARY KEY') then ALTER TABLE {table} ADD PRIMARY KEY ("stationReference"); end if;""".format(table=self.target_database["table"]))
             self.log.info(print(self.stations_df.head(0)))
 
             conn = sql_connection.raw_connection()

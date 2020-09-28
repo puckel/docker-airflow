@@ -160,7 +160,9 @@ class GetHydrologyAPIOperator(BaseOperator):
             self.log.info(print(self.measures_df.head(0)))
             self.measures_df.head(0).to_sql(name=self.target_database['table'], con=self.destination_sql_connection,
                                             if_exists='append', index=False)
-
+            self.destination_sql_connection.execute(
+                """if NOT exists (select constraint_name from information_schema.table_constraints where table_name = "{table}" and constraint_type = 'PRIMARY KEY') then ALTER TABLE {table} ADD PRIMARY KEY ("stationReference", "observedProperty", "dateTime"); end if;""".format(
+                    table=self.target_database["table"]))
             conn = self.destination_sql_connection.raw_connection()
             cur = conn.cursor()
             output = StringIO()
