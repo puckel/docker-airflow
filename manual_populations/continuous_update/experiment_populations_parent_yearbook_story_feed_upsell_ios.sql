@@ -8,7 +8,7 @@ create table ab_platform.experiment_populations_parent_yearbook_story_feed_upsel
          , entityid                               AS entity_id
          , 'Parents'                              AS entity_type
          , min(createdat)                         AS entered_at
-    from logs.product_event
+    from logs.product_event_no_pii
     where eventname = 'ios.experiment.iOS_parentYearbookStoryFeed'
       and eventvalue != 'off'
       and createdat >= '2020-09-28'
