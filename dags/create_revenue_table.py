@@ -34,7 +34,7 @@ def drop_create_revenue_table(conn_id, ts, **kwargs):
     )
     COMPOUND SORTKEY(event_date, event_name);
     commit;
-    '''.format({'table': PURCHASE_EVENT_TABLE})
+    '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
 
@@ -57,8 +57,8 @@ def get_ios_free_trial_events(conn_id, ts, **kwargs):
     JOIN
         production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
     WHERE
-        iap.is_trial_period = true;
-    '''.format({'table': PURCHASE_EVENT_TABLE})
+        iap.istrialperiod = true;
+    '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
 
@@ -81,8 +81,8 @@ def get_ios_refund_events(conn_id, ts, **kwargs):
     JOIN
         production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
     WHERE
-        iap.cancellation_date is not null;
-    '''.format({'table': PURCHASE_EVENT_TABLE})
+        iap.cancellationdate is not null;
+    '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
 
@@ -92,7 +92,7 @@ def get_ios_expired_events(conn_id, ts, **kwargs):
     query = '''
     INSERT INTO {table}
     SELECT
-        iap.purchasedate + INTERVAL'1 month',
+        add_months(iap.purchasedate, 1),
         p.serviceName,
         p.entityid,
         'paid_transaction_expired',
@@ -105,10 +105,10 @@ def get_ios_expired_events(conn_id, ts, **kwargs):
     JOIN
         production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
     WHERE
-        iap.is_trial_period = false and
-        iap.cancellation_date is null and
-        (iap.expiration_intent = 1 or iap.expiration_intent = 3 or iap.expiration_intent = 4)
-    '''.format({'table': PURCHASE_EVENT_TABLE})
+        iap.istrialperiod = false and
+        iap.cancellationdate is null and
+        (iap.expirationintent = 1 or iap.expirationintent = 3 or iap.expirationintent = 4)
+    '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
 
@@ -131,10 +131,10 @@ def get_ios_payment_failed_events(conn_id, ts, **kwargs):
     JOIN
         production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
     WHERE
-        iap.is_trial_period = false and
-        iap.cancellation_date is null and
-        iap.expiration_intent = 2
-    '''.format({'table': PURCHASE_EVENT_TABLE})
+        iap.istrialperiod = false and
+        iap.cancellationdate is null and
+        iap.expirationintent = 2
+    '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
 
@@ -157,10 +157,10 @@ def get_ios_payment_events(conn_id, ts, **kwargs):
     JOIN
         production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
     WHERE
-        iap.is_trial_period = false and
-        iap.cancellation_date is null and
-        iap.expiration_intent is null
-    '''.format({'table': PURCHASE_EVENT_TABLE})
+        iap.istrialperiod = false and
+        iap.cancellationdate is null and
+        iap.expirationintent is null
+    '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
 
@@ -183,10 +183,10 @@ def get_ios_unknown_events(conn_id, ts, **kwargs):
     JOIN
         production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
     WHERE
-        iap.is_trial_period = false and
-        iap.cancellation_date is null and
-        iap.expiration_intent = 5
-    '''.format({'table': PURCHASE_EVENT_TABLE})
+        iap.istrialperiod = false and
+        iap.cancellationdate is null and
+        iap.expirationintent = 5
+    '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
 
