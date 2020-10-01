@@ -130,8 +130,10 @@ class GetHydrologyAPIOperator(BaseOperator):
     def read_json(self, station_reference):
         try:
             API_endpoint = self.get_api_endpoint(station_reference)
+            self.log.info(print(API_endpoint))
             response = requests.get(API_endpoint)
             measures = response.json()["items"]
+            self.log.info(print(measures))
             self.measures_df = DataFrame.from_dict(measures)
         except Exception as e:
             self.log.info(print(e))
@@ -150,6 +152,8 @@ class GetHydrologyAPIOperator(BaseOperator):
             self.measures_df["long"] = long
             self.measures_df["observedProperty"] = self.observed_property
             self.measures_df.reset_index(drop=True, inplace=True)
+            self.measures_df = self.measures_df.reindex(sorted(self.measures_df.columns), axis=1)
+            self.log.info(print(self.measures_df))
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to process the dataframe"))
@@ -157,13 +161,20 @@ class GetHydrologyAPIOperator(BaseOperator):
 
     def write_to_local_sql(self):
         try:
-            self.log.info(print(self.measures_df.head(0)))
+            self.log.info(print(self.measures_df.head()))
             self.measures_df.head(0).to_sql(name=self.target_database['table'], con=self.destination_sql_connection,
                                             if_exists='append', index=False)
             try:
                 self.destination_sql_connection.execute(
-                    """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS ("stationReference", "observedProperty", "dateTime");""".format(table=self.target_database["table"]))
-                self.destination_sql_connection.execute("""ALTER TABLE {table} ADD PRIMARY KEY ("stationReference", "observedProperty", "dateTime");""".format(table=self.target_database["table"]))
+                    """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "dateTime";""".format(table=self.target_database["table"]))
+                self.destination_sql_connection.execute(
+                    """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "observedProperty";""".format(
+                        table=self.target_database["table"]))
+                self.destination_sql_connection.execute(
+                    """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "stationReference";""".format(
+                        table=self.target_database["table"]))
+                self.destination_sql_connection.execute("""ALTER TABLE {table} ADD PRIMARY KEY ("stationReference", 
+                "observedProperty", "dateTime");""".format(table=self.target_database["table"]))
             except Exception as e:
                 self.log.info(print(e))
                 self.log.info(print("Primary key restriction already exists"))
@@ -190,10 +201,10 @@ class GetHydrologyAPIOperator(BaseOperator):
         self.create_connections()
 
         station_reference_df = read_sql_query(
-            'SELECT label, "stationReference", lat, long FROM {table};'.format(
+            'SELECT "stationReference", lat, long FROM {table};'.format(
                 table=self.source_database["table"]), con=self.origin_sql_connection
         )
-
+        # label,
         for station_reference, lat, long in zip(station_reference_df["stationReference"], station_reference_df["lat"],
                                                 station_reference_df["long"]):
 
