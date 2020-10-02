@@ -33,6 +33,7 @@ services:
             - ./dags:/usr/local/airflow/dags
             - ./plugins:/usr/local/airflow/plugins
             - ./requirements.txt:/requirements.txt
+            - ./script/docker_automated_script.sh:/usr/local/airflow/docker_automated_script.sh
         ports:
             - "8080:8080"
         command: webserver
