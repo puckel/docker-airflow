@@ -66,16 +66,25 @@ class GetStationsAPIOperator(BaseOperator):
             self.stations_df.head(0).to_sql(name=self.target_database["table"], con=sql_connection,
                                             if_exists='append', index=False
                                             )
+            try:
+                sql_connection.execute("""ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "stationReference";""".format(table=self.target_database["table"])) #if NOT exists (select constraint_name from information_schema.table_constraints where table_name = "{table}" and constraint_type = 'PRIMARY KEY') then end if;
+                sql_connection.execute("""ALTER TABLE {table} ADD PRIMARY KEY ("stationReference");""".format(table=self.target_database["table"]))
+            except Exception as e:
+                self.log.info(print(e))
+                self.log.info(print("Primary key restriction already exists"))
 
             self.log.info(print(self.stations_df.head(0)))
-
-            conn = sql_connection.raw_connection()
-            cur = conn.cursor()
-            output = StringIO()
-            self.stations_df.to_csv(output, sep='\t', header=False, index=False)
-            output.seek(0)
-            cur.copy_from(output, self.target_database["table"], null="", sep='\t')
-            conn.commit()
+            try:
+                conn = sql_connection.raw_connection()
+                cur = conn.cursor()
+                output = StringIO()
+                self.stations_df.to_csv(output, sep='\t', header=False, index=False)
+                output.seek(0)
+                cur.copy_from(output, self.target_database["table"], null="", sep='\t')
+                conn.commit()
+            except Exception as e:
+                self.log.info(print(e))
+                self.log.info(print("Failure to write to local database"))
 
         except Exception as e:
             self.log.info(print(e))
@@ -121,5 +130,5 @@ class GetStationsAPIOperator(BaseOperator):
         self.process_dataframe()
         self.write_to_local_sql()
         self.save_locally()
-        self.save_to_s3()
+        # self.save_to_s3()
 

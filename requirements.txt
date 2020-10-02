@@ -4,3 +4,4 @@ requests
 pandas
 sqlalchemy
 boto3
+cryptography
