@@ -219,4 +219,4 @@ class GetHydrologyAPIOperator(BaseOperator):
 
             self.write_to_local_sql()
             self.save_locally()
-            # self.save_to_s3()
+            self.save_to_s3()
