@@ -12,7 +12,7 @@ services:
                 max-file: "3"
 
     webserver:
-        image: eduardofernandezvillazon/docker-airflow-uk-hydro:stable
+        image: eduardofernandezvillazon/docker-airflow-uk-hydro:automatedLaunch
         build:
             context: https://github.com/EduardoFernandezVillazon/Docker_Airflow_Setup_UK_HDE.git
             dockerfile: Dockerfile
@@ -33,6 +33,7 @@ services:
             - ./dags:/usr/local/airflow/dags
             - ./plugins:/usr/local/airflow/plugins
             - ./requirements.txt:/requirements.txt
+            - ./script/docker_automated_script.sh:/usr/local/airflow/docker_automated_script.sh
         ports:
             - "8080:8080"
         command: webserver

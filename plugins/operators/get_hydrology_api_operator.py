@@ -80,7 +80,7 @@ class GetHydrologyAPIOperator(BaseOperator):
     def save_to_s3(self):
         try:
             hook = S3Hook(aws_conn_id=self.aws_conn_id)
-            self.log.info(print(hook))
+            # self.log.info(print(hook))
             credentials = hook.get_credentials()
             bucket = Variable.get('s3_bucket')
             client = boto3.client(
@@ -130,10 +130,10 @@ class GetHydrologyAPIOperator(BaseOperator):
     def read_json(self, station_reference):
         try:
             API_endpoint = self.get_api_endpoint(station_reference)
-            self.log.info(print(API_endpoint))
+            # self.log.info(print(API_endpoint))
             response = requests.get(API_endpoint)
             measures = response.json()["items"]
-            self.log.info(print(measures))
+            # self.log.info(print(measures))
             self.measures_df = DataFrame.from_dict(measures)
         except Exception as e:
             self.log.info(print(e))
@@ -142,7 +142,7 @@ class GetHydrologyAPIOperator(BaseOperator):
 
     def process_dataframe(self, station_reference, lat, long):
         try:
-            self.log.info(print(self.measures_df.head(0)))
+            # self.log.info(print(self.measures_df.head(0)))
             if self.observed_property!="waterFlow":
                 self.measures_df["date"] = self.date_str_to_dateTime()
             else: pass
@@ -153,7 +153,7 @@ class GetHydrologyAPIOperator(BaseOperator):
             self.measures_df["observedProperty"] = self.observed_property
             self.measures_df.reset_index(drop=True, inplace=True)
             self.measures_df = self.measures_df.reindex(sorted(self.measures_df.columns), axis=1)
-            self.log.info(print(self.measures_df))
+            # self.log.info(print(self.measures_df))
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to process the dataframe"))
@@ -161,7 +161,7 @@ class GetHydrologyAPIOperator(BaseOperator):
 
     def write_to_local_sql(self):
         try:
-            self.log.info(print(self.measures_df.head()))
+            # self.log.info(print(self.measures_df.head()))
             self.measures_df.head(0).to_sql(name=self.target_database['table'], con=self.destination_sql_connection,
                                             if_exists='append', index=False)
             try:
@@ -219,4 +219,4 @@ class GetHydrologyAPIOperator(BaseOperator):
 
             self.write_to_local_sql()
             self.save_locally()
-            # self.save_to_s3()
+            self.save_to_s3()
