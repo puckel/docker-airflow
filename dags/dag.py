@@ -3,7 +3,8 @@ Code that goes along with the Airflow located at:
 http://airflow.readthedocs.org/en/latest/tutorial.html
 """
 from airflow import DAG
-from operators.get_stations_api_operator import GetStationsAPIOperator
+from operators.load_stations_operator import LoadStationsOperator
+from operators.stage_stations_api_operator import StageStationsAPIOperator
 from operators.get_hydrology_api_operator import GetHydrologyAPIOperator
 from datetime import datetime, timedelta
 
@@ -12,7 +13,7 @@ default_args = {
     "owner": "airflow",
     "depends_on_past": True,
     "max_active_runs": 1,
-    "start_date": datetime(2020, 9, 30),
+    "start_date": datetime(2020, 10, 4),
     "email": ["airflow@airflow.com"],
     "email_on_failure": False,
     "email_on_retry": False,
@@ -24,13 +25,84 @@ dag = DAG(
     "Hydrology-Data-Project", default_args=default_args
 )
 
-t1 = GetStationsAPIOperator(
+t10 = StageStationsAPIOperator(
     task_id="Get_Hydrology_Stations_from_API",
-    aws_conn_id="aws_credentials",
     API_endpoint="https://environment.data.gov.uk/hydrology/id/stations.json?observedProperty={"
-    "observed_property}&_limit=10",
+    "observed_property}&_limit=200",
     columns_to_drop=["easting", "northing", "notation", "type", "wiskiID", "RLOIid"],
     observed_property="waterFlow",
+    target_database={
+        "database": "airflow",
+        "table": "stage_stations",
+        "user": "airflow",
+        "password": "airflow",
+    },
+    dag=dag,
+)
+
+t11 = StageStationsAPIOperator(
+    task_id="Get_Rainfall_Stations_from_API",
+    API_endpoint="https://environment.data.gov.uk/flood-monitoring/id/stations?parameter={observed_property}&_limit=200",
+    columns_to_drop=[
+        "easting",
+        "northing",
+        "notation",
+        "wiskiID",
+        "RLOIid",
+        "town",
+        "status",
+        "catchmentName",
+        "dateOpened",
+        "stageScale",
+        "datumOffset",
+        "gridReference",
+    ],
+    observed_property="rainfall",
+    target_database={
+        "database": "airflow",
+        "table": "stage_stations",
+        "user": "airflow",
+        "password": "airflow",
+    },
+    dag=dag,
+)
+
+t12 = StageStationsAPIOperator(
+    task_id="Get_Level_Stations_from_API",
+    API_endpoint="https://environment.data.gov.uk/flood-monitoring/id/stations?parameter={observed_property}&_limit=200",
+    columns_to_drop=[
+        "easting",
+        "northing",
+        "notation",
+        "wiskiID",
+        "RLOIid",
+        "town",
+        "status",
+        "catchmentName",
+        "dateOpened",
+        "stageScale",
+        "datumOffset",
+        "gridReference",
+    ],
+    observed_property="level",
+    target_database={
+        "database": "airflow",
+        "table": "stage_stations",
+        "user": "airflow",
+        "password": "airflow",
+    },
+    dag=dag,
+)
+
+t2 = LoadStationsOperator(
+    task_id="Load_Stations_from_Staging_Table",
+    aws_conn_id = "aws_credentials",
+    source_database={
+        "database": "airflow",
+        "table": "stage_stations",
+        "user": "airflow",
+        "password": "airflow",
+    },
     target_database={
         "database": "airflow",
         "table": "stations",
@@ -40,7 +112,7 @@ t1 = GetStationsAPIOperator(
     dag=dag,
 )
 
-t2 = GetHydrologyAPIOperator(
+t30 = GetHydrologyAPIOperator(
     task_id="Get_Hydrology_Measures_from_API",
     source_database={
         "database": "airflow",
@@ -64,63 +136,7 @@ t2 = GetHydrologyAPIOperator(
     dag=dag,
 )
 
-t30 = GetStationsAPIOperator(
-    task_id="Get_Rainfall_Stations_from_API",
-    aws_conn_id="aws_credentials",
-    API_endpoint="https://environment.data.gov.uk/flood-monitoring/id/stations?parameter={observed_property}&_limit=5",
-    columns_to_drop=[
-        "easting",
-        "northing",
-        "notation",
-        "wiskiID",
-        "RLOIid",
-        "town",
-        "status",
-        "catchmentName",
-        "dateOpened",
-        "stageScale",
-        "datumOffset",
-        "gridReference",
-    ],
-    observed_property="rainfall",
-    target_database={
-        "database": "airflow",
-        "table": "stations",
-        "user": "airflow",
-        "password": "airflow",
-    },
-    dag=dag,
-)
-
-t31 = GetStationsAPIOperator(
-    task_id="Get_Rainfall_Stations_from_API",
-    aws_conn_id="aws_credentials",
-    API_endpoint="https://environment.data.gov.uk/flood-monitoring/id/stations?parameter={observed_property}&_limit=5",
-    columns_to_drop=[
-        "easting",
-        "northing",
-        "notation",
-        "wiskiID",
-        "RLOIid",
-        "town",
-        "status",
-        "catchmentName",
-        "dateOpened",
-        "stageScale",
-        "datumOffset",
-        "gridReference",
-    ],
-    observed_property="level",
-    target_database={
-        "database": "airflow",
-        "table": "stations",
-        "user": "airflow",
-        "password": "airflow",
-    },
-    dag=dag,
-)
-
-t4 = GetHydrologyAPIOperator(
+t31 = GetHydrologyAPIOperator(
     task_id="Get_Rainfall_Measures_from_API",
     source_database={
         "database": "airflow",
@@ -143,7 +159,7 @@ t4 = GetHydrologyAPIOperator(
     dag=dag,
 )
 
-t5 = GetHydrologyAPIOperator(
+t32 = GetHydrologyAPIOperator(
     task_id="Get_Level_Measures_from_API",
     source_database={
         "database": "airflow",
@@ -166,10 +182,11 @@ t5 = GetHydrologyAPIOperator(
     dag=dag,
 )
 
-t2.set_upstream(t1)
-t30.set_upstream(t1)
-t31.set_upstream(t1)
-t4.set_upstream(t30)
-t4.set_upstream(t2)
-t5.set_upstream(t31)
-t5.set_upstream(t2)
+t10.set_downstream(t2)
+t11.set_upstream(t10)
+t12.set_upstream(t10)
+t11.set_downstream(t2)
+t12.set_downstream(t2)
+t30.set_upstream(t2)
+t31.set_upstream(t2)
+t32.set_upstream(t2)

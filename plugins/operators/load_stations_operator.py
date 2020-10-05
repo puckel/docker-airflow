@@ -1,5 +1,6 @@
 import requests
 from pandas import DataFrame
+from pandas import read_sql
 from io import StringIO
 from sqlalchemy import create_engine
 from airflow.models import BaseOperator
@@ -7,9 +8,39 @@ from airflow.models import Variable
 from airflow.utils.decorators import apply_defaults
 from airflow.hooks.S3_hook import S3Hook
 import boto3
+from numpy import squeeze
+from numpy import asarray
+from numpy import matrix
+from pandas import get_dummies
+from pandas import DataFrame
 
 
-class GetStationsAPIOperator(BaseOperator):
+def categorical_encoder(dataframe, group_col, target_col):
+    """
+    dataframe: Pandas dataframe containing data to encode
+    group_col: column in dataframe to group into single value
+    target_col: column with categorical data that will be encoded into a single vector
+    """
+    # get one-hot encoded vector for each row
+    dummy_df = get_dummies(dataframe, columns=[target_col])
+
+    aggregated_vecs = {}
+    # group by group_col, and aggregate each group by summing one-hot encoded vectors
+    for name, group in dummy_df.groupby(group_col):
+        # get all columns that match our dummy variable prefix
+        g = group[group.columns[(group.columns).str.startswith(target_col)]]
+        # sum columns together
+        aggregated_vec = matrix(g).sum(axis=0)
+        #print(np.squeeze(np.asarray(phecode_vec)))
+        # turn matrix into vector
+        aggregated_vecs[name] = squeeze(asarray(aggregated_vec))
+    # create dataframe with dictionary mapping group_col values to aggregated vectors
+    aggregated_vecs_df = DataFrame.from_dict(aggregated_vecs, orient="index")
+    # add back column names
+    aggregated_vecs_df.columns = dummy_df.columns.values[dummy_df.columns.str.startswith(target_col)]
+    return aggregated_vecs_df
+
+class LoadStationsOperator(BaseOperator):
     ui_color = "#358140"
 
     sql_engine = "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}"
@@ -18,51 +49,61 @@ class GetStationsAPIOperator(BaseOperator):
     def __init__(
         self,
         aws_conn_id="",
-        API_endpoint="",
-        observed_property="",
         stations_df={},
+        source_database={},
         target_database={},
         file_key="",
+        limit=0,
         columns_to_drop=[],
         *args,
         **kwargs
     ):
 
-        super(GetStationsAPIOperator, self).__init__(*args, **kwargs)
+        super(LoadStationsOperator, self).__init__(*args, **kwargs)
         self.aws_conn_id = aws_conn_id
-        self.API_endpoint = API_endpoint.format(observed_property=observed_property)
-        self.observed_property = observed_property
         self.stations_df = stations_df
+        self.source_database = source_database
         self.target_database = target_database
         self.file_key = file_key
+        self.limit = limit
         self.columns_to_drop = columns_to_drop
 
-    def read_json(self):
+
+    def encode(self):
         try:
-            response = requests.get(self.API_endpoint)
-            stations = response.json()["items"]
-            self.stations_df = DataFrame.from_dict(stations)
+            stations_df_encoded = categorical_encoder(dataframe=self.stations_df,
+                                                   group_col="stationReference", target_col="observedProperty")
+            stations_df_encoded["stationReference"]=stations_df_encoded.index
+            stations_df_encoded.reset_index(drop=True, inplace=True)
+            self.log.info(print(stations_df_encoded))
+            self.stations_df = self.stations_df.merge(right=stations_df_encoded, on="stationReference", how="left")
+            self.log.info(print(self.stations_df))
+            # self.stations_df.drop(columns="observedProperty")
         except Exception as e:
             self.log.info(print(e))
-            self.log.info(print("Failure to read JSON from the API"))
+            self.log.info(print("Failure to encode the dataframe"))
             raise ValueError
 
-    def process_dataframe(self):
+    def read_from_local_sql(self):
         try:
-            self.stations_df["observedProperty"] = self.observed_property
-            self.stations_df.drop(columns=self.columns_to_drop, inplace=True)
-            self.stations_df = self.stations_df.reindex(
-                sorted(self.stations_df.columns), axis=1
+            sql_connection = create_engine(
+                LoadStationsOperator.sql_engine.format(
+                    user=self.source_database["user"],
+                    password=self.source_database["password"],
+                    database=self.source_database["database"],
+                )
             )
+            self.stations_df = read_sql(sql=self.source_database["table"], con=sql_connection)
+
         except Exception as e:
             self.log.info(print(e))
-            self.log.info(print("Failure to process the dataframe"))
+            self.log.info(print("Failure to read the dataframe"))
             raise ValueError
 
     def write_to_local_sql(self):
         try:
             sql_connection = create_engine(
-                GetStationsAPIOperator.sql_engine.format(
+                LoadStationsOperator.sql_engine.format(
                     user=self.target_database["user"],
                     password=self.target_database["password"],
                     database=self.target_database["database"],
@@ -80,7 +121,7 @@ class GetStationsAPIOperator(BaseOperator):
                     """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "stationReference";""".format(
                         table=self.target_database["table"]
                     )
-                )  # if NOT exists (select constraint_name from information_schema.table_constraints where table_name = "{table}" and constraint_type = 'PRIMARY KEY') then end if;
+                )
                 sql_connection.execute(
                     """ALTER TABLE {table} ADD PRIMARY KEY ("stationReference");""".format(
                         table=self.target_database["table"]
@@ -133,7 +174,7 @@ class GetStationsAPIOperator(BaseOperator):
         try:
             self.stations_df.to_parquet(
                 fname=self.file_key,
-                partition_cols=["observedProperty"],
+                # partition_cols=["observedProperty"],
                 compression="gzip",
             )
         except Exception as e:
@@ -141,16 +182,31 @@ class GetStationsAPIOperator(BaseOperator):
             self.log.info(print("Failure to save parquet file locally"))
             raise ValueError
 
+    def clear_staging_tables(self):
+        sql_connection = create_engine(
+            LoadStationsOperator.sql_engine.format(
+                user=self.source_database["user"],
+                password=self.source_database["password"],
+                database=self.source_database["database"],
+            )
+        )
+        sql_connection.execute(
+            """DROP TABLE {table};""".format(
+                table=self.source_database["table"]
+            )
+        )
+
     def execute(self, context):
 
         self.file_key = (
             self.target_database["table"]
-            + "/"
-            + self.observed_property
             + ".parquet.gzip"
         )
-        self.read_json()
-        self.process_dataframe()
+
+        self.read_from_local_sql()
+        self.encode()
         self.write_to_local_sql()
         self.save_locally()
-        self.save_to_s3()
+        self.clear_staging_tables()
+        # self.save_to_s3()
+#
