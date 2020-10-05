@@ -207,6 +207,6 @@ class LoadStationsOperator(BaseOperator):
         self.encode()
         self.write_to_local_sql()
         self.save_locally()
-        self.clear_staging_tables()
+        # self.clear_staging_tables()
         # self.save_to_s3()
 #
