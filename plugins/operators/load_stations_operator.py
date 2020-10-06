@@ -40,6 +40,18 @@ def categorical_encoder(dataframe, group_col, target_col):
     aggregated_vecs_df.columns = dummy_df.columns.values[dummy_df.columns.str.startswith(target_col)]
     return aggregated_vecs_df
 
+def create_sql_connection(database):
+    """This function creates a SQLalchemy connection from some database information and returns it."""
+    sql_connection = create_engine(
+        LoadStationsOperator.sql_engine.format(
+            user=database["user"],
+            password=database["password"],
+            database=database["database"],
+        )
+    )
+    return sql_connection
+
+
 class LoadStationsOperator(BaseOperator):
     ui_color = "#358140"
 
@@ -64,12 +76,16 @@ class LoadStationsOperator(BaseOperator):
         self.stations_df = stations_df
         self.source_database = source_database
         self.target_database = target_database
+        self.source_sql_connection = create_sql_connection(source_database)
+        self.target_sql_connection = create_sql_connection(target_database)
         self.file_key = file_key
         self.limit = limit
         self.columns_to_drop = columns_to_drop
 
 
     def encode(self):
+        """This method one hot encodes the observedProperties from each station, allowing to have only one
+        record per stationReference, then it drops the duplicates and the hot-encoded column."""
         try:
             stations_df_encoded = categorical_encoder(dataframe=self.stations_df,
                                                    group_col="stationReference", target_col="observedProperty")
@@ -86,44 +102,32 @@ class LoadStationsOperator(BaseOperator):
             raise ValueError
 
     def read_from_local_sql(self):
+        """This method reads the staging SQL database to load the final stations database."""
         try:
-            sql_connection = create_engine(
-                LoadStationsOperator.sql_engine.format(
-                    user=self.source_database["user"],
-                    password=self.source_database["password"],
-                    database=self.source_database["database"],
-                )
-            )
-            self.stations_df = read_sql(sql=self.source_database["table"], con=sql_connection)
-
+            self.stations_df = read_sql(sql=self.source_database["table"], con=self.source_sql_connection)
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to read the dataframe"))
             raise ValueError
 
     def write_to_local_sql(self):
+        """This function loads the final clean dataframe to a local SQL database, checking the PK constraint.
+        It serves as a test that the dataframe is ready to be saved to parquet."""
         try:
-            sql_connection = create_engine(
-                LoadStationsOperator.sql_engine.format(
-                    user=self.target_database["user"],
-                    password=self.target_database["password"],
-                    database=self.target_database["database"],
-                )
-            )
 
             self.stations_df.head(0).to_sql(
                 name=self.target_database["table"],
-                con=sql_connection,
+                con=self.target_sql_connection,
                 if_exists="append",
                 index=False,
             )
             try:
-                sql_connection.execute(
+                self.target_sql_connection.execute(
                     """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "stationReference";""".format(
                         table=self.target_database["table"]
                     )
                 )
-                sql_connection.execute(
+                self.target_sql_connection.execute(
                     """ALTER TABLE {table} ADD PRIMARY KEY ("stationReference");""".format(
                         table=self.target_database["table"]
                     )
@@ -134,7 +138,7 @@ class LoadStationsOperator(BaseOperator):
 
             self.stations_df.to_sql(
                 name=self.target_database["table"],
-                con=sql_connection,
+                con=self.target_sql_connection,
                 if_exists="append",
                 index=False,
             )
@@ -146,6 +150,7 @@ class LoadStationsOperator(BaseOperator):
             raise ValueError
 
     def save_to_s3(self):
+        """This method loads the parquet file stored within the container to an S3 bucket"""
         try:
             hook = S3Hook(aws_conn_id=self.aws_conn_id)
             self.log.info(print(hook))
@@ -167,6 +172,8 @@ class LoadStationsOperator(BaseOperator):
             raise ValueError
 
     def save_locally(self):
+        """This function saves the final clean dataframe as a parquet file within the container, prior to its loading
+        to s3"""
         try:
             self.stations_df.to_parquet(
                 fname=self.file_key,
@@ -179,14 +186,9 @@ class LoadStationsOperator(BaseOperator):
             raise ValueError
 
     def clear_staging_tables(self):
-        sql_connection = create_engine(
-            LoadStationsOperator.sql_engine.format(
-                user=self.source_database["user"],
-                password=self.source_database["password"],
-                database=self.source_database["database"],
-            )
-        )
-        sql_connection.execute(
+        """This method drops the staging_table for stations after the data has been cleaned and loaded to the final
+        table"""
+        self.source_sql_connection.execute(
             """DROP TABLE {table};""".format(
                 table=self.source_database["table"]
             )
@@ -205,4 +207,3 @@ class LoadStationsOperator(BaseOperator):
         self.save_locally()
         # self.clear_staging_tables()
         # self.save_to_s3()
-#

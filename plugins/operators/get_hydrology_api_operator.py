@@ -10,11 +10,23 @@ from airflow.hooks.S3_hook import S3Hook
 import boto3
 import datetime
 
+def create_sql_connection(database):
+    """This function creates a SQLalchemy connection from some database information and returns it."""
+    sql_connection = create_engine(
+        GetHydrologyAPIOperator.sql_engine.format(
+            user=database["user"],
+            password=database["password"],
+            database=database["database"],
+        )
+    )
+    return sql_connection
 
 class GetHydrologyAPIOperator(BaseOperator):
-    ui_color = "#358140"
+    ui_color = "#0000FF"
 
     template_fields = ["date"]
+
+    sql_engine = "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}"
 
     @apply_defaults
     def __init__(
@@ -44,29 +56,31 @@ class GetHydrologyAPIOperator(BaseOperator):
         self.columns_to_drop = columns_to_drop
         self.aws_conn_id = aws_conn_id
         self.file_key = file_key
-        self.origin_sql_connection = origin_sql_connection
-        self.destination_sql_connection = destination_sql_connection
+        self.source_sql_connection = create_sql_connection(source_database)
+        self.target_sql_connection = create_sql_connection(target_database)
         self.measures_df = measures_df
         self.general_API_endpoint = general_API_endpoint
 
-    def create_connections(self):
-        self.origin_sql_connection = create_engine(
-            "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(
-                user=self.source_database["user"],
-                password=self.source_database["password"],
-                database=self.source_database["database"],
-            )
-        )
-
-        self.destination_sql_connection = create_engine(
-            "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(
-                user=self.target_database["user"],
-                password=self.target_database["password"],
-                database=self.target_database["database"],
-            )
-        )
+    # def create_connections(self):
+    #     self.source_sql_connection = create_engine(
+    #         "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(
+    #             user=self.source_database["user"],
+    #             password=self.source_database["password"],
+    #             database=self.source_database["database"],
+    #         )
+    #     )
+    #
+    #     self.target_sql_connection = create_engine(
+    #         "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(
+    #             user=self.target_database["user"],
+    #             password=self.target_database["password"],
+    #             database=self.target_database["database"],
+    #         )
+    #     )
 
     def save_locally(self):
+        """This function saves the final clean dataframe as a parquet file within the container, prior to its loading
+        to s3"""
         try:
             self.measures_df.to_parquet(
                 fname=self.file_key,
@@ -79,9 +93,9 @@ class GetHydrologyAPIOperator(BaseOperator):
             raise ValueError
 
     def save_to_s3(self):
+        """This method loads the parquet file stored within the container to an S3 bucket"""
         try:
             hook = S3Hook(aws_conn_id=self.aws_conn_id)
-            # self.log.info(print(hook))
             credentials = hook.get_credentials()
             bucket = Variable.get("s3_bucket")
             client = boto3.client(
@@ -100,6 +114,7 @@ class GetHydrologyAPIOperator(BaseOperator):
             raise ValueError
 
     def date_str_to_dateTime(self):
+        """This function transforms a date in str format to a date in datetime format"""
         date_time_date = datetime.datetime.strptime(self.date, "%Y-%m-%d")
         return date_time_date
 
@@ -132,6 +147,7 @@ class GetHydrologyAPIOperator(BaseOperator):
         return final_string
 
     def get_api_endpoint(self, station_reference):
+        """This method generates the API endpoint used to call the API depending on the property we will be reading."""
         if self.observed_property == "waterFlow":
             API_endpoint = self.general_API_endpoint.format(
                 period=900, station_reference=station_reference, date=self.date
@@ -144,15 +160,15 @@ class GetHydrologyAPIOperator(BaseOperator):
                 )
                 + self.datetime_generator()
             )
+        self.log.info(print(API_endpoint))
         return API_endpoint
 
     def read_json(self, station_reference):
+        """This method reads a JSON from the API endpoint and creates a dataframe with the data retrieved"""
         try:
             API_endpoint = self.get_api_endpoint(station_reference)
-            # self.log.info(print(API_endpoint))
             response = requests.get(API_endpoint)
             measures = response.json()["items"]
-            # self.log.info(print(measures))
             self.measures_df = DataFrame.from_dict(measures)
         except Exception as e:
             self.log.info(print(e))
@@ -160,8 +176,10 @@ class GetHydrologyAPIOperator(BaseOperator):
             raise ValueError
 
     def process_dataframe(self, station_reference, lat, long):
+        """This method processes the raw dataframe obtained from the JSON, by adding several columns, by
+        dropping the unecesary columns and sorting the rest. This creates a consistency throughout the different
+        observedProperties, with the same columns"""
         try:
-            # self.log.info(print(self.measures_df.head(0)))
             if self.observed_property != "waterFlow":
                 self.measures_df["date"] = self.date_str_to_dateTime()
             else:
@@ -175,38 +193,38 @@ class GetHydrologyAPIOperator(BaseOperator):
             self.measures_df = self.measures_df.reindex(
                 sorted(self.measures_df.columns), axis=1
             )
-            # self.log.info(print(self.measures_df))
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to process the dataframe"))
             raise ValueError
 
     def write_to_local_sql(self):
+        """This function loads the final clean dataframe to a local SQL database, checking the PK constraint.
+        It serves as a test that the dataframe is ready to be saved to parquet."""
         try:
-            # self.log.info(print(self.measures_df.head()))
             self.measures_df.head(0).to_sql(
                 name=self.target_database["table"],
-                con=self.destination_sql_connection,
+                con=self.target_sql_connection,
                 if_exists="append",
                 index=False,
             )
             try:
-                self.destination_sql_connection.execute(
+                self.target_sql_connection.execute(
                     """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "dateTime";""".format(
                         table=self.target_database["table"]
                     )
                 )
-                self.destination_sql_connection.execute(
+                self.target_sql_connection.execute(
                     """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "observedProperty";""".format(
                         table=self.target_database["table"]
                     )
                 )
-                self.destination_sql_connection.execute(
+                self.target_sql_connection.execute(
                     """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "stationReference";""".format(
                         table=self.target_database["table"]
                     )
                 )
-                self.destination_sql_connection.execute(
+                self.target_sql_connection.execute(
                     """ALTER TABLE {table} ADD PRIMARY KEY ("stationReference", 
                 "observedProperty", "dateTime");""".format(
                         table=self.target_database["table"]
@@ -217,7 +235,7 @@ class GetHydrologyAPIOperator(BaseOperator):
                 self.log.info(print("Primary key restriction already exists"))
 
             try:
-                conn = self.destination_sql_connection.raw_connection()
+                conn = self.target_sql_connection.raw_connection()
                 cur = conn.cursor()
                 output = StringIO()
                 self.measures_df.to_csv(output, sep="\t", header=False, index=False)
@@ -235,15 +253,14 @@ class GetHydrologyAPIOperator(BaseOperator):
 
     def execute(self, context):
 
-        self.create_connections()
+        #self.create_connections()
 
         station_reference_df = read_sql_query(
             'SELECT "stationReference", lat, long FROM {table};'.format(
                 table=self.source_database["table"]
             ),
-            con=self.origin_sql_connection,
+            con=self.source_sql_connection,
         )
-        # label,
         for station_reference, lat, long in zip(
             station_reference_df["stationReference"],
             station_reference_df["lat"],

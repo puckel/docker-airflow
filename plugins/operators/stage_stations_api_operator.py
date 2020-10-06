@@ -8,9 +8,19 @@ from airflow.utils.decorators import apply_defaults
 from airflow.hooks.S3_hook import S3Hook
 import boto3
 
+def create_sql_connection(database):
+    """This function creates a SQLalchemy connection from some database information and returns it."""
+    sql_connection = create_engine(
+        StageStationsAPIOperator.sql_engine.format(
+            user=database["user"],
+            password=database["password"],
+            database=database["database"],
+        )
+    )
+    return sql_connection
 
 class StageStationsAPIOperator(BaseOperator):
-    ui_color = "#358140"
+    ui_color = "#DD3581"
 
     sql_engine = "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}"
 
@@ -33,11 +43,13 @@ class StageStationsAPIOperator(BaseOperator):
         self.observed_property = observed_property
         self.stations_df = stations_df
         self.target_database = target_database
+        self.target_sql_connection = create_sql_connection(target_database)
         self.file_key = file_key
         self.limit = limit
         self.columns_to_drop = columns_to_drop
 
     def read_json(self):
+        """This method reads a JSON from the API endpoint and creates a dataframe with the data retrieved"""
         try:
             response = requests.get(self.API_endpoint)
             stations = response.json()["items"]
@@ -48,6 +60,9 @@ class StageStationsAPIOperator(BaseOperator):
             raise ValueError
 
     def process_dataframe(self):
+        """This method processes the raw dataframe obtained from the JSON, by adding the observed property column, by
+        dropping the unecesary columns and sorting the rest. This creates a consistency throughout the different
+        observedProperties, with the same columns"""
         try:
             self.stations_df["observedProperty"] = self.observed_property
             self.stations_df.drop(columns=self.columns_to_drop, inplace=True)
@@ -61,25 +76,18 @@ class StageStationsAPIOperator(BaseOperator):
             raise ValueError
 
     def write_to_local_sql(self):
+        """This function loads the final clean dataframe to a local SQL database, for later use."""
         try:
-            sql_connection = create_engine(
-                StageStationsAPIOperator.sql_engine.format(
-                    user=self.target_database["user"],
-                    password=self.target_database["password"],
-                    database=self.target_database["database"],
-                )
-            )
-
             self.stations_df.head(0).to_sql(
                 name=self.target_database["table"],
-                con=sql_connection,
+                con=self.target_sql_connection,
                 if_exists="append",
                 index=False,
             )
 
             self.log.info(print(self.stations_df.head(0)))
             try:
-                conn = sql_connection.raw_connection()
+                conn = self.target_sql_connection.raw_connection()
                 cur = conn.cursor()
                 output = StringIO()
                 self.stations_df.to_csv(output, sep="\t", header=False, index=False)
@@ -96,6 +104,7 @@ class StageStationsAPIOperator(BaseOperator):
             raise ValueError
 
     def save_to_s3(self):
+        """This method loads the parquet file stored within the container to an S3 bucket"""
         try:
             hook = S3Hook(aws_conn_id=self.aws_conn_id)
             self.log.info(print(hook))
@@ -117,6 +126,8 @@ class StageStationsAPIOperator(BaseOperator):
             raise ValueError
 
     def save_locally(self):
+        """This function saves the final clean dataframe as a parquet file within the container, prior to its loading
+        to s3"""
         try:
             self.stations_df.to_parquet(
                 fname=self.file_key,

@@ -13,7 +13,7 @@ default_args = {
     "owner": "airflow",
     "depends_on_past": True,
     "max_active_runs": 1,
-    "start_date": datetime(2020, 10, 4),
+    "start_date": datetime(2020, 10, 5),
     "email": ["airflow@airflow.com"],
     "email_on_failure": False,
     "email_on_retry": False,
@@ -26,7 +26,7 @@ dag = DAG(
 )
 
 t10 = StageStationsAPIOperator(
-    task_id="Get_Hydrology_Stations_from_API",
+    task_id="Get_Waterflow_Stations_from_API",
     API_endpoint="https://environment.data.gov.uk/hydrology/id/stations.json?observedProperty={"
     "observed_property}&_limit=200",
     columns_to_drop=["easting", "northing", "notation", "type", "wiskiID", "RLOIid", "measures"],
