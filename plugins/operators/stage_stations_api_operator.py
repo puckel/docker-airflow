@@ -54,6 +54,7 @@ class StageStationsAPIOperator(BaseOperator):
             self.stations_df = self.stations_df.reindex(
                 sorted(self.stations_df.columns), axis=1
             )
+            self.stations_df.dropna(axis="index", subset=["stationReference"], inplace=True)
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to process the dataframe"))

@@ -29,7 +29,7 @@ t10 = StageStationsAPIOperator(
     task_id="Get_Hydrology_Stations_from_API",
     API_endpoint="https://environment.data.gov.uk/hydrology/id/stations.json?observedProperty={"
     "observed_property}&_limit=200",
-    columns_to_drop=["easting", "northing", "notation", "type", "wiskiID", "RLOIid"],
+    columns_to_drop=["easting", "northing", "notation", "type", "wiskiID", "RLOIid", "measures"],
     observed_property="waterFlow",
     target_database={
         "database": "airflow",
@@ -56,6 +56,7 @@ t11 = StageStationsAPIOperator(
         "stageScale",
         "datumOffset",
         "gridReference",
+        "measures"
     ],
     observed_property="rainfall",
     target_database={
@@ -83,6 +84,10 @@ t12 = StageStationsAPIOperator(
         "stageScale",
         "datumOffset",
         "gridReference",
+        "town",
+        "dateOpened",
+        "measures",
+        "downstageScale"
     ],
     observed_property="level",
     target_database={
