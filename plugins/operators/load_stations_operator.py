@@ -78,7 +78,8 @@ class LoadStationsOperator(BaseOperator):
             self.log.info(print(stations_df_encoded))
             self.stations_df = self.stations_df.merge(right=stations_df_encoded, on="stationReference", how="left")
             self.log.info(print(self.stations_df))
-            # self.stations_df.drop(columns="observedProperty")
+            self.stations_df.drop(columns="observedProperty", inplace=True)
+            self.stations_df.drop_duplicates(subset=["stationReference"], inplace=True)
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to encode the dataframe"))
@@ -131,18 +132,13 @@ class LoadStationsOperator(BaseOperator):
                 self.log.info(print(e))
                 self.log.info(print("Primary key restriction already exists"))
 
+            self.stations_df.to_sql(
+                name=self.target_database["table"],
+                con=sql_connection,
+                if_exists="append",
+                index=False,
+            )
             self.log.info(print(self.stations_df.head(0)))
-            try:
-                conn = sql_connection.raw_connection()
-                cur = conn.cursor()
-                output = StringIO()
-                self.stations_df.to_csv(output, sep="\t", header=False, index=False)
-                output.seek(0)
-                cur.copy_from(output, self.target_database["table"], null="", sep="\t")
-                conn.commit()
-            except Exception as e:
-                self.log.info(print(e))
-                self.log.info(print("Failure to write to local database"))
 
         except Exception as e:
             self.log.info(print(e))
