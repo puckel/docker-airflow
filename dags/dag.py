@@ -3,17 +3,35 @@ Code that goes along with the Airflow located at:
 http://airflow.readthedocs.org/en/latest/tutorial.html
 """
 from airflow import DAG
+from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.python_operator import BranchPythonOperator
 from operators.load_stations_operator import LoadStationsOperator
 from operators.stage_stations_api_operator import StageStationsAPIOperator
 from operators.get_hydrology_api_operator import GetHydrologyAPIOperator
+from airflow.utils.trigger_rule import TriggerRule
 from datetime import datetime, timedelta
+from sqlalchemy import create_engine
+
+
+def check_table_existance(database):
+    sql_connection = create_engine(
+        "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(
+            user=database["user"],
+            password=database["password"],
+            database=database["database"],
+        )
+    )
+    if sql_connection.dialect.has_table(sql_connection, database["table"]):
+        return "Dummy"
+    else:
+        return "Get_Waterflow_Stations_from_API"
 
 
 default_args = {
     "owner": "airflow",
     "depends_on_past": True,
     "max_active_runs": 1,
-    "start_date": datetime(2020, 10, 5),
+    "start_date": datetime(2020, 10, 1),
     "email": ["airflow@airflow.com"],
     "email_on_failure": False,
     "email_on_retry": False,
@@ -23,6 +41,28 @@ default_args = {
 
 dag = DAG(
     "Hydrology-Data-Project", default_args=default_args
+)
+
+t0 = BranchPythonOperator(
+    task_id="Check_Table_Existance",
+    python_callable=check_table_existance,
+    op_kwargs={'database': {
+        "database": "airflow",
+        "table": "stations",
+        "user": "airflow",
+        "password": "airflow"}},
+    dag=dag
+)
+
+tdummy = DummyOperator(
+    task_id="Dummy",
+    dag=dag
+)
+
+tcheckpoint = DummyOperator(
+    task_id="Branch_Checkpoint",
+    trigger_rule=TriggerRule.ONE_SUCCESS,
+    dag=dag
 )
 
 t10 = StageStationsAPIOperator(
@@ -187,11 +227,15 @@ t32 = GetHydrologyAPIOperator(
     dag=dag,
 )
 
+t10.set_upstream(t0)
 t10.set_downstream(t2)
 t11.set_upstream(t10)
 t12.set_upstream(t10)
 t11.set_downstream(t2)
 t12.set_downstream(t2)
-t30.set_upstream(t2)
-t31.set_upstream(t2)
-t32.set_upstream(t2)
+tdummy.set_upstream(t0)
+tcheckpoint.set_upstream(tdummy)
+tcheckpoint.set_upstream(t2)
+t30.set_upstream(tcheckpoint)
+t31.set_upstream(tcheckpoint)
+t32.set_upstream(tcheckpoint)

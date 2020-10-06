@@ -256,8 +256,8 @@ class GetHydrologyAPIOperator(BaseOperator):
         #self.create_connections()
 
         station_reference_df = read_sql_query(
-            'SELECT "stationReference", lat, long FROM {table};'.format(
-                table=self.source_database["table"]
+            """SELECT "stationReference", lat, long FROM {table} where "observedProperty_{observed_property}"!='0';""".format(
+                table=self.source_database["table"], observed_property=self.observed_property
             ),
             con=self.source_sql_connection,
         )
