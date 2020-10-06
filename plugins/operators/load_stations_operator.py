@@ -139,17 +139,6 @@ class LoadStationsOperator(BaseOperator):
                 index=False,
             )
             self.log.info(print(self.stations_df.head(0)))
-            # try:
-            #     conn = sql_connection.raw_connection()
-            #     cur = conn.cursor()
-            #     output = StringIO()
-            #     self.stations_df.to_csv(output, sep="\t", header=False, index=False)
-            #     output.seek(0)
-            #     cur.copy_from(output, self.target_database["table"], null="", sep="\t")
-            #     conn.commit()
-            # except Exception as e:
-            #     self.log.info(print(e))
-            #     self.log.info(print("Failure to write to local database"))
 
         except Exception as e:
             self.log.info(print(e))

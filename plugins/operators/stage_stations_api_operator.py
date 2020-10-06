@@ -76,25 +76,6 @@ class StageStationsAPIOperator(BaseOperator):
                 if_exists="append",
                 index=False,
             )
-            # try:
-            #     sql_connection.execute(
-            #         """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "stationReference";""".format(
-            #             table=self.target_database["table"]
-            #         )
-            #     )
-            #     sql_connection.execute(
-            #         """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "observedProperty";""".format(
-            #             table=self.target_database["table"]
-            #         )
-            #     )
-            #     sql_connection.execute(
-            #         """ALTER TABLE {table} ADD PRIMARY KEY ("stationReference", "observedProperty");""".format(
-            #             table=self.target_database["table"]
-            #         )
-            #     )
-            # except Exception as e:
-            #     self.log.info(print(e))
-            #     self.log.info(print("Primary key restriction already exists"))
 
             self.log.info(print(self.stations_df.head(0)))
             try:
@@ -158,5 +139,4 @@ class StageStationsAPIOperator(BaseOperator):
         self.read_json()
         self.process_dataframe()
         self.write_to_local_sql()
-        # self.save_locally()
-        # self.save_to_s3()
+
