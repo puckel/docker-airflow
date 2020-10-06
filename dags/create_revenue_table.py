@@ -33,6 +33,7 @@ def drop_create_revenue_table(conn_id, ts, **kwargs):
         product_name varchar(256) encode ZSTD
     )
     COMPOUND SORTKEY(event_date, event_name);
+    GRANT ALL ON TABLE {table} TO GROUP team;
     commit;
     '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)

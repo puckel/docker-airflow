@@ -168,7 +168,7 @@ def _get_insert_query(record, column_mapping):
         if not v:
             values.append('null')
         elif type(v) == str:
-            values.append("'%s'" % v)
+            values.append("'%s'" % v.replace("'", "\\'"))
         else:
             values.append(str(v))
 
