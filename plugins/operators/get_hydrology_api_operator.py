@@ -61,22 +61,6 @@ class GetHydrologyAPIOperator(BaseOperator):
         self.measures_df = measures_df
         self.general_API_endpoint = general_API_endpoint
 
-    # def create_connections(self):
-    #     self.source_sql_connection = create_engine(
-    #         "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(
-    #             user=self.source_database["user"],
-    #             password=self.source_database["password"],
-    #             database=self.source_database["database"],
-    #         )
-    #     )
-    #
-    #     self.target_sql_connection = create_engine(
-    #         "postgresql+psycopg2://{user}:{password}@postgres:5432/{database}".format(
-    #             user=self.target_database["user"],
-    #             password=self.target_database["password"],
-    #             database=self.target_database["database"],
-    #         )
-    #     )
 
     def save_locally(self):
         """This function saves the final clean dataframe as a parquet file within the container, prior to its loading
@@ -237,8 +221,6 @@ class GetHydrologyAPIOperator(BaseOperator):
             raise ValueError
 
     def execute(self, context):
-
-        #self.create_connections()
 
         station_reference_df = read_sql_query(
             """SELECT "stationReference", lat, long FROM {table} where "observedProperty_{observed_property}"!='0';""".format(
