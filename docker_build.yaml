@@ -7,6 +7,7 @@ app: airflow
 # Raw build arguments
 args:
   AIRFLOW_VERSION: 1.10.10
-  AIRFLOW_DEPS: kubernetes,slack,aws,s3,elasticsearch,papermill,postgres
+  AIRFLOW_DEPS: kubernetes,slack,aws,s3,elasticsearch,postgres
+  PAPERMILL_PACKAGE: git+https://github.com/viaduct-ai/papermill.git@2ed27f6fa59ab0622aa581dbcecaf8dae40c335c#egg=papermill[s3]
 # Environment variables to inject as build arguments
 env: {}
