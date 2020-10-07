@@ -1,7 +1,4 @@
-import requests
-from pandas import DataFrame
 from pandas import read_sql
-from io import StringIO
 from sqlalchemy import create_engine
 from airflow.models import BaseOperator
 from airflow.models import Variable

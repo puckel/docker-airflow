@@ -90,7 +90,6 @@ class GetHydrologyAPIOperator(BaseOperator):
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to save parquet file locally"))
-            raise ValueError
 
     def save_to_s3(self):
         """This method loads the parquet file stored within the container to an S3 bucket"""
@@ -193,6 +192,7 @@ class GetHydrologyAPIOperator(BaseOperator):
             self.measures_df = self.measures_df.reindex(
                 sorted(self.measures_df.columns), axis=1
             )
+            self.measures_df.dropna(axis="index", subset=["value"], inplace=True)
         except Exception as e:
             self.log.info(print(e))
             self.log.info(print("Failure to process the dataframe"))
@@ -209,21 +209,6 @@ class GetHydrologyAPIOperator(BaseOperator):
                 index=False,
             )
             try:
-                self.target_sql_connection.execute(
-                    """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "dateTime";""".format(
-                        table=self.target_database["table"]
-                    )
-                )
-                self.target_sql_connection.execute(
-                    """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "observedProperty";""".format(
-                        table=self.target_database["table"]
-                    )
-                )
-                self.target_sql_connection.execute(
-                    """ALTER TABLE {table} DROP CONSTRAINT IF EXISTS "stationReference";""".format(
-                        table=self.target_database["table"]
-                    )
-                )
                 self.target_sql_connection.execute(
                     """ALTER TABLE {table} ADD PRIMARY KEY ("stationReference", 
                 "observedProperty", "dateTime");""".format(
@@ -256,8 +241,8 @@ class GetHydrologyAPIOperator(BaseOperator):
         #self.create_connections()
 
         station_reference_df = read_sql_query(
-            'SELECT "stationReference", lat, long FROM {table};'.format(
-                table=self.source_database["table"]
+            """SELECT "stationReference", lat, long FROM {table} where "observedProperty_{observed_property}"!='0';""".format(
+                table=self.source_database["table"], observed_property=self.observed_property
             ),
             con=self.source_sql_connection,
         )
