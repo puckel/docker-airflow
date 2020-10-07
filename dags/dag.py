@@ -22,9 +22,9 @@ def check_table_existance(database):
         )
     )
     if sql_connection.dialect.has_table(sql_connection, database["table"]):
-        return "Dummy"
+        return "Branch_1"
     else:
-        return "Get_Waterflow_Stations_from_API"
+        return "Branch_2"
 
 
 default_args = {
@@ -48,14 +48,19 @@ t0 = BranchPythonOperator(
     python_callable=check_table_existance,
     op_kwargs={'database': {
         "database": "airflow",
-        "table": "stations",
+        "table": "stage_stations",
         "user": "airflow",
         "password": "airflow"}},
     dag=dag
 )
 
-tdummy = DummyOperator(
-    task_id="Dummy",
+tdummy1 = DummyOperator(
+    task_id="Branch_1",
+    dag=dag
+)
+
+tdummy2 = DummyOperator(
+    task_id="Branch_2",
     dag=dag
 )
 
@@ -69,7 +74,7 @@ t10 = StageStationsAPIOperator(
     task_id="Get_Waterflow_Stations_from_API",
     API_endpoint="https://environment.data.gov.uk/hydrology/id/stations.json?observedProperty={"
     "observed_property}&_limit=200",
-    columns_to_drop=["easting", "northing", "notation", "type", "wiskiID", "RLOIid", "measures"],
+    columns_to_drop=["easting", "northing", "notation", "type", "wiskiID", "RLOIid", "measures", "@id"],
     observed_property="waterFlow",
     target_database={
         "database": "airflow",
@@ -96,7 +101,8 @@ t11 = StageStationsAPIOperator(
         "stageScale",
         "datumOffset",
         "gridReference",
-        "measures"
+        "measures",
+        "@id"
     ],
     observed_property="rainfall",
     target_database={
@@ -127,7 +133,8 @@ t12 = StageStationsAPIOperator(
         "town",
         "dateOpened",
         "measures",
-        "downstageScale"
+        "downstageScale",
+        "@id"
     ],
     observed_property="level",
     target_database={
@@ -158,7 +165,7 @@ t2 = LoadStationsOperator(
 )
 
 t30 = GetHydrologyAPIOperator(
-    task_id="Get_Hydrology_Measures_from_API",
+    task_id="Get_WaterFlow_Measures_from_API",
     source_database={
         "database": "airflow",
         "table": "stations",
@@ -227,14 +234,15 @@ t32 = GetHydrologyAPIOperator(
     dag=dag,
 )
 
-t10.set_upstream(t0)
+t10.set_upstream(tdummy2)
+t11.set_upstream(tdummy2)
+t12.set_upstream(tdummy2)
 t10.set_downstream(t2)
-t11.set_upstream(t10)
-t12.set_upstream(t10)
 t11.set_downstream(t2)
 t12.set_downstream(t2)
-tdummy.set_upstream(t0)
-tcheckpoint.set_upstream(tdummy)
+tdummy1.set_upstream(t0)
+tdummy2.set_upstream(t0)
+tcheckpoint.set_upstream(tdummy1)
 tcheckpoint.set_upstream(t2)
 t30.set_upstream(tcheckpoint)
 t31.set_upstream(tcheckpoint)
