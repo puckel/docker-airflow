@@ -93,7 +93,7 @@ def get_ios_expired_events(conn_id, ts, **kwargs):
     query = '''
     INSERT INTO {table}
     SELECT
-        add_months(iap.purchasedate, 1),
+        iap.expiresdate,
         p.serviceName,
         p.entityid,
         'paid_transaction_expired',
