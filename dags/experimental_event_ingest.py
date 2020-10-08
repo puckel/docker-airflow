@@ -1,6 +1,5 @@
 from airflow import DAG
 from airflow.hooks import PostgresHook
-from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 
@@ -192,10 +191,6 @@ with DAG('experimental_event_ingest',
         task_id='cleanup_intermediate_tables'
     )
 
-    trigger_population_creation_dag_task = TriggerDagRunOperator(
-        task_id='trigger_population_creation_dag',
-        trigger_dag_id='experimental_population_creation'
-    )
 
     # DAG for event ingestion
     start_task >> [get_active_experiment_task, generate_start_and_end_ts_task]
@@ -203,4 +198,4 @@ with DAG('experimental_event_ingest',
     generate_start_and_end_ts_task >> generate_intermediate_events_task
     [generate_missing_event_tables_tasks,
         generate_intermediate_events_task] >> populate_experiment_events_task
-    populate_experiment_events_task >> cleanup_intermediate_tables_task >> trigger_population_creation_dag_task
+    populate_experiment_events_task >> cleanup_intermediate_tables_task
