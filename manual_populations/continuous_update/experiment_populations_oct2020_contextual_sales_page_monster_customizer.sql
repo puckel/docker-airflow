@@ -1,6 +1,6 @@
-drop table if exists ab_platform.experiment_populations_oct2020_contextual_monster_customizer_temp cascade;
+drop table if exists ab_platform.experiment_populations_oct2020_contextual_sales_page_monster_customizer_temp cascade;
 
-create table ab_platform.experiment_populations_oct2020_contextual_monster_customizer_temp
+create table ab_platform.experiment_populations_oct2020_contextual_sales_page_monster_customizer_temp
   distkey (entity_id)
   sortkey (entity_id) as (
   select
@@ -24,9 +24,9 @@ create table ab_platform.experiment_populations_oct2020_contextual_monster_custo
 );
 
 begin;
-grant all on ab_platform.experiment_populations_oct2020_contextual_monster_customizer_temp to group team;
-grant all on ab_platform.experiment_populations_oct2020_contextual_monster_customizer_temp to astronomer;
-drop table if exists ab_platform.experiment_populations_oct2020_contextual_monster_customizer cascade;
-alter table ab_platform.experiment_populations_oct2020_contextual_monster_customizer_temp
-  rename to experiment_populations_oct2020_contextual_monster_customizer;
+grant all on ab_platform.experiment_populations_oct2020_contextual_sales_page_monster_customizer_temp to group team;
+grant all on ab_platform.experiment_populations_oct2020_contextual_sales_page_monster_customizer_temp to astronomer;
+drop table if exists ab_platform.experiment_populations_oct2020_contextual_sales_page_monster_customizer cascade;
+alter table ab_platform.experiment_populations_oct2020_contextual_sales_page_monster_customizer_temp
+  rename to experiment_populations_oct2020_contextual_sales_page_monster_customizer;
 commit;
