@@ -15,6 +15,7 @@ create table ab_platform.experiment_populations_oct2020_contextual_sales_page_re
     and createdat >= '2020-10-07'
     and createdat <= getdate()
     and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport', TRUE) != ''
+    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport', TRUE) != 'off'
     and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport', TRUE) is not null
   group by
     entity_id,
