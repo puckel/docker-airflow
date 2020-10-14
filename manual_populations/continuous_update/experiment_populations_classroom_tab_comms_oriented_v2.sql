@@ -1,4 +1,4 @@
-drop table if exists ab_platform.experiment_populations_classroom_tab_comms_oriented_v2 cascade;
+drop table if exists ab_platform.experiment_populations_classroom_tab_comms_oriented_v2_temp cascade;
 
 create table ab_platform.experiment_populations_classroom_tab_comms_oriented_v2_temp distkey(entity_id) sortkey(entity_id) as (
   select
