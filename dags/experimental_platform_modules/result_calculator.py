@@ -110,7 +110,7 @@ def calculate_intermediate_result_for_day(conn_id, dt, experiment_to_population_
             records = pg_hook.get_records(s)
             all_records += records
             if timeout:
-                time.sleep(1.0)
+                time.sleep(0.5)
 
     return all_records
 

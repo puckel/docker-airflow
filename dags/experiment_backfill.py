@@ -153,7 +153,7 @@ def backfill_intermediate_results(analytics_conn_id, frontend_conn_id, ts, **kwa
             )
             result_calculator.insert_intermediate_records(
                 frontend_conn_id, records)
-            time.sleep(1.0)
+            time.sleep(0.5)
         except Exception as e:
             print("Got error {}".format(e))
             print ("Continuing to next date")

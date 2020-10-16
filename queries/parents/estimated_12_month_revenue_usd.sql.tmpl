@@ -1,6 +1,6 @@
 /* Estimated revenue over the next 12 months, assuming free trial to
 paid conversion and average monthly retention for different
-subscription types remains the same.  
+subscription types remains the same.
 
 NOTE: This metric will not work for pricing experiments since we
 have hard-coded the unit prices for different productids.
@@ -31,10 +31,10 @@ WITH results_raw AS (
       pop.variant,
       SUM(
           CASE
-          -- Assume free trial to paid conversion rate of 65%
+          -- Assume free trial to paid conversion rate of 65 percent
           -- Monthly average retention at 6 months, annual average retention of 16 months, and biannual at 10 months.
           -- Because we only project out the next 12 months, we just count 12 months of annual subscription revenue.
-          -- Discount annual retention by 5% to account for the fact that annual tends to have a higher rate of refunds.
+          -- Discount annual retention by 5 percent to account for the fact that annual tends to have a higher rate of refunds.
           -- For unit prices, used numbers from accounting tracker https://docs.google.com/spreadsheets/d/1PCZ_XACvA2auNx1NAuUiXTTFr2jphW0MYvsn-A7lMVA/edit#gid=771631850
           WHEN is_beyond_signup and (
             productname = 'AfterSchoolClubMonthly799'

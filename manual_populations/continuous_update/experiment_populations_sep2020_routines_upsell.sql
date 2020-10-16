@@ -1,5 +1,3 @@
-frog.beyond_modal_and_banner_ios_experiment_audience
-
 drop table if exists ab_platform.experiment_populations_sep2020_routines_upsell_temp cascade;
 
 create table ab_platform.experiment_populations_sep2020_routines_upsell_temp
