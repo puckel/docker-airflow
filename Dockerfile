@@ -76,6 +76,7 @@ RUN echo "${AIRFLOW_CONFIG}" > ${AIRFLOW_USER_HOME}/airflow.cfg
 COPY dags ${AIRFLOW_USER_HOME}/dags
 COPY queries ${AIRFLOW_USER_HOME}/queries
 COPY extras ${AIRFLOW_USER_HOME}/extras
+COPY manual_populations ${AIRFLOW_USER_HOME}/manual_populations
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
