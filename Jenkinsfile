@@ -17,7 +17,7 @@ pipeline {
                         --build-arg AIRFLOW_CONFIG="$(consul kv get -http-addr=consul.internal.classdojo.com config/airflow)" \
                         -t $PROD_IMAGE
 
-                    $(aws ecr get-login --no-include-email --region us-east-1)
+                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 347708466071.dkr.ecr.us-east-1.amazonaws.com
                     docker push $PROD_IMAGE
 
                     echo "Latest image available at: $PROD_IMAGE"
