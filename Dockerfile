@@ -74,6 +74,7 @@ ARG AIRFLOW_CONFIG
 COPY script/entrypoint.sh /entrypoint.sh
 RUN echo "${AIRFLOW_CONFIG}" > ${AIRFLOW_USER_HOME}/airflow.cfg
 COPY dags ${AIRFLOW_USER_HOME}/dags
+COPY queries ${AIRFLOW_USER_HOME}/queries
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
