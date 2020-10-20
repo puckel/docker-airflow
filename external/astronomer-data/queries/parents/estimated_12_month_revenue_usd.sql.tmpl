@@ -1,0 +1,81 @@
+/* Estimated revenue over the next 12 months, assuming free trial to
+paid conversion and average monthly retention for different
+subscription types remains the same.
+
+NOTE: This metric will not work for pricing experiments since we
+have hard-coded the unit prices for different productids.
+*/
+
+WITH results_raw AS (
+    SELECT
+      pop.experiment_id,
+      pop.entity_id,
+      pop.variant,
+      purchases.productname,
+      CASE WHEN COUNT(purchases.effectivedate) > 0
+        THEN 1
+      ELSE 0 END AS is_beyond_signup
+    FROM %(table_name)s AS pop
+      LEFT JOIN frog.purchases
+        ON purchases.entityid = pop.entity_id
+           AND purchases.effectivedate IS NOT NULL
+           AND purchases.effectivedate BETWEEN pop.entered_at AND '%(ds)s'::TIMESTAMP
+    WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
+    group by 1, 2, 3, 4
+)
+
+  , results AS (
+    SELECT
+      pop.experiment_id,
+      pop.entity_id,
+      pop.variant,
+      SUM(
+          CASE
+          -- Assume free trial to paid conversion rate of 65 percent
+          -- Monthly average retention at 6 months, annual average retention of 16 months, and biannual at 10 months.
+          -- Because we only project out the next 12 months, we just count 12 months of annual subscription revenue.
+          -- Discount annual retention by 5 percent to account for the fact that annual tends to have a higher rate of refunds.
+          -- For unit prices, used numbers from accounting tracker https://docs.google.com/spreadsheets/d/1PCZ_XACvA2auNx1NAuUiXTTFr2jphW0MYvsn-A7lMVA/edit#gid=771631850
+          WHEN is_beyond_signup and (
+            productname = 'AfterSchoolClubMonthly799'
+            or productname = 'AfterSchoolClubMonthly299'
+            or productname = 'AfterSchoolClubMonthly799NoAppleTrial'
+            or productname = 'BeyondSchoolStripeMonthly60DayTrial'
+            or productname = 'BeyondSchoolWeeklyStripe799'
+          )
+            THEN 0.65 * 5.80 * 6
+          WHEN is_beyond_signup and (
+            productname = 'AfterSchoolClubAnnual5999'
+            or productname = 'BeyondSchoolAnnual6999'
+            or productname = 'BeyondSchoolStripeAnnual'
+            or productname = 'BeyondSchoolAnnual599930DayTrial'
+            or productname = 'BeyondSchoolStripeAnnual60DayTrial'
+          )
+            THEN 0.65 * 4.40 * 12 * 0.95
+          WHEN is_beyond_signup and (
+            productname = 'AfterSchoolClubBiAnnual3999'
+            or productname = 'BeyondSchoolStripeBiannual'
+            or productname = 'BeyondSchoolBiannual399930DayTrial'
+            or productname = 'BeyondSchoolStripeBiannual60DayTrial'
+          )
+            THEN 0.65 * 6.35 * 10
+          ELSE 0.0
+          END
+      ) AS outcome
+    FROM results_raw AS pop
+    GROUP BY 1, 2, 3
+)
+
+SELECT
+  experiment_id
+, variant
+, '%(metric_name)s' AS metric_name
+, 'RATIO' AS metric_type
+, 'any' AS segment
+, '%(ds)s'::TIMESTAMP AS day
+, SUM(outcome) AS numerator
+, COUNT(entity_id) AS denominator
+, SUM(outcome)::FLOAT / COUNT(entity_id) AS mean
+, STDDEV(outcome) AS standard_deviation
+FROM results
+GROUP BY 1, 2, 3, 4, 5, 6;

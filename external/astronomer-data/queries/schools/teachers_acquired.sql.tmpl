@@ -1,0 +1,28 @@
+WITH results AS (
+  SELECT
+    pop.experiment_id
+  , pop.entity_id
+  , pop.variant
+  , pop.entered_at
+  , COUNT(DISTINCT teachers_acquired.teacherid) AS outcome
+  FROM %(table_name)s AS pop
+  LEFT JOIN cache.teacher AS teachers_acquired
+    ON teachers_acquired.schoolid = pop.entity_id
+   AND teachers_acquired.createdat >= pop.entered_at
+  WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
+  GROUP BY 1,2,3,4
+)
+
+SELECT
+  experiment_id
+, variant
+, '%(metric_name)s' AS metric_name
+, 'RATIO' AS metric_type
+, 'any' AS segment
+, '%(ds)s'::TIMESTAMP AS day
+, SUM(outcome) AS numerator
+, COUNT(entity_id) AS denominator
+, SUM(outcome)::FLOAT / COUNT(entity_id) AS mean
+, STDDEV(outcome) AS standard_deviation
+FROM results
+GROUP BY 1,2,3,4,5,6
