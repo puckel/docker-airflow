@@ -4,7 +4,7 @@ create table ab_platform.experiment_populations_parent_post_signup_routines_onbo
   distkey (entity_id)
   sortkey (entity_id) as (
   select
-    '0a20f227-d51f-49d2-8013-8cf3bea821b9'                                       as experiment_id,
+    '398efd1a-caa2-4bfa-96c5-c1e0006d91bd'                                       as experiment_id,
     eventvalue as variant,
     entityid                                                                     as entity_id,
     'Parents'                                                                    as entity_type,
