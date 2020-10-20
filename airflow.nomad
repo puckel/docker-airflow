@@ -43,6 +43,7 @@ job "airflow" {
         POSTGRES_PORT = "5432"
         FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
         AIRFLOW__CORE__FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
+        AIRFLOW__CORE__LOAD_EXAMPLES = "False"
       }
 
       user = "0"
