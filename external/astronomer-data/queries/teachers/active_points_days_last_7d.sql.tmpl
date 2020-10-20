@@ -1,0 +1,37 @@
+/*This is counting the total number of unique Teachers+Days with points over the most recent 7 day period*/
+/*This counts the number of Teachers independent of whether they were connected to a parent*/
+/*Depending on when the timestamp runs, this might not grab a full 7 days*/
+
+WITH results AS (
+  SELECT
+    pop.experiment_id
+  , pop.entity_id
+  , pop.variant
+  , pop.entered_at
+  , COUNT(DISTINCT CONCAT(to_char(tda.day, 'YYYY-MM-DD'), tda.teacherid)) AS outcome
+  FROM %(table_name)s AS pop
+  LEFT JOIN cache.teacher_daily_active tda
+    ON tda.teacherid = pop.entity_id
+    AND tda.award = true
+    AND tda.day >= date_trunc('day', pop.entered_at)
+    AND tda.day <= '%(ds)s'::TIMESTAMP
+    AND tda.day >= '%(ds)s'::TIMESTAMP - interval '6 days'
+  /* The where clause limits to users who have already entered the experiment
+  on a given date; important for backfilling. */
+  WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
+  GROUP BY 1,2,3,4
+)
+
+SELECT
+  experiment_id
+, variant
+, '%(metric_name)s' AS metric_name
+, 'RATIO' AS metric_type
+, 'any' AS segment
+, '%(ds)s'::TIMESTAMP AS day
+, SUM(outcome) AS numerator
+, COUNT(entity_id) AS denominator
+, SUM(outcome)::FLOAT / COUNT(entity_id) AS mean
+, STDDEV(outcome) AS standard_deviation
+FROM results
+GROUP BY 1,2,3,4,5,6
