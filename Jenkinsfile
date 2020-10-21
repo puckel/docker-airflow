@@ -13,7 +13,7 @@ pipeline {
             steps {
                 sh'''#!/bin/bash
                     docker build . -f Dockerfile \
-                        --build-arg AIRFLOW_DEPS="datadog" \
+                        --build-arg AIRFLOW_DEPS="datadog,statsd" \
                         --build-arg PYTHON_DEPS="pandas statsmodels gspread scipy" \
                         --build-arg AIRFLOW_CONFIG="$(consul kv get -http-addr=consul.internal.classdojo.com config/airflow)" \
                         -t $PROD_IMAGE
