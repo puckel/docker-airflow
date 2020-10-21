@@ -48,7 +48,6 @@ job "airflow" {
         # Statsd stuff
         AIRFLOW__SCHEDULER__STATSD_ON = "True"
         AIRFLOW__SCHEDULER__STATSD_HOST = "${NOMAD_IP_http}"
-        AIRFLOW__SCHEDULER__STATSD_PORT= "8500"
       }
 
       user = "0"
