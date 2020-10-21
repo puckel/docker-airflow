@@ -44,6 +44,11 @@ job "airflow" {
         FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
         AIRFLOW__CORE__FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
         AIRFLOW__CORE__LOAD_EXAMPLES = "False"
+
+        # Statsd stuff
+        AIRFLOW__SCHEDULER__STATSD_ON = "True"
+        AIRFLOW__SCHEDULER__STATSD_HOST = "${NOMAD_IP_http}"
+        AIRFLOW__SCHEDULER__STATSD_PORT= "8500"
       }
 
       user = "0"
@@ -51,10 +56,6 @@ job "airflow" {
       config {
         image      = "[[ .DOCKER_IMAGE_ID ]]"
         force_pull = true
-
-        port_map {
-          http = 8080
-        }
 
         logging {
           type = "json-file"
@@ -77,6 +78,7 @@ job "airflow" {
         network {
           port "http" {
             static = "9001"
+            to = "8080"
           }
         }
       }
