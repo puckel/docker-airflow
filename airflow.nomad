@@ -57,6 +57,10 @@ job "airflow" {
         image      = "[[ .DOCKER_IMAGE_ID ]]"
         force_pull = true
 
+        port_map {
+          http = "8080"
+        }
+
         logging {
           type = "json-file"
         }
@@ -78,7 +82,6 @@ job "airflow" {
         network {
           port "http" {
             static = "9001"
-            to = "8080"
           }
         }
       }
