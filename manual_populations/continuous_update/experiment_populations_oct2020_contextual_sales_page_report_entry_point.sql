@@ -5,7 +5,7 @@ create table ab_platform.experiment_populations_oct2020_contextual_sales_page_re
   sortkey (entity_id) as (
   select
     '08970b02-b5c1-446b-ab83-cf2c3300e70a'                                       as experiment_id,
-    json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport_Entry_Point', TRUE) as variant, 
+    json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport', TRUE) as variant,
     entityid                                                                     as entity_id,
     'Parents'                                                                    as entity_type,
     min(createdat)                                                               as entered_at
@@ -14,9 +14,9 @@ create table ab_platform.experiment_populations_oct2020_contextual_sales_page_re
     eventname = 'ios.parent.paid_product.sales_page.exposure'
     and createdat >= '2020-10-07'
     and createdat <= getdate()
-    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport_Entry_Point', TRUE) != ''
-    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport_Entry_Point', TRUE) != 'off'
-    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport_Entry_Point', TRUE) is not null
+    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport', TRUE) != ''
+    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport', TRUE) != 'off'
+    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageReport', TRUE) is not null
     and json_extract_path_text(metadata, 'entryPoint', TRUE) in ('homeReports', 'schoolReports')
   group by
     entity_id,
