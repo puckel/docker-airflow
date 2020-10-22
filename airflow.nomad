@@ -60,6 +60,10 @@ job "airflow" {
           http = "8080"
         }
 
+        volumes = [
+          "/var/log/airflow:/usr/local/airflow/logs"
+        ]
+
         logging {
           type = "json-file"
         }
