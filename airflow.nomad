@@ -44,7 +44,6 @@ job "airflow" {
         FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
         AIRFLOW__CORE__FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
         AIRFLOW__CORE__LOAD_EXAMPLES = "False"
-        AIRFLOW__CORE__LOGGING_LEVEL= "WARN"
 
         # Statsd stuff
         AIRFLOW__SCHEDULER__STATSD_ON = "True"
@@ -102,9 +101,10 @@ job "airflow" {
         port = "http"
 
         check {
+          type     = "http"
           name     = "alive"
-          type     = "tcp"
-          interval = "10s"
+          path     = "/health"
+          interval = "30s"
           timeout  = "2s"
         }
       }
