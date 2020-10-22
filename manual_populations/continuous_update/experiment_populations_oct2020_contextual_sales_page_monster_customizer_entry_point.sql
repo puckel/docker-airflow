@@ -5,7 +5,7 @@ create table ab_platform.experiment_populations_oct2020_contextual_sales_page_mo
   sortkey (entity_id) as (
   select
     '45a1eabd-9af3-458e-af2d-a13665f95d62'                                       as experiment_id,
-    json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageMonsterCustomizer_Entry_Point', TRUE) as variant, 
+    json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageMonsterCustomizer', TRUE) as variant,
     entityid                                                                     as entity_id,
     'Parents'                                                                    as entity_type,
     min(createdat)                                                               as entered_at
@@ -14,10 +14,10 @@ create table ab_platform.experiment_populations_oct2020_contextual_sales_page_mo
     eventname = 'ios.parent.paid_product.sales_page.exposure'
     and createdat >= '2020-10-07'
     and createdat <= getdate()
-    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageMonsterCustomizer_Entry_Point', TRUE) != ''
-    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageMonsterCustomizer_Entry_Point', TRUE) != 'off'
-    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageMonsterCustomizer_Entry_Point', TRUE) is not null
-    and json_extract_path_text(metadata, 'entryPoint', TRUE) = 'monsterCustomizer_Entry_Point'
+    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageMonsterCustomizer', TRUE) != ''
+    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageMonsterCustomizer', TRUE) != 'off'
+    and json_extract_path_text(metadata, 'iOS_october2020ContextualSalesPageMonsterCustomizer', TRUE) is not null
+    and json_extract_path_text(metadata, 'entryPoint', TRUE) = 'monsterCustomizer'
   group by
     entity_id,
     variant,
