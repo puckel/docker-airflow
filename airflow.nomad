@@ -44,6 +44,7 @@ job "airflow" {
         FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
         AIRFLOW__CORE__FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
         AIRFLOW__CORE__LOAD_EXAMPLES = "False"
+        AIRFLOW__CORE__LOGGING_LEVEL= "WARN"
 
         # Statsd stuff
         AIRFLOW__SCHEDULER__STATSD_ON = "True"
