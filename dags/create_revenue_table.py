@@ -159,7 +159,7 @@ def get_ios_payment_events(conn_id, ts, **kwargs):
         production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
     WHERE
         iap.istrialperiod = false and
-        iap.expirationintent != 2
+        (iap.expirationintent != 2 or iap.expirationintent is null)
     '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
