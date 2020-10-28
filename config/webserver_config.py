@@ -73,14 +73,13 @@ OAUTH_PROVIDERS = [{
         'base_url': 'https://api.github.com/',
         'request_token_params': {
             'scope': 'user:email',
-            'redirect_uri': 'https://airflow.internal.classdojo.com/oauth/callback',
         },
         'request_token_url': None,
         'authorize_url': 'https://github.com/login/oauth/authorize',
         'access_token_method': 'POST',
         'access_token_url': 'https://github.com/login/oauth/access_token',
-        'consumer_key': '75e7d175fbffb494040b',
-        'consumer_secret': 'a26875dd3f5453fb4e83a364a472272baced065e',
+        'consumer_key': '10951fb34c476ad43848',
+        'consumer_secret': '226f9f9e115502d56b562bbeeb7092f66af0ef6a',
     }
 }]
 
