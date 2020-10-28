@@ -76,7 +76,7 @@ OAUTH_PROVIDERS = [{
         'authorize_url': 'https://github.com/login/oauth/authorize',
         'access_token_method': 'POST',
         'access_token_url': 'https://github.com/login/oauth/access_token',
-        'consumer_id': '75e7d175fbffb494040b',
+        'consumer_key': '75e7d175fbffb494040b',
         'consumer_secret': 'a26875dd3f5453fb4e83a364a472272baced065e',
     }
 }]
