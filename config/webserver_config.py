@@ -70,6 +70,12 @@ OAUTH_PROVIDERS = [{
     'token_key': 'access_token',
     'icon': 'fa-github',
     'remote_app': {
+        'base_url': 'https://api.github.com/',
+        'request_token_params': {'scope': 'user:email'},
+        'request_token_url': None,
+        'authorize_url': 'https://github.com/login/oauth/authorize',
+        'access_token_method': 'POST',
+        'access_token_url': 'https://github.com/login/oauth/access_token',
         'consumer_id': '75e7d175fbffb494040b',
         'consumer_secret': 'a26875dd3f5453fb4e83a364a472272baced065e',
     }
