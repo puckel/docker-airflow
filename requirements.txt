@@ -23,7 +23,7 @@ ipython==7.15.0
 ipython-genutils==0.2.0
 jedi==0.17.0
 oauth2client==4.1.3
-oauthlib==3.1.0
+oauthlib==2.1.0
 parso==0.7.0
 patsy==0.5.1
 pexpect==4.8.0
