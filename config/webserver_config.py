@@ -71,7 +71,10 @@ OAUTH_PROVIDERS = [{
     'icon': 'fa-github',
     'remote_app': {
         'base_url': 'https://api.github.com/',
-        'request_token_params': {'scope': 'user:email'},
+        'request_token_params': {
+            'scope': 'user:email',
+            'redirect_uri': 'https://airflow.internal.classdojo.com/oauth/callback',
+        },
         'request_token_url': None,
         'authorize_url': 'https://github.com/login/oauth/authorize',
         'access_token_method': 'POST',
