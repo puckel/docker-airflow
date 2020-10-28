@@ -70,14 +70,8 @@ OAUTH_PROVIDERS = [{
     'token_key': 'access_token',
     'icon': 'fa-github',
     'remote_app': {
-        'api_base_url': 'https://www.github.com.com/login/oauth/',
-        'authorize_url': 'https://github.com/login/oauth/authorize',
-        'authorize_params': {
-            'redirect_uri': 'https://airflow.internal.classdojo.com/oauth/callback',
-        },
-        'access_token_url': 'https://github.com/login/oauth/access_token',
-        'client_id': '75e7d175fbffb494040b',
-        'client_secret': 'a26875dd3f5453fb4e83a364a472272baced065e',
+        'consumer_id': '75e7d175fbffb494040b',
+        'consumer_secret': 'a26875dd3f5453fb4e83a364a472272baced065e',
     }
 }]
 
