@@ -44,7 +44,6 @@ job "airflow" {
         FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
         AIRFLOW__CORE__FERNET_KEY = "cCqdPr1fa8hgAMliKWxucD4fnLvehZmn8FfDSBcfGl0="
         AIRFLOW__CORE__LOAD_EXAMPLES = "False"
-        AIRFLOW__WEBSERVER__BASE_URL = "https://airflow.internal.classdojo.com"
 
         # Statsd stuff
         AIRFLOW__SCHEDULER__STATSD_ON = "True"

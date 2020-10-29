@@ -36,6 +36,9 @@ SQLALCHEMY_DATABASE_URI = conf.get('core', 'SQL_ALCHEMY_CONN')
 # Flask-WTF flag for CSRF
 WTF_CSRF_ENABLED = True
 
+# Set preferred url scheme to be https
+PREFERRED_URL_SCHEME = 'https'
+
 # ----------------------------------------------------
 # AUTHENTICATION CONFIG
 # ----------------------------------------------------
