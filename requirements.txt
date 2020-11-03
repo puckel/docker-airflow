@@ -1,0 +1,2 @@
+apache-airflow-backport-providers-pagerduty >= 1.1.0
+boto3
