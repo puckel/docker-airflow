@@ -1,6 +1,7 @@
 appnope==0.1.0
 authlib==0.15.2
 backcall==0.2.0
+cattrs==1.0.0
 cachetools==4.1.0
 certifi==2020.4.5.2
 chardet==3.0.4
