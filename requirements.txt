@@ -42,6 +42,7 @@ rsa==4.0
 scipy==1.5.0
 six==1.15.0
 smmap==3.0.4
+statsd==3.3.0
 statsmodels==0.11.1
 termcolor==1.1.0
 traitlets==4.3.3
