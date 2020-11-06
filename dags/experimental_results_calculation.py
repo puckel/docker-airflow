@@ -1,3 +1,5 @@
+import statsd
+
 from airflow import DAG
 from airflow.hooks import PostgresHook
 from airflow.operators.python_operator import PythonOperator
@@ -46,6 +48,15 @@ def _callback(state, ctx):
     ('{}', '{}', '{}'::TIMESTAMP)
     '''.format(RESULTS_METADATA_TABLE, run_id, state, intermediate_results_run_date.isoformat())
     pg_hook.run(query)
+
+    conf = ctx['conf']
+    if conf.getboolean('scheduler', 'statsd_on'):
+        client = statsd.StatsClient(
+            host=conf.get('scheduler', 'statsd_host'),
+            port=conf.get('scheduler', 'statsd_port'),
+            prefix=conf.get('scheduler', 'statsd_prefix'),
+        )
+        client.incr('results_dag.%s' % state, 1)
 
 
 def success_callback(ctx):
