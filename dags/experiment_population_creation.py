@@ -1,4 +1,5 @@
 import os
+import statsd
 
 from airflow import DAG
 from airflow.hooks import PostgresHook
@@ -63,6 +64,14 @@ def create_mapping_table(conn_id, ts, **kwargs):
 def generate_manual_population(conn_id, ts, **kwargs):
     pg_hook = PostgresHook(conn_id)
     parent_dir = './manual_populations/continuous_update'
+
+    conf = ctx['conf']
+    client = statsd.StatsClient(
+        host=conf.get('scheduler', 'statsd_host'),
+        port=conf.get('scheduler', 'statsd_port'),
+        prefix=conf.get('scheduler', 'statsd_prefix'),
+    )
+
     for item in os.listdir(parent_dir):
         item_path = os.path.join(parent_dir, item)
         with open(item_path, 'r') as f:
@@ -73,6 +82,9 @@ def generate_manual_population(conn_id, ts, **kwargs):
                 print("Success!")
             except Exception as e:
                 print("Error: {}".format(e))
+                if conf.get_boolean('scheduler', 'statsd_on'):
+                    client.incr(
+                        'population_creation.manual_population.error', 1)
 
 
 def get_manually_mapped_tables(conn_id, ts, **kwargs):
@@ -154,7 +166,7 @@ with DAG('experimental_population_creation',
     generate_manual_population_task = PythonOperator(
         task_id='generate_manual_population',
         python_callable=generate_manual_population,
-        op_kwargs = {'conn_id': 'analytics_redshift'},
+        op_kwargs={'conn_id': 'analytics_redshift'},
         provide_context=True
     )
 
@@ -174,6 +186,6 @@ with DAG('experimental_population_creation',
 
     # DAG for the population ingestion
     start_task >> \
-    create_mapping_table_task >> \
-    [generate_automatic_population_task, generate_manual_population_task, get_manually_mapped_tables_task] >> \
-    write_mappings_task
+        create_mapping_table_task >> \
+        [generate_automatic_population_task, generate_manual_population_task, get_manually_mapped_tables_task] >> \
+        write_mappings_task
