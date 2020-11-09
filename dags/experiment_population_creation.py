@@ -65,7 +65,7 @@ def generate_manual_population(conn_id, ts, **kwargs):
     pg_hook = PostgresHook(conn_id)
     parent_dir = './manual_populations/continuous_update'
 
-    conf = ctx['conf']
+    conf = kwargs['conf']
     client = statsd.StatsClient(
         host=conf.get('scheduler', 'statsd_host'),
         port=conf.get('scheduler', 'statsd_port'),
