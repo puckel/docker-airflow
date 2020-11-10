@@ -52,7 +52,7 @@ create table ab_platform.experiment_populations_ios_student_monster_creator_upse
     min(pop.entered_at)                    as entered_at
   from parent_one_child pone
     join cache.graph on graph.parentid = pone.parentid
-    join temp.ios_student_monster_creator_upsell_student_population pop
+    join ab_platform.experiment_populations_ios_student_monster_creator_upsell_student_population pop
       on pop.pstudentid = graph.pstudentid
   group by 1, 2, 3, 4
 );
