@@ -1,9 +1,25 @@
-/*Note, need to figure out how to best remove weeks with just a day or so of teacherstudentcreatedat
-but think this might be best done in upstream tables*/
+/* 
+For teachers in a given variant, counts up total number of weeks
+teachers were active communicating 3 out of 7 days.  Computed for
+weeks after experiment start and before current week (which is likely
+incomplete).
 
-WITH results AS (
-  SELECT
-    pop.experiment_id
+Note, need to figure out how to best remove weeks with just a day or
+so of teacherstudentcreatedat but think this might be best done in
+upstream tables.
+*/
+
+WITH latest_complete_week as (
+    SELECT max(twa.week) as week
+    FROM cache.teacher_weekly_active twa
+    WHERE
+      week >= date_trunc('week', '%(ds)s'::TIMESTAMP) - interval '2 weeks'
+      and datediff('day', twa.week, date_trunc('week', '%(ds)s'::TIMESTAMP)) >= 7
+)
+
+, results AS (
+SELECT
+  pop.experiment_id
   , pop.entity_id
   , pop.variant
   , pop.entered_at
@@ -12,10 +28,10 @@ WITH results AS (
   LEFT JOIN cache.teacher_weekly_active AS twa
     ON twa.teacherid = pop.entity_id
    AND twa.week >= pop.entered_at
-   AND twa.week = date_trunc('week', '%(ds)s'::TIMESTAMP)
+   AND twa.week = (select max(week) from latest_complete_week)
    AND twa.is3d7wact
   WHERE pop.entered_at <= '%(ds)s'::TIMESTAMP
-  GROUP BY 1,2,3,4
+GROUP BY 1,2,3,4
 )
 
 SELECT
