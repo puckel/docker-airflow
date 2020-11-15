@@ -1,0 +1,55 @@
+WITH subscriber_data AS (
+SELECT
+  entityid,
+  CASE
+    WHEN LOWER(productname) LIKE '%monthly%' THEN 'monthly'
+    WHEN LOWER(productname) LIKE '%biannual%' THEN 'biannual'
+    WHEN LOWER(productname) LIKE '%annual%' THEN 'annual'
+    END AS productname,
+  CASE
+    WHEN LOWER(productname) LIKE '%monthly%' THEN 7.69
+    WHEN LOWER(productname) LIKE '%biannual%' THEN 6.10
+    WHEN LOWER(productname) LIKE '%annual%' THEN 4.51
+    END AS estimated_monthly_revenue,
+  MIN(date_trunc('day', createdat)) AS first_creation_day
+
+FROM frog.purchases
+WHERE
+  expirationdate > getdate() --expiration date is in the future
+  AND purchases.latestperiodistrialperiod is false --they were ever a paid user
+  AND (ingraceperiod is false or ingraceperiod is null) --not in grace period
+  and servicename != 'dojoPromo'
+  AND productname NOT IN ('MojoWeek1', 'MojoDiscoversGratitude', 'AfterSchoolClubMonthly799Test')
+GROUP BY 1,2,3
+)
+
+, results as (
+  SELECT
+    pop.experiment_id
+  , pop.entity_id
+  , pop.variant
+  , pop.entered_at
+  , MAX(CASE WHEN events.entityid IS NOT NULL THEN 1 ELSE 0 END) AS outcome
+  FROM %(table_name)s AS pop
+  LEFT JOIN subscriber_data AS events
+  ON
+    events.entityid = pop.entity_id
+    AND events.first_creation_day >= date_trunc('day', pop.entered_at)
+    --AND events.first_creation_day >= '%(ds)s' :: timestamp - interval '6 days'
+  WHERE pop.entered_at <= '%(ds)s' :: TIMESTAMP
+  GROUP BY 1, 2, 3, 4
+)
+
+SELECT
+  experiment_id
+, variant
+, '%(metric_name)s' AS metric_name
+, 'PROPORTIONAL' AS metric_type
+, 'any' AS segment
+, '%(ds)s'::TIMESTAMP AS day
+, SUM(outcome) AS numerator
+, COUNT(entity_id) AS denominator
+, SUM(outcome)::FLOAT / COUNT(entity_id) AS mean
+, STDDEV(outcome) AS standard_deviation
+FROM results
+GROUP BY 1,2,3,4,5,6
