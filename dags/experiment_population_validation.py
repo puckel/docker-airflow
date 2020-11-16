@@ -45,7 +45,7 @@ def check_table_existence(conn_id, ts, **kwargs):
         ) as table_exists
         '''.format(table_name)
         exists_record = pg_hook.get_records(query)
-        exists = boolean(exists_record[0])
+        exists = bool(exists_record[0])
 
         if not exists:
             missing_experiments.append(experiment_id)
