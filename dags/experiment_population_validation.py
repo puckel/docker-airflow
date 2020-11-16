@@ -45,9 +45,9 @@ def check_table_existence(conn_id, ts, **kwargs):
         ) as table_exists
         '''.format(table_name)
         exists_record = pg_hook.get_records(query)
-        exists_dict = dict(exists_record)
+        exists = boolean(exists_record[0])
 
-        if not exists_dict['table_exists']:
+        if not exists:
             missing_experiments.append(experiment_id)
 
         # To not DDOS redshift
