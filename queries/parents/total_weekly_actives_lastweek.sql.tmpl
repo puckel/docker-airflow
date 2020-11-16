@@ -1,0 +1,31 @@
+WITH results as (
+  SELECT
+    pop.experiment_id
+  , pop.entity_id
+  , pop.variant
+  , pop.entered_at
+  , MAX(CASE WHEN events.week IS NOT NULL THEN 1 ELSE 0 END) AS outcome
+  FROM %(table_name)s AS pop
+  LEFT JOIN cache.parent_weekly_active AS events
+  ON
+    events.parentid = pop.entity_id
+    AND events.daysasdact > 0
+    --AND events.eventday >= date_trunc('day', pop.entered_at)
+    AND DATEDIFF(weeks, events.week, '%(ds)s' :: timestamp) = 1
+  WHERE pop.entered_at <= '%(ds)s' :: TIMESTAMP
+  GROUP BY 1, 2, 3, 4
+)
+
+SELECT
+  experiment_id
+, variant
+, '%(metric_name)s' AS metric_name
+, 'PROPORTIONAL' AS metric_type
+, 'any' AS segment
+, '%(ds)s'::TIMESTAMP AS day
+, SUM(outcome) AS numerator
+, COUNT(entity_id) AS denominator
+, SUM(outcome)::FLOAT / COUNT(entity_id) AS mean
+, STDDEV(outcome) AS standard_deviation
+FROM results
+GROUP BY 1,2,3,4,5,6
