@@ -1,5 +1,4 @@
-drop table if exists ab_platform.experiment_populations_ios_nov2020_no_biannual_price_temp cascade;
-
+drop table if exists ab_platform.experiment_populations_ios_nov2020_no_biannual_price_temp;
 create table ab_platform.experiment_populations_ios_nov2020_no_biannual_price_temp
   distkey (entity_id)
   sortkey (entity_id) as (
@@ -24,7 +23,7 @@ create table ab_platform.experiment_populations_ios_nov2020_no_biannual_price_te
 begin;
 grant all on ab_platform.experiment_populations_ios_nov2020_no_biannual_price_temp to group team;
 grant all on ab_platform.experiment_populations_ios_nov2020_no_biannual_price_temp to astronomer;
-drop table if exists ab_platform.experiment_populations_ios_nov2020_no_biannual_price_temp cascade;
+drop table if exists ab_platform.experiment_populations_ios_nov2020_no_biannual_price cascade;
 alter table ab_platform.experiment_populations_ios_nov2020_no_biannual_price_temp
   rename to experiment_populations_ios_nov2020_no_biannual_price;
 commit;
