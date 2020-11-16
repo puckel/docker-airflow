@@ -161,7 +161,8 @@ with DAG('experimental_population_validation',
     identify_missing_tables_task = PythonOperator(
         task_id='identify_missing_tables',
         python_callable=identify_missing_tables,
-        op_kwargs={'conn_id'}
+        op_kwargs={'conn_id': 'analytics_redshift'},
+        provide_context=True,
     )
 
     end_task = DummyOperator(task_id='end')
