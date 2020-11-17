@@ -1,5 +1,7 @@
 import os
 import statsd
+import time
+import uuid
 
 from airflow import DAG
 from airflow.hooks import PostgresHook
@@ -8,11 +10,11 @@ from airflow.operators.python_operator import PythonOperator
 
 from datetime import datetime, timedelta
 
-import uuid
 
 CONTROL_PANEL_TABLE = 'ab_platform.experiment_control_panel'
 POPULATION_METADATA_TABLE = 'ab_platform.population_run'
 POPULATION_MAPPING_TABLE = 'ab_platform.experiment_to_population_map'
+MANUAL_POPULATION_CHECKSUM_TABLE = 'ab_platform.manual_population_checksums'
 
 
 def _create_population_run_metadata_table(conn_id):
@@ -61,6 +63,17 @@ def create_mapping_table(conn_id, ts, **kwargs):
     pg_hook.run(query)
 
 
+def create_manual_population_checksum_table(conn_id, ts, **kwargs):
+    pg_hook = PostgresHook(conn_id)
+    query = '''
+    CREATE TABLE IF NOT EXISTS {} (
+        filename VARCHAR(128) ENCODE ZSTD DISTKEY,
+        checksum VARCHAR(16) ENCODE ZSTD
+    );
+    '''.format(MANUAL_POPULATION_CHECKSUM_TABLE)
+    pg_hook.run(query)
+
+
 def generate_manual_population(conn_id, ts, **kwargs):
     pg_hook = PostgresHook(conn_id)
     parent_dir = './manual_populations/continuous_update'
@@ -85,6 +98,31 @@ def generate_manual_population(conn_id, ts, **kwargs):
                 if conf.get_boolean('scheduler', 'statsd_on'):
                     client.incr(
                         'population_creation.manual_population.error', 1)
+
+
+def record_manual_population_checksums(conn_id, ts, **kwargs):
+    pg_hook = PostgresHook(conn_id)
+    parent_dir = './manual_populations/continuous_update'
+    for item in os.listdir(parent_dir):
+        item_path = os.path.join(parent_dir, item)
+        with open(item_path, 'r') as f:
+            s = f.read()
+
+        # Fast checksum. We don't need it to be too unique, just unique enough to tell us if it's changed
+        checksum = hash(s).to_bytes(8, 'big', signed=True).hex()
+
+        query = '''
+        begin;
+        DELETE FROM {table_name} WHERE filename = '{filename}';
+        INSERT INTO {table_name} VALUES ('{filename}', '{checksum}');
+        commit;
+        '''.format({
+            'table_name': MANUAL_POPULATION_CHECKSUM_TABLE,
+            'filename': item_path,
+            'checksum': checksum,
+        })
+        pg_hook.run(query)
+        time.sleep(0.1)
 
 
 def get_manually_mapped_tables(conn_id, ts, **kwargs):
@@ -159,6 +197,13 @@ with DAG('experimental_population_creation',
         provide_context=True
     )
 
+    create_manual_population_checksum_table_task = PythonOperator(
+        task_id='create_manual_population_checksum_table',
+        python_callable=create_manual_population_checksum_table,
+        op_kwargs={'conn_id': 'analytics_redshift'},
+        provide_context=True
+    )
+
     generate_automatic_population_task = DummyOperator(
         task_id='generate_automatic_population'
     )
@@ -166,6 +211,13 @@ with DAG('experimental_population_creation',
     generate_manual_population_task = PythonOperator(
         task_id='generate_manual_population',
         python_callable=generate_manual_population,
+        op_kwargs={'conn_id': 'analytics_redshift'},
+        provide_context=True
+    )
+
+    record_manual_population_checksums_task = PythonOperator(
+        task_id='record_manual_population_checksums',
+        python_callable=record_manual_population_checksums,
         op_kwargs={'conn_id': 'analytics_redshift'},
         provide_context=True
     )
@@ -189,3 +241,8 @@ with DAG('experimental_population_creation',
         create_mapping_table_task >> \
         [generate_automatic_population_task, generate_manual_population_task, get_manually_mapped_tables_task] >> \
         write_mappings_task
+
+    start_task >> \
+        create_manual_population_checksum_table_task >> \
+        generate_manual_population_task >> \
+        record_manual_population_checksums_task
