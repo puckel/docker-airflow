@@ -243,6 +243,7 @@ with DAG('experimental_population_creation',
         write_mappings_task
 
     start_task >> \
-        create_manual_population_checksum_table_task >> \
-        generate_manual_population_task >> \
+        create_manual_population_checksum_table_task
+
+    [create_manual_population_checksum_table_task, generate_manual_population_task] >> \
         record_manual_population_checksums_task
