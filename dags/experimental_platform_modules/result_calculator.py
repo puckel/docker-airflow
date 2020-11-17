@@ -100,7 +100,7 @@ def calculate_intermediate_result_for_day(conn_id, dt, experiment_to_population_
         template_map = population_templates.get(
             population_metadata['population_type'], {})
         for metric_name, template in template_map.items():
-            print(metric_name)
+            print('Fetching metric: %s for day: %s' % (metric_name, dt))
             s = template % {
                 'metric_name': metric_name,
                 'table_name': '%s.%s' % (population_metadata['population_schema_name'],
