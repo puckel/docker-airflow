@@ -1,0 +1,31 @@
+WITH results as (
+  SELECT
+    pop.experiment_id
+  , pop.entity_id
+  , pop.variant
+  , pop.entered_at
+  , COALESCE(COUNT(DISTINCT events.pstudentid), 0) AS outcome
+  FROM %(table_name)s AS pop
+  LEFT JOIN cache.graph AS events
+  ON
+    events.parentid = pop.entity_id
+    AND events.parentid IS NOT NULL
+    AND date_trunc('day', events.parentstudentcreatedat) >= date_trunc('day', pop.entered_at)
+    --AND events.first_creation_day >= '%(ds)s' :: timestamp - interval '6 days'
+  WHERE pop.entered_at <= '%(ds)s' :: TIMESTAMP
+  GROUP BY 1, 2, 3, 4
+)
+
+SELECT
+  experiment_id
+, variant
+, '%(metric_name)s' AS metric_name
+, 'RATIO' AS metric_type
+, 'any' AS segment
+, '%(ds)s'::TIMESTAMP AS day
+, SUM(outcome) AS numerator
+, COUNT(entity_id) AS denominator
+, SUM(outcome)::FLOAT / COUNT(entity_id) AS mean
+, STDDEV(outcome) AS standard_deviation
+FROM results
+GROUP BY 1,2,3,4,5,6
