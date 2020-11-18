@@ -236,14 +236,16 @@ with DAG('experimental_population_creation',
         provide_context=True
     )
 
+    end_task = DummyOperator(task_id='end')
+
     # DAG for the population ingestion
     start_task >> \
         create_mapping_table_task >> \
         [generate_automatic_population_task, generate_manual_population_task, get_manually_mapped_tables_task] >> \
-        write_mappings_task
+        write_mappings_task >> end_task
 
     start_task >> \
         create_manual_population_checksum_table_task
 
     [create_manual_population_checksum_table_task, generate_manual_population_task] >> \
-        record_manual_population_checksums_task
+        record_manual_population_checksums_task >> end_task
