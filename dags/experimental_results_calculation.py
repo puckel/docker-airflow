@@ -9,7 +9,7 @@ from airflow.operators.dummy_operator import DummyOperator
 
 from datetime import datetime, timedelta
 from dateutil import parser
-from experimental_platform_modules import result_calculator
+from experimental_platform_modules import result_calculator, population_checker
 
 import os
 import uuid
@@ -98,7 +98,8 @@ def calculate_intermediate_results(analytics_conn_id, ts, **kwargs):
         task_ids='get_active_experiment_and_population_map'
     )
 
-    return result_calculator.calculate_intermediate_result_for_day(analytics_conn_id, yesterday, experiment_to_population_map, timeout=True)
+    return result_calculator.calculate_intermediate_result_for_day(analytics_conn_id, yesterday,
+                                                                   experiment_to_population_map, timeout=True)
 
 
 def insert_intermediate_records(frontend_conn_id, ts, **kwargs):
@@ -113,6 +114,25 @@ def insert_intermediate_records(frontend_conn_id, ts, **kwargs):
 def calculate_results(frontend_conn_id, ts, **kwargs):
     result_calculator.calculate_results(frontend_conn_id)
     print("Done writing results to RDS")
+
+
+def identify_switched_population(analytics_conn_id, ts, **kwargs):
+    task_instance = kwargs['task_instance']
+    experiment_to_population_map = task_instance.xcom_pull(task_ids='get_active_experiment_and_population_map')
+    population_checker.identify_switched_population(analytics_conn_id, experiment_to_population_map)
+    print("Wrote results of populations that switched to Redshift")
+
+
+def summarize_switched_population(analytics_conn_id, ts, **kwargs):
+    return population_checker.summarize_switched_population(analytics_conn_id)
+
+
+def summarize_population_check(frontend_conn_id, ts, **kwargs):
+    task_instance = kwargs['task_instance']
+    switched_population = task_instance.xcom_pull(task_ids='summarize_switched_population')
+    print(switched_population)
+    population_checker.summarize_population_check(frontend_conn_id, switched_population)
+    print("Wrote results of population checks to RDS")
 
 
 # Default settings applied to all tasks
@@ -139,15 +159,10 @@ with DAG('experimental_results_calculator',
          on_failure_callback=failure_callback,
          on_success_callback=success_callback,
          ) as dag:
-
-    # start_task = ExternalTaskSensor(
-    #     task_id="start",
-    #     external_dag_id="experiment_population_creation"
-    # )
-
     start_task = DummyOperator(
         task_id='start'
     )
+
     get_date_to_calculate_task = PythonOperator(
         task_id='get_date_to_calculate',
         python_callable=get_date_to_calculate,
@@ -190,8 +205,41 @@ with DAG('experimental_results_calculator',
         provide_context=True,
     )
 
-    start_task >> [get_date_to_calculate_task,
-                   create_intermediate_results_table_task] >> \
-        get_active_experiment_and_population_map_task >> \
-        calculate_intermediate_results_task >> insert_intermediate_records_task >> \
+    identify_switched_population_task = PythonOperator(
+        task_id='identify_switched_population',
+        python_callable=identify_switched_population,
+        op_kwargs=default_task_kwargs,
+        provide_context=True,
+    )
+
+    summarize_switched_population_task = PythonOperator(
+        task_id='summarize_switched_population',
+        python_callable=summarize_switched_population,
+        op_kwargs=default_task_kwargs,
+        provide_context=True,
+    )
+
+    summarize_population_check_task = PythonOperator(
+        task_id='summarize_population_check',
+        python_callable=summarize_population_check,
+        op_kwargs=default_task_kwargs,
+        provide_context=True,
+    )
+
+
+    start_task >> \
+        [get_date_to_calculate_task, create_intermediate_results_table_task] >> \
+        get_active_experiment_and_population_map_task
+
+    get_active_experiment_and_population_map_task >> \
+        calculate_intermediate_results_task >> \
+        insert_intermediate_records_task >> \
         calculate_results_task
+
+    get_active_experiment_and_population_map_task >> \
+        identify_switched_population_task >> \
+        summarize_switched_population_task >> \
+        summarize_population_check_task
+
+
+
