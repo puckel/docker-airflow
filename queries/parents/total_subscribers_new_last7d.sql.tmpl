@@ -2,14 +2,14 @@ WITH subscriber_data AS (
 SELECT
   entityid,
   CASE
-    WHEN LOWER(productname) LIKE '%monthly%' THEN 'monthly'
-    WHEN LOWER(productname) LIKE '%biannual%' THEN 'biannual'
-    WHEN LOWER(productname) LIKE '%annual%' THEN 'annual'
+    WHEN LOWER(productname) LIKE '%%monthly%%' THEN 'monthly'
+    WHEN LOWER(productname) LIKE '%%biannual%%' THEN 'biannual'
+    WHEN LOWER(productname) LIKE '%%annual%%' THEN 'annual'
     END AS productname,
   CASE
-    WHEN LOWER(productname) LIKE '%monthly%' THEN 7.69
-    WHEN LOWER(productname) LIKE '%biannual%' THEN 6.10
-    WHEN LOWER(productname) LIKE '%annual%' THEN 4.51
+    WHEN LOWER(productname) LIKE '%%monthly%%' THEN 7.69
+    WHEN LOWER(productname) LIKE '%%biannual%%' THEN 6.10
+    WHEN LOWER(productname) LIKE '%%annual%%' THEN 4.51
     END AS estimated_monthly_revenue,
   MIN(date_trunc('day', createdat)) AS first_creation_day
 

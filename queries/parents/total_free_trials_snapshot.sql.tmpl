@@ -2,9 +2,9 @@ WITH subscriber_data AS (
 SELECT
   entityid,
   CASE
-    WHEN LOWER(productname) LIKE '%monthly%' THEN 'monthly'
-    WHEN LOWER(productname) LIKE '%biannual%' THEN 'biannual'
-    WHEN LOWER(productname) LIKE '%annual%' THEN 'annual'
+    WHEN LOWER(productname) LIKE '%%monthly%%' THEN 'monthly'
+    WHEN LOWER(productname) LIKE '%%biannual%%' THEN 'biannual'
+    WHEN LOWER(productname) LIKE '%%annual%%' THEN 'annual'
     ELSE 'other'
     END AS productname,
   MIN(date_trunc('day', createdat)) AS first_creation_day
