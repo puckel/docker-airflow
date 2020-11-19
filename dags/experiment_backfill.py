@@ -56,7 +56,8 @@ def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
     analytics_pg_hook = PostgresHook(analytics_conn_id)
     frontend_pg_hook = PostgresHook(frontend_conn_id)
     fast_min_date = date.today() - timedelta(weeks=4)
-    do_complete_backfill = kwargs['dag_run'].get('do_complete_backfill', False)
+    do_complete_backfill = kwargs['dag_run'].conf.get(
+        'do_complete_backfill', False)
 
     if not do_complete_backfill:
         print('Doing a fast backfill starting on %s' %
