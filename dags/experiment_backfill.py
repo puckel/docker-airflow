@@ -5,7 +5,7 @@ from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 
 from experimental_platform_modules import result_calculator
 
@@ -55,6 +55,14 @@ def failure_callback(ctx):
 def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
     analytics_pg_hook = PostgresHook(analytics_conn_id)
     frontend_pg_hook = PostgresHook(frontend_conn_id)
+    fast_min_date = date.today() - timedelta(weeks=4)
+    do_complete_backfill = kwargs['dag_run'].conf['do_complete_backfill']
+
+    if not do_complete_backfill:
+        print('Doing a fast backfill starting on %s' %
+              fast_min_date.isoformat())
+    else:
+        print("Doing a complete backfill")
 
     missing_days = []
     query = '''
@@ -122,6 +130,9 @@ def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
             if set(metric_names) - metric_set:
                 missing_days.append(day)
 
+    if not do_complete_backfill:
+        missing_days = [day for day in missing_days if day >= fast_min_date]
+
     # Return the missing_day_set
     # After deduping
     missing_day_set = set(missing_days)
@@ -156,7 +167,7 @@ def backfill_intermediate_results(analytics_conn_id, frontend_conn_id, ts, **kwa
             time.sleep(0.5)
         except Exception as e:
             print("Got error {}".format(e))
-            print ("Continuing to next date")
+            print("Continuing to next date")
             continue
 
 
