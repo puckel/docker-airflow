@@ -53,6 +53,10 @@ def failure_callback(ctx):
 
 
 def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
+    '''
+    By default, this will gather the last 4 weeks of data. If you want to do a complete backfill, use the
+    do_complete_backfill option when triggering the dag.
+    '''
     analytics_pg_hook = PostgresHook(analytics_conn_id)
     frontend_pg_hook = PostgresHook(frontend_conn_id)
     fast_min_date = date.today() - timedelta(weeks=4)
@@ -165,7 +169,7 @@ def backfill_intermediate_results(analytics_conn_id, frontend_conn_id, ts, **kwa
             )
             result_calculator.insert_intermediate_records(
                 frontend_conn_id, records)
-            time.sleep(0.5)
+            time.sleep(0.1)
         except Exception as e:
             print("Got error {}".format(e))
             print("Continuing to next date")
