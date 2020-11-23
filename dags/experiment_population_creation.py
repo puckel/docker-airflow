@@ -116,7 +116,7 @@ def record_manual_population_checksums(conn_id, ts, **kwargs):
         DELETE FROM {table_name} WHERE filename = '{filename}';
         INSERT INTO {table_name} VALUES ('{filename}', '{checksum}');
         commit;
-        '''.format({
+        '''.format(**{
             'table_name': MANUAL_POPULATION_CHECKSUM_TABLE,
             'filename': item_path,
             'checksum': checksum,
