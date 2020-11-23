@@ -11,6 +11,7 @@ create table ab_platform.experiment_populations_ios_nov2020_no_biannual_price_te
   from logs.product_event_no_pii
   where
     eventname = 'ios.parent.paid_product.sales_page.exposure'
+    and json_extract_path_text(metadata, 'iOS_nov2020noBiAnnualPriceExperiment', TRUE) is not NULL
     and createdat >= '2020-11-12'
     and createdat <= getdate()
   group by
