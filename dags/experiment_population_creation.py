@@ -7,6 +7,7 @@ from airflow import DAG
 from airflow.hooks import PostgresHook
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
+from experimental_platform_modules import util
 
 from datetime import datetime, timedelta
 
@@ -108,8 +109,7 @@ def record_manual_population_checksums(conn_id, ts, **kwargs):
         with open(item_path, 'r') as f:
             s = f.read()
 
-        # Fast checksum. We don't need it to be too unique, just unique enough to tell us if it's changed
-        checksum = hash(s).to_bytes(8, 'big', signed=True).hex()
+        checksum = util.fast_checksum(s)
 
         query = '''
         begin;
