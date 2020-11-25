@@ -52,7 +52,9 @@ def find_changed_checksums(ts, **kwargs):
             print('New population file detected {}'.format(path))
             missing_populations.append(path)
         elif existing_checksum != checksum:
-            print('{} checksum doesn\'t match')
+            print('{} checksum doesn\'t match'.format(path))
+            print('Existing Checksum: {} | New Checksum: {}').format(
+                existing_population_checksums, checksum)
             missing_populations.append(path)
 
     return missing_populations
