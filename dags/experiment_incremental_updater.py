@@ -37,7 +37,7 @@ def get_manual_population_checksums(ts, **kwargs):
 def find_changed_checksums(ts, **kwargs):
     task_instance = kwargs['task_instance']
     existing_population_checksums = task_instance.xcom_pull(
-        task_ids='get_existing_poopulations_checksums'
+        task_ids='get_existing_populations_checksums'
     )
     manual_population_checksums = task_instance.xcom_pull(
         task_ids='get_manual_population_checksums'
