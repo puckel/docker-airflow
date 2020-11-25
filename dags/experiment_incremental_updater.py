@@ -54,7 +54,7 @@ def find_changed_checksums(ts, **kwargs):
         elif existing_checksum != checksum:
             print('{} checksum doesn\'t match'.format(path))
             print('Existing Checksum: {} | New Checksum: {}'.format(
-                existing_population_checksums, checksum))
+                existing_checksum, checksum))
             missing_populations.append(path)
 
     return missing_populations
