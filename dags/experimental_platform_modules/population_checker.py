@@ -82,7 +82,8 @@ def summarize_population_check(conn_id, switched_population):
         con=pg_hook.get_sqlalchemy_engine(),
         schema='ab_platform',
         if_exists='replace',
-        index=False,
+        method='multi',
+        index_label='experiment_id',
         dtype={
             "experiment_id": sqlalchemy.types.VARCHAR(36),
             "switched_variant": sqlalchemy.types.Integer
