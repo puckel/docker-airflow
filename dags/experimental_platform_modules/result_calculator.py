@@ -15,7 +15,7 @@ EXPERIMENT_INTERMEDIATE_RESULTS_TABLE = 'ab_platform.experiment_results_intermed
 EXPERIMENT_INTERMEDIATE_RESULTS_TABLE_ONLY = 'experiment_results_intermediate'
 
 
-def get_active_experiment_and_population_map(conn_id, target_date):
+def get_active_experiment_and_population_map(conn_id, target_date, limit_experiment_ids=None):
     pg_hook = PostgresHook(conn_id)
     query = '''
     SELECT
@@ -28,6 +28,9 @@ def get_active_experiment_and_population_map(conn_id, target_date):
     records = pg_hook.get_records(query)
     experiment_to_population_map = {}
     for experiment_id, population_kind, table_name in records:
+        if limit_experiment_ids and experiment_id not in limit_experiment_ids:
+            continue
+
         experiment_to_population_map[experiment_id] = {
             'population_table_name': table_name,
             'population_schema_name':  'ab_platform',

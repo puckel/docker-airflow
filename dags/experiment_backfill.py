@@ -147,6 +147,9 @@ def get_backfill_dates(analytics_conn_id, frontend_conn_id, ts, **kwargs):
 
 def backfill_intermediate_results(analytics_conn_id, frontend_conn_id, ts, **kwargs):
     task_instance = kwargs['task_instance']
+    limit_experiment_ids = kwargs['dag_run'].conf.get(
+        'limit_experiment_ids', []
+    )
 
     backfill_dates = task_instance.xcom_pull(
         task_ids='get_backfill_dates'
@@ -159,7 +162,7 @@ def backfill_intermediate_results(analytics_conn_id, frontend_conn_id, ts, **kwa
             # Run the backfill
             print("Running backfill for {}".format(dt.isoformat()))
             experiment_to_population_map = result_calculator.get_active_experiment_and_population_map(
-                analytics_conn_id, dt)
+                analytics_conn_id, dt, limit_experiment_ids=limit_experiment_ids)
             print("Found active {} active experiments {}".format(
                 len(experiment_to_population_map), experiment_to_population_map.keys()))
 
