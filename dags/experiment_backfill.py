@@ -155,6 +155,9 @@ def backfill_intermediate_results(analytics_conn_id, frontend_conn_id, ts, **kwa
         task_ids='get_backfill_dates'
     )
 
+    if limit_experiment_ids:
+        print('Limiting experiment backfill to: {}'.format(limit_experiment_ids))
+
     # Do it all in one go instead of piecemeal like the result calculator graph
     for dt in backfill_dates:
         try:
