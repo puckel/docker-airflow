@@ -145,10 +145,7 @@ def get_ios_payment_events(conn_id, ts, **kwargs):
     query = '''
     INSERT INTO {table}
     SELECT
-        CASE
-            when iap.cancellationdate is not null then iap.cancellationdate
-            else iap.purchasedate
-        END,
+        iap.purchasedate
         p.serviceName,
         p.entityid,
         'paid_transaction',
