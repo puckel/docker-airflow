@@ -11,6 +11,14 @@ services:
                 max-size: 10m
                 max-file: "3"
 
+    mysql:
+
+        image: mysql:5.7.27
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+        volumes:
+            - ./store_files:/store_files_mysql/
+
     webserver:
         image: puckel/docker-airflow:1.10.9
         restart: always
