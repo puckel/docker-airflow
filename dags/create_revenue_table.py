@@ -131,7 +131,7 @@ def get_ios_payment_events(conn_id, ts, **kwargs):
         iap.transactionid,
         iap.productid,
         p.productname,
-        iap.expires_date
+        iap.expiresdate
     FROM
         frog.purchases p
     JOIN
