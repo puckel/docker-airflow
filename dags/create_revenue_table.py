@@ -30,7 +30,8 @@ def drop_create_revenue_table(conn_id, ts, **kwargs):
         original_transaction_id varchar(256) encode ZSTD,
         transaction_id varchar(256) encode ZSTD DISTKEY,
         product_id varchar(256) encode ZSTD,
-        product_name varchar(256) encode ZSTD
+        product_name varchar(256) encode ZSTD,
+        expires_date timestamp encode AZ64
     )
     COMPOUND SORTKEY(event_date, event_name);
     GRANT ALL ON TABLE {table} TO GROUP team;
@@ -52,7 +53,8 @@ def get_ios_free_trial_events(conn_id, ts, **kwargs):
         p.servicetransactionid,
         iap.transactionid,
         iap.productid,
-        p.productname
+        p.productname,
+        iap.expiresdate
     FROM
         frog.purchases p
     JOIN
@@ -76,39 +78,14 @@ def get_ios_refund_events(conn_id, ts, **kwargs):
         p.servicetransactionid,
         iap.transactionid,
         iap.productid,
-        p.productname
+        p.productname,
+        null
     FROM
         frog.purchases p
     JOIN
         production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
     WHERE
         iap.cancellationdate is not null;
-    '''.format(**{'table': PURCHASE_EVENT_TABLE})
-    pg_hook.run(query)
-
-
-def get_ios_expired_events(conn_id, ts, **kwargs):
-    pg_hook = PostgresHook(conn_id)
-
-    query = '''
-    INSERT INTO {table}
-    SELECT
-        iap.expiresdate,
-        p.serviceName,
-        p.entityid,
-        'paid_transaction_expired',
-        p.servicetransactionid,
-        iap.transactionid,
-        iap.productid,
-        p.productname
-    FROM
-        frog.purchases p
-    JOIN
-        production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
-    WHERE
-        iap.istrialperiod = false and
-        iap.cancellationdate is null and
-        iap.expirationintent is not null
     '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
@@ -126,7 +103,8 @@ def get_ios_payment_failed_events(conn_id, ts, **kwargs):
         p.servicetransactionid,
         iap.transactionid,
         iap.productid,
-        p.productname
+        p.productname,
+        null
     FROM
         frog.purchases p
     JOIN
@@ -152,7 +130,8 @@ def get_ios_payment_events(conn_id, ts, **kwargs):
         p.servicetransactionid,
         iap.transactionid,
         iap.productid,
-        p.productname
+        p.productname,
+        iap.expires_date
     FROM
         frog.purchases p
     JOIN
@@ -176,7 +155,8 @@ def get_ios_cancellation_events(conn_id, ts, **kwargs):
         p.servicetransactionid,
         iap.transactionid,
         iap.productid,
-        p.productname
+        p.productname,
+        null
     FROM
         frog.purchases p
     JOIN
@@ -201,7 +181,8 @@ def get_ios_unknown_events(conn_id, ts, **kwargs):
         p.servicetransactionid,
         iap.transactionid,
         iap.productid,
-        p.productname
+        p.productname,
+        null
     FROM
         frog.purchases p
     JOIN
@@ -256,12 +237,6 @@ with DAG('create_revenue_table',
         op_kwargs={'conn_id': 'analytics_redshift'},
         provide_context=True
     )
-    get_ios_expired_events_task = PythonOperator(
-        task_id='get_ios_expired_events',
-        python_callable=get_ios_expired_events,
-        op_kwargs={'conn_id': 'analytics_redshift'},
-        provide_context=True
-    )
     get_ios_payment_failed_events_task = PythonOperator(
         task_id='get_ios_payment_failed_events',
         python_callable=get_ios_payment_failed_events,
@@ -293,5 +268,5 @@ with DAG('create_revenue_table',
 
     start_task >> drop_create_revenue_table_task >> [
         get_ios_free_trial_events_task, get_ios_refund_events_task,
-        get_ios_expired_events_task, get_ios_payment_failed_events_task,
-        get_ios_payment_events_task, get_ios_cancellation_events_task, get_ios_unknown_events_task] >> finish_ios_task
+        get_ios_payment_failed_events_task, get_ios_payment_events_task, get_ios_cancellation_events_task,
+        get_ios_unknown_events_task] >> finish_ios_task
