@@ -25,16 +25,24 @@ services:
         restart: always
         depends_on:
             - postgres
+            - mysql
         environment:
+            - INSTALL_MYSQL=y
             - LOAD_EX=n
             - EXECUTOR=Local
+            - AIRFLOW__SMTP__SMTP_HOST=smtp.gmail.com
+            - AIRFLOW__SMTP__SMTP_USER=example@gmail.com
+            - AIRFLOW__SMTP__SMTP_PASSWORD=hdwiondmyyobhlto
+            - AIRFLOW__SMTP__SMTP_PORT=587
+            - AIRFLOW__SMTP__SMTP_MAIL_FROM=Airflow
         logging:
             options:
                 max-size: 10m
                 max-file: "3"
         volumes:
             - ./dags:/usr/local/airflow/dags
-            # - ./plugins:/usr/local/airflow/plugins
+            - ./store_files:/usr/local/airflow/store_files_airflow
+            - ./sql_files:/usr/local/airflow/sql_files
         ports:
             - "8080:8080"
         command: webserver
