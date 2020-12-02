@@ -22,4 +22,6 @@ t2 = PythonOperator(task_id='clean_raw_csv', python_callable=data_cleaner, dag=d
 
 t3 = MySqlOperator(task_id='create_mysql_table', mysql_conn_id="mysql_conn", sql="create_table.sql", dag=dag)
 
-t1 >> t2 >> t3
+t4 = MySqlOperator(task_id='insert_into_table', mysql_conn_id="mysql_conn", sql="insert_into_table.sql", dag=dag)
+
+t1 >> t2 >> t3 >> t4
