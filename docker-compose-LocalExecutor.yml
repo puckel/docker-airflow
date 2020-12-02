@@ -34,3 +34,6 @@ services:
             interval: 30s
             timeout: 30s
             retries: 3
+
+    redis:
+            image: "redis:3.2.7"
