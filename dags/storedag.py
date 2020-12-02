@@ -24,4 +24,6 @@ t3 = MySqlOperator(task_id='create_mysql_table', mysql_conn_id="mysql_conn", sql
 
 t4 = MySqlOperator(task_id='insert_into_table', mysql_conn_id="mysql_conn", sql="insert_into_table.sql", dag=dag)
 
-t1 >> t2 >> t3 >> t4
+t5 = MySqlOperator(task_id='select_from_table', mysql_conn_id="mysql_conn", sql="select_from_table.sql", dag=dag)
+
+t1 >> t2 >> t3 >> t4 >> t5
