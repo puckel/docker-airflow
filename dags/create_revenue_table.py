@@ -123,7 +123,7 @@ def get_ios_payment_events(conn_id, ts, **kwargs):
     query = '''
     INSERT INTO {table}
     SELECT
-        iap.purchasedate
+        iap.purchasedate,
         p.serviceName,
         p.entityid,
         'paid_transaction',
@@ -268,5 +268,5 @@ with DAG('create_revenue_table',
 
     start_task >> drop_create_revenue_table_task >> [
         get_ios_free_trial_events_task, get_ios_refund_events_task,
-        get_ios_payment_failed_events_task, get_ios_payment_events_task, get_ios_cancellation_events_task,
-        get_ios_unknown_events_task] >> finish_ios_task
+        get_ios_payment_failed_events_task, get_ios_payment_events_task,
+        get_ios_cancellation_events_task, get_ios_unknown_events_task] >> finish_ios_task
