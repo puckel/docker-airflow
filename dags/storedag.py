@@ -13,6 +13,8 @@ default_args = {
     'retry_delay': timedelta(seconds=5)
 }
 
+timestamp = datetime.strftime(datetime.now(), '%Y-%m-%d:%HH%MM')
+
 dag = DAG('store_dag',default_args=default_args,schedule_interval='@daily', catchup=False)
 
 t1=BashOperator(task_id='check_file_exists', bash_command='shasum ~/store_files_airflow/raw_store_transactions.csv',
@@ -26,4 +28,10 @@ t4 = MySqlOperator(task_id='insert_into_table', mysql_conn_id="mysql_conn", sql=
 
 t5 = MySqlOperator(task_id='select_from_table', mysql_conn_id="mysql_conn", sql="select_from_table.sql", dag=dag)
 
-t1 >> t2 >> t3 >> t4 >> t5
+t6 = BashOperator(task_id='move_file1',
+                  bash_command='cat ~/store_files_airflow/location_wise_profit.csv && mv ~/store_files_airflow/location_wise_profit.csv ~/store_files_airflow/location_wise_profit_%s.csv' % timestamp, dag=dag)
+
+t7 = BashOperator(task_id='move_file2',
+                  bash_command='cat ~/store_files_airflow/store_wise_profit.csv && mv ~/store_files_airflow/store_wise_profit.csv ~/store_files_airflow/store_wise_profit_%s.csv' % timestamp, dag=dag)
+
+t1 >> t2 >> t3 >> t4 >> t5 >> [t6,t7]
