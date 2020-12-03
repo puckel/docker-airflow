@@ -84,10 +84,12 @@ def get_ios_payment_failed_events(conn_id, ts, **kwargs):
         frog.purchases p
     JOIN
         production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
+    JOIN
+        production.ios_subscription_notification sub on iap.transactionid = sub.transactionid
     WHERE
         iap.istrialperiod = false and
         iap.cancellationdate is null and
-        iap.expirationintent = 2
+        sub.notificationtype = 'DID_FAIL_TO_RENEW'
     '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
@@ -139,33 +141,6 @@ def get_ios_cancellation_events(conn_id, ts, **kwargs):
     WHERE
         iap.istrialperiod = false and
         iap.cancellationdate is not null
-    '''.format(**{'table': PURCHASE_EVENT_TABLE})
-    pg_hook.run(query)
-
-
-def get_ios_unknown_events(conn_id, ts, **kwargs):
-    pg_hook = PostgresHook(conn_id)
-
-    query = '''
-    INSERT INTO {table}
-    SELECT
-        iap.purchasedate,
-        p.serviceName,
-        p.entityid,
-        'unknown_error',
-        p.servicetransactionid,
-        iap.transactionid,
-        iap.productid,
-        p.productname,
-        null
-    FROM
-        frog.purchases p
-    JOIN
-        production.ios_iap_receipt iap on p.servicetransactionid = iap.originaltransactionid
-    WHERE
-        iap.istrialperiod = false and
-        iap.cancellationdate is null and
-        iap.expirationintent = 5
     '''.format(**{'table': PURCHASE_EVENT_TABLE})
     pg_hook.run(query)
 
@@ -224,12 +199,6 @@ with DAG('create_revenue_table',
         op_kwargs={'conn_id': 'analytics_redshift'},
         provide_context=True
     )
-    get_ios_unknown_events_task = PythonOperator(
-        task_id='get_ios_unknown_events',
-        python_callable=get_ios_unknown_events,
-        op_kwargs={'conn_id': 'analytics_redshift'},
-        provide_context=True
-    )
 
     finish_ios_task = DummyOperator(
         task_id='finish_ios'
@@ -237,5 +206,4 @@ with DAG('create_revenue_table',
 
     start_task >> drop_create_revenue_table_task >> [
         get_ios_free_trial_events_task, get_ios_payment_failed_events_task,
-        get_ios_payment_events_task, get_ios_cancellation_events_task,
-        get_ios_unknown_events_task] >> finish_ios_task
+        get_ios_payment_events_task, get_ios_cancellation_events_task, ] >> finish_ios_task
