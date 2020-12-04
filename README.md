@@ -8,6 +8,10 @@
 
 This repository contains **Dockerfile** of [apache-airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
+## Why is this fork needed?
+This repo is a fork of https://github.com/puckel/docker-airflow. The major reason why it is needed is that in the original repo python modules are installed with `--user` option.
+This presents an issue for packages like `apache-airflow-backport-providers-*` because according to https://airflow.apache.org/docs/apache-airflow/1.10.13/backport-providers.html#troubleshooting-installing-backport-packages and found by trial and error such installation will render these modules inaccessible by airflow. Therefore this repo simply installs all dependencies in `/requirements.txt` as global modules.
+
 ## Informations
 
 * Based on Python (3.7-slim-buster) official Image [python:3.7-slim-buster](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
