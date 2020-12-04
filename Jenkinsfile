@@ -80,7 +80,7 @@ pipeline {
     post {
         failure {
             script {
-                paterduty(resolve: false, serviceKey: "b744c608601448da906e1172d2a0e1ba", incDescription: "Airflow failed to build")
+                pagerduty(resolve: false, serviceKey: "b744c608601448da906e1172d2a0e1ba", incDescription: "Airflow failed to build")
             }
         }
         always {
