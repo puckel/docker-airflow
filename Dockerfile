@@ -50,10 +50,13 @@ RUN set -ex \
         rsync \
         netcat \
         locales \
+        sudo \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
+    && usermod -aG sudo airflow
+    && echo 'airflow ALL=(ALL) NOPASSWD: ALL' > /etc/susu \
     && pip install -U pip setuptools wheel \
     && pip install pytz \
     && pip install pyOpenSSL \
