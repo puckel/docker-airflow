@@ -31,7 +31,8 @@ def drop_create_revenue_table(conn_id, ts, **kwargs):
         transaction_id varchar(256) encode ZSTD DISTKEY,
         product_id varchar(256) encode ZSTD,
         product_name varchar(256) encode ZSTD,
-        expires_date timestamp encode AZ64
+        expires_date timestamp encode AZ64,
+        source varchar(16) encode ZSTD
     )
     COMPOUND SORTKEY(event_date, event_name);
     GRANT ALL ON TABLE {table} TO GROUP team;
@@ -54,7 +55,8 @@ def get_ios_free_trial_events(conn_id, ts, **kwargs):
         iap.transactionid,
         iap.productid,
         p.productname,
-        iap.expiresdate
+        iap.expiresdate,
+        'ios'
     FROM
         frog.purchases p
     JOIN
@@ -79,7 +81,8 @@ def get_ios_payment_failed_events(conn_id, ts, **kwargs):
         iap.transactionid,
         iap.productid,
         p.productname,
-        null
+        null,
+        'ios'
     FROM
         frog.purchases p
     JOIN
@@ -108,7 +111,8 @@ def get_ios_payment_events(conn_id, ts, **kwargs):
         iap.transactionid,
         iap.productid,
         p.productname,
-        iap.expiresdate
+        iap.expiresdate,
+        'ios'
     FROM
         frog.purchases p
     JOIN
@@ -133,7 +137,8 @@ def get_ios_cancellation_events(conn_id, ts, **kwargs):
         iap.transactionid,
         iap.productid,
         p.productname,
-        null
+        null,
+        'ios'
     FROM
         frog.purchases p
     JOIN
