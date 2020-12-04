@@ -25,7 +25,7 @@ export \
 
 # Install custom python package if requirements.txt is present
 if [ -e "/requirements.txt" ]; then
-    $(command -v pip) install -r /requirements.txt
+    sudo $(command -v pip) install -r /requirements.txt
 fi
 
 wait_for_port() {
