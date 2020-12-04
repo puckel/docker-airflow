@@ -44,6 +44,6 @@ t8 = EmailOperator(task_id='send_email',
                    dag=dag)
 
 t9 = BashOperator(task_id='rename_raw',
-                  bash_command='mv ~/store_files_airflow/raw_store_transactions.csv ~/store_files_airflow/raw_store_transactions_%s.csv' % timestamp, dag=dag)
+                  bash_command='mv ~/store_files_airflow/clean_store_transactions.csv ~/store_files_airflow/raw_store_transactions_%s.csv' % timestamp, dag=dag)
 
 t1 >> t2 >> t3 >> t4 >> t5 >> [t6, t7] >> t8 >> t9
