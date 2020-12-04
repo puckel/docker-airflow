@@ -24,3 +24,8 @@ sftp-config.json
 
 # Python
 __pycache__
+
+# output files
+store_files/location_wise_profit*
+store_files/store_wise_profit*
+store_files/clean_store_transactions*

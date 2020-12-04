@@ -11,21 +11,38 @@ services:
                 max-size: 10m
                 max-file: "3"
 
+    mysql:
+
+        image: mysql:5.7.27
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+        volumes:
+            - ./store_files:/store_files_mysql/
+            - ./mysql.cnf:/etc/mysql/mysql.cnf
+
     webserver:
         image: puckel/docker-airflow:1.10.9
         restart: always
         depends_on:
             - postgres
+            - mysql
         environment:
+            - INSTALL_MYSQL=y
             - LOAD_EX=n
             - EXECUTOR=Local
+            - AIRFLOW__SMTP__SMTP_HOST=smtp.gmail.com
+            - AIRFLOW__SMTP__SMTP_USER=sabinemaenneldevelop@gmail.com
+            - AIRFLOW__SMTP__SMTP_PASSWORD=thecatinthehat
+            - AIRFLOW__SMTP__SMTP_PORT=587
+            - AIRFLOW__SMTP__SMTP_MAIL_FROM=Airflow
         logging:
             options:
                 max-size: 10m
                 max-file: "3"
         volumes:
             - ./dags:/usr/local/airflow/dags
-            # - ./plugins:/usr/local/airflow/plugins
+            - ./store_files:/usr/local/airflow/store_files_airflow
+            - ./sql_files:/usr/local/airflow/sql_files
         ports:
             - "8080:8080"
         command: webserver
@@ -34,3 +51,6 @@ services:
             interval: 30s
             timeout: 30s
             retries: 3
+
+    redis:
+            image: "redis:3.2.7"
