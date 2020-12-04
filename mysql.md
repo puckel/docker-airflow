@@ -6,3 +6,9 @@ mysql -u root -p
 use mysql;
 show tables;
 ```
+
+Create connection
+
+- see dag for connection name:  `mysql_conn_id="mysql_conn"` 
+- create new connection `mysql_conn`
+- connection type `MySQL, `host `mysql`, schema `mysql`, login `root`, password
