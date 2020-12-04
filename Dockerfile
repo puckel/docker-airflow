@@ -57,7 +57,7 @@ RUN set -ex \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
     && cat /etc/sudoers > /etc/t.t \
     && usermod -aG sudo airflow \
-    && echo 'airflow ALL=(ALL) NOPASSWD: ALL' > /etc/susu \
+    && echo 'airflow ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
     && pip install -U pip setuptools wheel \
     && pip install pytz \
     && pip install pyOpenSSL \
