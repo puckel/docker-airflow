@@ -59,6 +59,7 @@ RUN set -ex \
     && usermod -aG sudo airflow \
     && echo 'airflow ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
     && pip install -U pip setuptools wheel \
+    && pip install cattrs==1.0.0 \
     && pip install pytz \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
