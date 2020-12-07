@@ -6,7 +6,7 @@ from airflow.operators.python_operator import PythonOperator
 from datetime import datetime, timedelta
 
 
-PURCHASE_EVENT_TABLE = 'temp.purchase_events'
+PURCHASE_EVENT_TABLE = 'logs.purchase_events'
 
 
 def success_callback(ctx):
