@@ -79,7 +79,7 @@ def get_ios_payment_failed_events(conn_id, ts, **kwargs):
         iap.transactionid,
         iap.productid,
         p.productname,
-        null
+        iap.expiresdate
     FROM
         frog.purchases p
     JOIN
@@ -211,7 +211,7 @@ def get_android_payment_failed_events(conn_id, ts, **kwargs):
         snap.orderid,
         snap.productid,
         p.productname,
-        null
+        snap.expirytimemillis
     FROM
         frog.purchases p
     JOIN
