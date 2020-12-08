@@ -233,7 +233,6 @@ def get_android_cancellation_events(conn_id, ts, **kwargs):
             when snap.cancelReason = 0 then snap.usercancellationtimemillis
             else snap.expirytimemillis
         END,
-        snap.starttimemillis,
         p.serviceName,
         p.entityid,
         'cancel',
