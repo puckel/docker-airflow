@@ -197,6 +197,62 @@ def get_android_payment_events(conn_id, ts, **kwargs):
     pg_hook.run(query)
 
 
+def get_android_payment_failed_events(conn_id, ts, **kwargs):
+    pg_hook = PostgresHook(conn_id)
+
+    query = '''
+    INSERT INTO {table}
+    SELECT
+        snap.starttimemillis,
+        p.serviceName,
+        p.entityid,
+        'payment_failed',
+        p.servicetransactionid,
+        snap.orderid,
+        snap.productid,
+        p.productname,
+        null
+    FROM
+        frog.purchases p
+    JOIN
+        production.android_subscription_snapshot snap on p.servicetransactionid = snap.purchasetoken
+    WHERE
+        snap.cancelReason = 2
+
+    '''.format(**{'table': PURCHASE_EVENT_TABLE})
+    pg_hook.run(query)
+
+
+def get_android_cancellation_events(conn_id, ts, **kwargs):
+    pg_hook = PostgresHook(conn_id)
+
+    query = '''
+    INSERT INTO {table}
+    SELECT
+        CASE
+            when snap.usercancellationtimemillis then snap.cancelReason = 0
+            else snap.expirytimemillis
+        END,
+        snap.starttimemillis,
+        p.serviceName,
+        p.entityid,
+        'cancel',
+        p.servicetransactionid,
+        snap.orderid,
+        snap.productid,
+        p.productname,
+        null
+    FROM
+        frog.purchases p
+    JOIN
+        production.android_subscription_snapshot snap on p.servicetransactionid = snap.purchasetoken
+    WHERE
+        snap.cancelReason is not null;
+
+    '''.format(**{'table': PURCHASE_EVENT_TABLE})
+    pg_hook.run(query)
+
+
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -267,6 +323,18 @@ with DAG('create_revenue_table',
         op_kwargs={'conn_id': 'analytics_redshift'},
         provide_context=True
     )
+    get_android_payment_failed_events_task = PythonOperator(
+        task_id='get_android_payment_failed_events',
+        python_callable=get_android_payment_failed_events,
+        op_kwargs={'conn_id': 'analytics_redshift'},
+        provide_context=True
+    )
+    get_android_cancellation_events_task = PythonOperator(
+        task_id='get_android_cancellation_events',
+        python_callable=get_android_cancellation_events,
+        op_kwargs={'conn_id': 'analytics_redshift'},
+        provide_context=True
+    )
     finish_android_task = DummyOperator(
         task_id='finish_android'
     )
@@ -274,4 +342,5 @@ with DAG('create_revenue_table',
     start_task >> drop_create_revenue_table_task >> [
         get_ios_free_trial_events_task, get_ios_payment_failed_events_task,
         get_ios_payment_events_task, get_ios_cancellation_events_task, ] >> finish_ios_task >> [
-        get_android_free_trial_events_task, get_android_payment_events_task] >> finish_android_task
+        get_android_free_trial_events_task, get_android_payment_events_task,
+        get_android_payment_failed_events_task, get_android_cancellation_events_task] >> finish_android_task
