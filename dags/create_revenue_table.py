@@ -230,7 +230,7 @@ def get_android_cancellation_events(conn_id, ts, **kwargs):
     INSERT INTO {table}
     SELECT
         CASE
-            when snap.usercancellationtimemillis then snap.cancelReason = 0
+            when snap.cancelReason = 0 then snap.usercancellationtimemillis
             else snap.expirytimemillis
         END,
         snap.starttimemillis,
