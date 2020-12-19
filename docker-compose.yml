@@ -1,4 +1,4 @@
-version: '2.1'
+version: '2.2'
 services:
     redis:
         image: 'redis:5.0.5'
@@ -16,7 +16,7 @@ services:
         #     - ./pgdata:/var/lib/postgresql/data/pgdata
 
     webserver:
-        image: puckel/docker-airflow:1.10.9
+        image: ney/airflow:2.0.0
         restart: always
         depends_on:
             - postgres
@@ -43,7 +43,7 @@ services:
             retries: 3
 
     flower:
-        image: puckel/docker-airflow:1.10.9
+        image: ney/airflow:2.0.0
         restart: always
         depends_on:
             - redis
@@ -52,10 +52,10 @@ services:
             # - REDIS_PASSWORD=redispass
         ports:
             - "5555:5555"
-        command: flower
+        command: celery flower
 
     scheduler:
-        image: puckel/docker-airflow:1.10.9
+        image: ney/airflow:2.0.0
         restart: always
         depends_on:
             - webserver
@@ -74,7 +74,7 @@ services:
         command: scheduler
 
     worker:
-        image: puckel/docker-airflow:1.10.9
+        image: ney/airflow:2.0.0
         restart: always
         depends_on:
             - scheduler
@@ -89,4 +89,4 @@ services:
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
-        command: worker
+        command: celery worker
