@@ -31,7 +31,6 @@ services:
             # - REDIS_PASSWORD=redispass
         volumes:
             - ./dags:/usr/local/airflow/dags
-            - ./data:/usr/local/airflow/data
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
@@ -62,7 +61,6 @@ services:
             - webserver
         volumes:
             - ./dags:/usr/local/airflow/dags
-            - ./data:/usr/local/airflow/data
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
@@ -82,7 +80,6 @@ services:
             - scheduler
         volumes:
             - ./dags:/usr/local/airflow/dags
-            - ./data:/usr/local/airflow/data
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
