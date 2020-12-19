@@ -98,6 +98,9 @@ In order to incorporate plugins into your docker container
 - Airflow: [localhost:8080](http://localhost:8080/)
 - Flower: [localhost:5555](http://localhost:5555/)
 
+To log into airflow webserver, the default credentials are
+- username: airflow
+- password: airflow
 
 ## Scale the number of workers
 
