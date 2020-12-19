@@ -117,12 +117,12 @@ case "$1" in
     fi
     exec airflow webserver
     ;;
-  "celery worker"|scheduler)
+  celery|scheduler)
     # Give the webserver time to run db init.
     sleep 10
     exec airflow "$@"
     ;;
-  "celery flower")
+  celery)
     sleep 10
     exec airflow "$@"
     ;;
