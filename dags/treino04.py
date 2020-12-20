@@ -36,7 +36,7 @@ start_preprocessing = BashOperator(
 
 get_data = BashOperator(
     task_id="get-data",
-    bash_command='curl http://download.inep.gov.br/microdados/Enade_Microdados/microdados_enade_2019.zip -o /usr/local/airflow/data/microdados_enade_2019.zip',
+    bash_command='curl https://download.inep.gov.br/microdados/Enade_Microdados/microdados_enade_2019.zip -o /usr/local/airflow/data/microdados_enade_2019.zip',
     dag=dag
 )
 
