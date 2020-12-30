@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
 from datetime import datetime, timedelta
+import zipfile
 import pandas as pd
 
 data_path = '/usr/local/airflow/data/microdados_enade_2019/2019/3.DADOS/'
@@ -10,7 +11,7 @@ arquivo = data_path + 'microdados_enade_2019.txt'
 default_args = {
     'owner': 'Neylson Crepalde',
     "depends_on_past": False,
-    "start_date": datetime(2020, 11, 15, 1, 55),
+    "start_date": datetime(2020, 12, 30, 14, 50),
     "email": ["airflow@airflow.com"],
     "email_on_failure": False,
     "email_on_retry": False
@@ -22,12 +23,12 @@ dag = DAG(
     "treino-05", 
     description="Uma dag com vários paralelismos",
     default_args=default_args, 
-    schedule_interval="*/10 * * * *"
+    schedule_interval="*/3 * * * *"
 )
 
 get_data = BashOperator(
     task_id="get-data",
-    bash_command='curl http://download.inep.gov.br/microdados/Enade_Microdados/microdados_enade_2019.zip -o /usr/local/airflow/data/microdados_enade_2019.zip',
+    bash_command='curl https://download.inep.gov.br/microdados/Enade_Microdados/microdados_enade_2019.zip -o /usr/local/airflow/data/microdados_enade_2019.zip',
     trigger_rule="all_done",
     dag=dag
 )
