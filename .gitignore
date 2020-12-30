@@ -26,3 +26,5 @@ sftp-config.json
 __pycache__
 
 .vscode/
+
+microdados_enade_2019*
