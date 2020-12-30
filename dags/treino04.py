@@ -9,7 +9,7 @@ import pandas as pd
 default_args = {
     'owner': 'Neylson Crepalde',
     "depends_on_past": False,
-    "start_date": datetime(2020, 12, 30, 14, 50),
+    "start_date": datetime(2020, 12, 30, 18, 10),
     "email": ["airflow@airflow.com"],
     "email_on_failure": False,
     "email_on_retry": False
