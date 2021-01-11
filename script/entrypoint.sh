@@ -37,7 +37,7 @@ wait_for_port() {
       echo >&2 "$(date) - $host:$port still not reachable, giving up"
       exit 1
     fi
-    echo "$(date) - waiting for $name... $j/$TRY_LOOP"
+    echo "$(date) - waiting for $name($host:$port)... $j/$TRY_LOOP"
     sleep 5
   done
 }
@@ -100,8 +100,8 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
   else
     # Derive useful variables from the AIRFLOW__ variables provided explicitly by the user
     REDIS_ENDPOINT=$(echo -n "$AIRFLOW__CELERY__BROKER_URL" | cut -d '/' -f3 | sed -e 's,.*@,,')
-    REDIS_HOST=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f1)
-    REDIS_PORT=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f2)
+    REDIS_HOST=$(echo -n "$REDIS_ENDPOINT" | cut -d ':' -f1)
+    REDIS_PORT=$(echo -n "$REDIS_ENDPOINT" | cut -d ':' -f2)
   fi
 
   wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
