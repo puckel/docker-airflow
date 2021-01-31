@@ -24,3 +24,9 @@ sftp-config.json
 
 # Python
 __pycache__
+
+.vscode/
+
+microdados_enade_2019*
+
+igti_bootcamp*
