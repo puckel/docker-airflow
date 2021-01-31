@@ -16,7 +16,7 @@ services:
         #     - ./pgdata:/var/lib/postgresql/data/pgdata
 
     webserver:
-        image: neylsoncrepalde/airflow-docker:2.0.0
+        image: neylsoncrepalde/airflow-docker:latest
         restart: always
         depends_on:
             - postgres
@@ -44,7 +44,7 @@ services:
             retries: 3
 
     flower:
-        image: neylsoncrepalde/airflow-docker:2.0.0
+        image: neylsoncrepalde/airflow-docker:latest
         restart: always
         depends_on:
             - redis
@@ -56,7 +56,7 @@ services:
         command: celery flower
 
     scheduler:
-        image: neylsoncrepalde/airflow-docker:2.0.0
+        image: neylsoncrepalde/airflow-docker:latest
         restart: always
         depends_on:
             - webserver
@@ -76,7 +76,7 @@ services:
         command: scheduler
 
     worker:
-        image: neylsoncrepalde/airflow-docker:2.0.0
+        image: neylsoncrepalde/airflow-docker:latest
         restart: always
         depends_on:
             - scheduler
