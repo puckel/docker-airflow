@@ -1,0 +1,9 @@
+---
+    version: '2.1'
+    services:
+      airflow:
+        image: puckel/docker-airflow:1.10.14
+        build:
+          dockerfile: Dockerfile
+          context: .
+    

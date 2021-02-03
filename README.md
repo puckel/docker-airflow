@@ -1,3 +1,12 @@
+# docker-airflow-3.7-stretch-1.10.14
+This is a fork from puckel/docker-airflow with the following changes.
+- Change back to python 3.7-stretch base image due to a dependency to Debian 3.7
+- Upgrade Airflow to 1.10.14 to prepare for the AirFlow 2.0 upgrade
+- Added apache-airflow-upgrade-check
+
+https://airflow.apache.org/docs/apache-airflow/stable/upgrading-to-2.html
+
+
 # docker-airflow
 [![CI status](https://github.com/puckel/docker-airflow/workflows/CI/badge.svg?branch=master)](https://github.com/puckel/docker-airflow/actions?query=workflow%3ACI+branch%3Amaster+event%3Apush)
 [![Docker Build status](https://img.shields.io/docker/build/puckel/docker-airflow?style=plastic)](https://hub.docker.com/r/puckel/docker-airflow/tags?ordering=last_updated)
