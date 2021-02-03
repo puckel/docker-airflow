@@ -1,0 +1,33 @@
+---
+repos:
+      - repo: https://github.com/adrienverge/yamllint.git
+        rev: v1.19.0
+        hooks:
+          - id: yamllint
+      - repo: https://github.com/pre-commit/pre-commit-hooks
+        rev: v2.4.0
+        hooks:
+          - id: check-case-conflict
+          - id: check-merge-conflict
+          - id: check-symlinks
+          - id: end-of-file-fixer
+          - id: trailing-whitespace
+          - id: no-commit-to-branch
+            args: [--branch=master]
+          - id: check-executables-have-shebangs
+          - id: check-json
+          - id: check-xml
+      - repo: https://github.com/pre-commit/mirrors-pylint
+        rev: 'v2.4.4'
+        hooks:
+          - id: pylint
+            args: [--rcfile=.pylintrc, --max-line-length=100, --ignore=cv19index]
+      - repo: https://github.com/Lucas-C/pre-commit-hooks-nodejs
+        rev: v1.1.0
+        hooks:
+          - id: dockerfile_lint
+      - repo: https://github.com/kynan/nbstripout
+        rev: master
+        hooks:
+          - id: nbstripout
+            files: ".ipynb"
