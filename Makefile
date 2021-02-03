@@ -11,7 +11,7 @@ build-docker:
 	docker-compose -f docker-compose-build.yml build airflow
 
 push-docker:
-	docker-compose -f docker-compose-airflow-build.yml push airflow
+	docker-compose -f docker-compose-build.yml push airflow
 
 pull-docker:
-	docker-compose -f docker-compose-airflow-build.yml pull airflow
+	docker-compose -f docker-compose-build.yml pull airflow
