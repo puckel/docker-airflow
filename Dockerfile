@@ -39,6 +39,8 @@ RUN set -ex \
         git \
     ' \
     && apt-get update -yqq \
+    && apt install openssh-server \
+    && ssh-keygen -q -t rsa -N '' -f ./id_rsa
     && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
