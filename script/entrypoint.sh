@@ -23,9 +23,10 @@ export \
   AIRFLOW__CORE__FERNET_KEY \
   AIRFLOW__CORE__LOAD_EXAMPLES \
 
-# Install custom python package if requirements.txt is present
-if [ -e "/requirements.txt" ]; then
-    $(command -v pip) install --user -r /requirements.txt
+# Install custom python package if requirements.txt is present for the specified location
+: "${PIP_REQUIREMENTS_PATH:="/requirements.txt"}"
+if [ -e "$PIP_REQUIREMENTS_PATH" ]; then
+    $(command -v pip) install --user -r "$PIP_REQUIREMENTS_PATH"
 fi
 
 wait_for_port() {

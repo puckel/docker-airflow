@@ -91,6 +91,7 @@ In order to incorporate plugins into your docker container
 
 - Create a file "requirements.txt" with the desired python modules
 - Mount this file as a volume `-v $(pwd)/requirements.txt:/requirements.txt` (or add it as a volume in docker-compose file)
+- To mount the file in another location modify the `PIP_REQUIREMENTS_PATH` variable
 - The entrypoint.sh script execute the pip install command (with --user option)
 
 ## UI Links
