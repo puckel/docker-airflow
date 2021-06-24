@@ -10,6 +10,7 @@ TRY_LOOP="20"
 # Global defaults and back-compat
 : "${AIRFLOW_HOME:="/usr/local/airflow"}"
 : "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}}"
+: "${AIRFLOW__WEBSERVER__SECRET_KEY:=${SECRET_KEY:=$(python -c "from cryptography.fernet import Fernet; SECRET_KEY = Fernet.generate_key().decode(); print(SECRET_KEY)")}}"
 : "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR:-Sequential}Executor}"
 
 # Load DAGs examples (default: Yes)
@@ -22,6 +23,7 @@ export \
   AIRFLOW__CORE__EXECUTOR \
   AIRFLOW__CORE__FERNET_KEY \
   AIRFLOW__CORE__LOAD_EXAMPLES \
+  AIRFLOW__WEBSERVER__SECRET_KEY \
 
 # Install custom python package if requirements.txt is present
 if [ -e "/requirements.txt" ]; then
@@ -37,7 +39,7 @@ wait_for_port() {
       echo >&2 "$(date) - $host:$port still not reachable, giving up"
       exit 1
     fi
-    echo "$(date) - waiting for $name... $j/$TRY_LOOP"
+    echo "$(date) - waiting for $name($host:$port)... $j/$TRY_LOOP"
     sleep 5
   done
 }
@@ -100,8 +102,8 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
   else
     # Derive useful variables from the AIRFLOW__ variables provided explicitly by the user
     REDIS_ENDPOINT=$(echo -n "$AIRFLOW__CELERY__BROKER_URL" | cut -d '/' -f3 | sed -e 's,.*@,,')
-    REDIS_HOST=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f1)
-    REDIS_PORT=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f2)
+    REDIS_HOST=$(echo -n "$REDIS_ENDPOINT" | cut -d ':' -f1)
+    REDIS_PORT=$(echo -n "$REDIS_ENDPOINT" | cut -d ':' -f2)
   fi
 
   wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
