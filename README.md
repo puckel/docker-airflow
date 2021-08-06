@@ -44,9 +44,11 @@ or combined
 
 ## Usage
 
-By default, docker-airflow runs Airflow with **LocalExecutor** :
+By default, docker-airflow runs Airflow with **SequentialExecutor** :
 
-use the docker-compose.yml files provided in this repository.
+    docker run -d -p 8080:8080 puckel/docker-airflow webserver
+
+If you want to run another executor, use the docker-compose.yml files provided in this repository.
 
 For **LocalExecutor** :
 
