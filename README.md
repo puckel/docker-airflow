@@ -2,8 +2,8 @@
 [![Docker Image CI](https://github.com/dataops-sre/docker-airflow2/actions/workflows/ci.yml/badge.svg)](https://github.com/dataops-sre/docker-airflow2/actions/workflows/ci.yml)
 
 [![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/dataopssre/docker-airflow2)
-[![Docker Pulls](https://img.shields.io/docker/pulls/dataopssre/docker-airflow2.svg)]()
-[![Docker Stars](https://img.shields.io/docker/stars/dataopssre/docker-airflow2.svg)]()
+[![Docker Pulls](https://img.shields.io/docker/pulls/dataopssre/docker-airflow2.svg)](https://hub.docker.com/r/dataopssre/docker-airflow2)
+[![Docker Stars](https://img.shields.io/docker/stars/dataopssre/docker-airflow2.svg)](https://hub.docker.com/r/dataopssre/docker-airflow2)
 
 This repository contains **Dockerfile** of [apache-airflow2](https://github.com/apache/airflow) for [Docker](https://www.docker.com/)'s [automated build](https://hub.docker.com/r/dataopssre/docker-airflow2/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
