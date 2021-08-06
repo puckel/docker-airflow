@@ -11,13 +11,36 @@ This repository contains **Dockerfile** of [apache-airflow2](https://github.com/
 
 * Based on official Airflow 2 Image [apache/airflow2:2.1.2-python3.8
 ](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
-* Docker entrypoint script is based on [puckel/docker-airflow](https://github.com/puckel/docker-airflow)
+* Docker entrypoint script is forked from [puckel/docker-airflow](https://github.com/puckel/docker-airflow)
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
 
 
 ## Motivation
-This repos is forked form [puckel/docker-airflow](https://github.com/puckel/docker-airflow), It 
+This repos is forked form [puckel/docker-airflow](https://github.com/puckel/docker-airflow), the original repo seems not maintained.
+
+Airflow is been updated to version 2 and release its [official docker image](https://hub.docker.com/r/apache/airflow), you can also find [bitnamin airflow image](https://hub.docker.com/r/bitnami/airflow). Nevertheless, puckel's image is still interesting, in the market none of providers offer an Airflow run with LocalExecutor with scheduler in one container, it is extremely usefull when to deploy a simple Airflow to an AWS EKS cluster. With Kubernetes you can resolve Airflow scablity issue by using uniquely KubernetesPodOpetertor in your dags, so we need zero computational power for airflow, it serves pure purpose of scheduler, moreover seperate scheduler and webserver into two different pods is a bit problematic on AWS EKS cluster, we want to keep dags and logs into a Persistant volume, AWS has some limitation for EBS volume multi attach, which means webserver and scheduler pod has to be scheduled on the same EKS node, it is a bit annoying. Thus puckel's airflow startup script is usefull.
+
+With this fork :
+
+* Disactive by default the login screen
+* Improve current script to only take into account Airflow environment variables
+* Make sure docker compose files works
+
+You can use my [Airflow helm chart](https://github.com/dataops-sre/helm-charts) whith deploy this image to your Kubernetes cluster.
+
+
+## Build
+
+Optionally install [Extra Airflow Packages](https://airflow.incubator.apache.org/installation.html#extra-package) and/or python dependencies at build time :
+
+    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" -t dataopssre/docker-airflow2 .
+    docker build --rm --build-arg PYTHON_DEPS="requests" -t dataopssre/docker-airflow2 .
+
+or combined
+
+    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" --build-arg PYTHON_DEPS="requests" -t dataopssre/docker-airflow2 .
+
 
 ## Usage
 
