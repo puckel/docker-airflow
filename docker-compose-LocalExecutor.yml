@@ -17,8 +17,8 @@ services:
         depends_on:
             - postgres
         environment:
-            - LOAD_EX=n
-            - EXECUTOR=Local
+            - AIRFLOW__CORE__LOAD_EXAMPLES=false
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
         logging:
             options:
                 max-size: 10m
