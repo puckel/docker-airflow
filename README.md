@@ -17,17 +17,17 @@ This repository contains **Dockerfile** of [apache-airflow2](https://github.com/
 
 
 ## Motivation
-This repos is forked form [puckel/docker-airflow](https://github.com/puckel/docker-airflow), the original repo seems not maintained.
+This repo is forked form [puckel/docker-airflow](https://github.com/puckel/docker-airflow), the original repo seems not maintained.
 
-Airflow is been updated to version 2 and release its [official docker image](https://hub.docker.com/r/apache/airflow), you can also find [bitnamin airflow image](https://hub.docker.com/r/bitnami/airflow). Nevertheless, puckel's image is still interesting, in the market none of providers offer an Airflow run with LocalExecutor with scheduler in one container, it is extremely usefull when to deploy a simple Airflow to an AWS EKS cluster. With Kubernetes you can resolve Airflow scablity issue by using uniquely KubernetesPodOpetertor in your dags, so we need zero computational power for airflow, it serves pure purpose of scheduler, moreover seperate scheduler and webserver into two different pods is a bit problematic on AWS EKS cluster, we want to keep dags and logs into a Persistant volume, AWS has some limitation for EBS volume multi attach, which means webserver and scheduler pod has to be scheduled on the same EKS node, it is a bit annoying. Thus puckel's airflow startup script is usefull.
+Airflow is been updated to version 2 and release its [official docker image](https://hub.docker.com/r/apache/airflow), you can also find [bitnami airflow image](https://hub.docker.com/r/bitnami/airflow). Nevertheless, puckel's image is still interesting, in the market none of providers offer an Airflow run with LocalExecutor with scheduler in one container, it is extremely usefull when to deploy a simple Airflow to an AWS EKS cluster. With Kubernetes you can resolve Airflow scablity issue by using uniquely KubernetesPodOpetertor in your dags, then we need zero computational power for airflow, it serves pure purpose of scheduler, seperate scheduler and webserver into two different pods is a bit problematic on AWS EKS cluster, we want to keep dags and logs into a Persistant volume, but AWS has some limitation for EBS volume multi attach, which means webserver and scheduler pod has to be scheduled on the same EKS node, it is a bit annoying. Thus puckel's airflow startup script is usefull.
 
-With this fork :
+what this fork do :
 
-* Disactive by default the login screen
+* Disactive by default the login screen in Airflow 2
 * Improve current script to only take into account Airflow environment variables
 * Make sure docker compose files works
 
-You can use my [Airflow helm chart](https://github.com/dataops-sre/helm-charts) whith deploy this image to your Kubernetes cluster.
+You can use my [Airflow helm chart](https://github.com/dataops-sre/helm-charts) which deploys this image to a Kubernetes cluster.
 
 
 ## Build
