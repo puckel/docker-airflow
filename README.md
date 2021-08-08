@@ -5,7 +5,10 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/dataopssre/docker-airflow2.svg)](https://hub.docker.com/r/dataopssre/docker-airflow2)
 [![Docker Stars](https://img.shields.io/docker/stars/dataopssre/docker-airflow2.svg)](https://hub.docker.com/r/dataopssre/docker-airflow2)
 
-This repository contains **Dockerfile** of [apache-airflow2](https://github.com/apache/airflow) for [Docker](https://www.docker.com/)'s [automated build](https://hub.docker.com/r/dataopssre/docker-airflow2/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
+This repository contains **Dockerfile** of [apache-airflow2](https://github.com/apache/airflow) for [Docker](https://www.docker.com/)'s [automated build](https://hub.docker.com/r/dataopssre/docker-airflow2/) published to the public [Docker Hub Registry](https://hub.docker.com/r/dataopssre/docker-airflow2).
+
+## TL,TR
+Use Docker image [dataopssre/docker-airflow2](https://hub.docker.com/r/dataopssre/docker-airflow2) to update your airflow setup
 
 ## Informations
 
