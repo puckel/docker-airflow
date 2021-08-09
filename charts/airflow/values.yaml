@@ -1,0 +1,80 @@
+# Default values for airflow.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
+
+airflow:
+  image:
+    repository: dataopssre/docker-airflow2
+    tag: 2.1.2
+    imagePullPolicy: IfNotPresent
+  config:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: true
+    AIRFLOW__CORE__DAG_RUN_CONF_OVERRIDES_PARAMS: true
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 30
+    AIRFLOW__CORE__FERNET_KEY: 46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+    AIRFLOW__KUBERNETES__NAMESPACE: default
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgresql:5432/airflow
+    AIRFLOW__CORE__DAG_DISCOVERY_SAFE_MODE: false
+    # Don't load airflow dag from db for zipped dags
+    AIRFLOW__CORE__STORE_DAG_CODE: false
+    POSTGRES_HOST: airflow-postgresql
+    ENV: minikube
+  resources:
+    requests:
+      cpu: 150m
+      memory: 1Gi
+
+web:
+  initialStartupDelay: "10"
+  initialDelaySeconds: "10"
+
+postgresql:
+  enabled: true
+  postgresqlUsername: airflow
+  postgresqlDatabase: airflow
+  postgresqlPassword: airflow
+
+logsPersistence:
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+dagsPersistence:
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: airflow
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
