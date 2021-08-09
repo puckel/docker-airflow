@@ -10,6 +10,13 @@ This repository contains **Dockerfile** of [apache-airflow2](https://github.com/
 ## TL,TR
 Use Docker image [dataopssre/docker-airflow2](https://hub.docker.com/r/dataopssre/docker-airflow2) to update your airflow setup
 
+Helm chart to deploy airflow2 docker image:
+```
+helm repo add dataops-sre-airflow https://dataops-sre.github.io/docker-airflow2/
+helm repo update
+helm install airflow dataops-sre-airflow/airflow --wait --timeout 300s
+```
+
 ## Informations
 
 * Based on official Airflow 2 Image [apache/airflow2:2.1.2-python3.8
@@ -29,8 +36,9 @@ what this fork do :
 * Disactive by default the login screen in Airflow 2
 * Improve current script to only take into account Airflow environment variables
 * Make sure docker compose files works
+* Add Airflow2 deployment helm chart and release a public repository in Github
 
-You can use my [Airflow helm chart](https://github.com/dataops-sre/helm-charts) which deploys this image to a Kubernetes cluster.
+You can use the helm chart release in this repository, see [here](https://dataops-sre.github.io/docker-airflow2) to deploys airflow2 to a Kubernetes cluster.
 
 
 ## Build
