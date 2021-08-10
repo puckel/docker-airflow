@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "airflow.fullname" . }}
+  labels:
+    {{- include "airflow.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "airflow.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "airflow.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "airflow.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.airflow.image.repository }}:{{ .Values.airflow.image.tag }}"
+          imagePullPolicy: {{ .Values.airflow.image.imagePullPolicy }}
+          ports:
+          - containerPort: 8080
+          volumeMounts:
+          - mountPath: /opt/airflow/logs
+            name: {{ include "airflow.fullname" . }}-logs-pvc
+          - mountPath: /opt/airflow/dags
+            name: {{ include "airflow.fullname" . }}-dags-pvc
+          args:
+          - webserver
+          env:
+          {{- range $key, $val := .Values.airflow.config }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+          {{- end}}
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.web.initialDelaySeconds }}
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /health
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: {{ .Values.web.initialDelaySeconds }}
+            periodSeconds: 60
+            successThreshold: 1
+            timeoutSeconds: 1
+          {{- with .Values.airflow.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+      - name: {{ include "airflow.fullname" . }}-logs-pvc
+        persistentVolumeClaim:
+          claimName: {{ include "airflow.fullname" . }}-logs-pvc
+      - name: {{ include "airflow.fullname" . }}-dags-pvc
+        persistentVolumeClaim:
+          claimName: {{ include "airflow.fullname" . }}-dags-pvc
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

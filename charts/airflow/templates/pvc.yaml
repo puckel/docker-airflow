@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "airflow.fullname" . }}-logs-pvc
+  labels:
+    {{- include "airflow.labels" . | nindent 4 }}
+  annotations:
+     helm.sh/resource-policy: keep
+spec:
+  accessModes:
+  - {{ .Values.logsPersistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.logsPersistence.size }}
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "airflow.fullname" . }}-dags-pvc
+  labels:
+    {{- include "airflow.labels" . | nindent 4 }}
+  annotations:
+     helm.sh/resource-policy: keep
+spec:
+  accessModes:
+  - {{ .Values.dagsPersistence.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.dagsPersistence.size }}
