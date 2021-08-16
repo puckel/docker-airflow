@@ -10,9 +10,8 @@ services:
             options:
                 max-size: 10m
                 max-file: "3"
-
     webserver:
-        image: puckel/docker-airflow:1.10.9
+        image: guymelul/docker-airflow:1.10.15-python3.7
         restart: always
         depends_on:
             - postgres

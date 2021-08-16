@@ -14,9 +14,8 @@ services:
         #     - PGDATA=/var/lib/postgresql/data/pgdata
         # volumes:
         #     - ./pgdata:/var/lib/postgresql/data/pgdata
-
     webserver:
-        image: puckel/docker-airflow:1.10.9
+        image: guymelul/docker-airflow:1.10.15-python3.7
         restart: always
         depends_on:
             - postgres

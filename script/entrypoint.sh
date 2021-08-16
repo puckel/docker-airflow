@@ -12,21 +12,23 @@ TRY_LOOP="20"
 : "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}}"
 : "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR:-Sequential}Executor}"
 
-# Load DAGs examples (default: Yes)
-if [[ -z "$AIRFLOW__CORE__LOAD_EXAMPLES" && "${LOAD_EX:=n}" == n ]]; then
-  AIRFLOW__CORE__LOAD_EXAMPLES=False
-fi
+# Loading defaults is disabled
+export AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS=${AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS:-False}
+export AIRFLOW__CORE__LOAD_EXAMPLES=${AIRFLOW__CORE__LOAD_EXAMPLES:-False}
+
+echo "export FERNET_KEY=${AIRFLOW__CORE__FERNET_KEY}" >> .bashrc
 
 export \
   AIRFLOW_HOME \
   AIRFLOW__CORE__EXECUTOR \
   AIRFLOW__CORE__FERNET_KEY \
-  AIRFLOW__CORE__LOAD_EXAMPLES \
 
 # Install custom python package if requirements.txt is present
 if [ -e "/requirements.txt" ]; then
     $(command -v pip) install --user -r /requirements.txt
 fi
+
+
 
 wait_for_port() {
   local name="$1" host="$2" port="$3"
@@ -69,12 +71,12 @@ if [ "$AIRFLOW__CORE__EXECUTOR" != "SequentialExecutor" ]; then
     fi
 
     # Derive useful variables from the AIRFLOW__ variables provided explicitly by the user
-    POSTGRES_ENDPOINT=$(echo -n "$AIRFLOW__CORE__SQL_ALCHEMY_CONN" | cut -d '/' -f3 | sed -e 's,.*@,,')
-    POSTGRES_HOST=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f1)
-    POSTGRES_PORT=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f2)
+    DB_ENDPOINT=$(echo -n "$AIRFLOW__CORE__SQL_ALCHEMY_CONN" | cut -d '/' -f3 | sed -e 's,.*@,,')
+    DB_HOST=$(echo -n "$DB_ENDPOINT" | cut -d ':' -f1)
+    DB_PORT=$(echo -n "$DB_ENDPOINT" | cut -d ':' -f2)
   fi
 
-  wait_for_port "Postgres" "$POSTGRES_HOST" "$POSTGRES_PORT"
+  wait_for_port "Airflow database" "$DB_HOST" "$DB_PORT"
 fi
 
 # CeleryExecutor drives the need for a Celery broker, here Redis is used
@@ -100,8 +102,8 @@ if [ "$AIRFLOW__CORE__EXECUTOR" = "CeleryExecutor" ]; then
   else
     # Derive useful variables from the AIRFLOW__ variables provided explicitly by the user
     REDIS_ENDPOINT=$(echo -n "$AIRFLOW__CELERY__BROKER_URL" | cut -d '/' -f3 | sed -e 's,.*@,,')
-    REDIS_HOST=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f1)
-    REDIS_PORT=$(echo -n "$POSTGRES_ENDPOINT" | cut -d ':' -f2)
+    REDIS_HOST=$(echo -n "$REDIS_ENDPOINT" | cut -d ':' -f1)
+    REDIS_PORT=$(echo -n "$REDIS_ENDPOINT" | cut -d ':' -f2)
   fi
 
   wait_for_port "Redis" "$REDIS_HOST" "$REDIS_PORT"
@@ -114,6 +116,9 @@ case "$1" in
       # With the "Local" and "Sequential" executors it should all run in one container.
       airflow scheduler &
     fi
+
+    airflow variables import "/airflow_variables.json"
+
     exec airflow webserver
     ;;
   worker|scheduler)
