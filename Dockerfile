@@ -65,8 +65,8 @@ RUN set -ex \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
     && pip install -U pip==20.2.4 setuptools wheel --constraint ${CONSTRAINT_URL} \
-    && pip install pytz pyasn1 ndg-httpsclient pyOpenSSL redis --constraint ${CONSTRAINT_URL} \
-    && pip install "apache-airflow[crypto,celery,vertica,hive,webhdfs,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}" --constraint ${CONSTRAINT_URL} \
+    && pip install pytz pyasn1 ndg-httpsclient pyOpenSSL redis pandas kafka-python --constraint ${CONSTRAINT_URL} \
+    && pip install "apache-airflow[crypto,celery,cncf.kubernetes,virtualenv,vertica,hive,webhdfs,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION}" --constraint ${CONSTRAINT_URL} \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \

@@ -12,10 +12,11 @@ TRY_LOOP="20"
 : "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}}"
 : "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR:-Sequential}Executor}"
 
-# Loading defaults is disabled
+# Examples disabled by default
 export AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS=${AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS:-False}
 export AIRFLOW__CORE__LOAD_EXAMPLES=${AIRFLOW__CORE__LOAD_EXAMPLES:-False}
 
+# Enable airflow CLI from container terminal
 echo "export FERNET_KEY=${AIRFLOW__CORE__FERNET_KEY}" >> .bashrc
 
 export \
@@ -27,8 +28,6 @@ export \
 if [ -e "/requirements.txt" ]; then
     $(command -v pip) install --user -r /requirements.txt
 fi
-
-
 
 wait_for_port() {
   local name="$1" host="$2" port="$3"
