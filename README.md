@@ -1,14 +1,9 @@
 # docker-airflow
-[![CI status](https://github.com/guymelul/docker-airflow/workflows/CI/badge.svg?branch=master)](https://github.com/guymelul/docker-airflow/actions?query=workflow%3ACI+branch%3Amaster+event%3Apush)
-[![Docker Build status](https://img.shields.io/docker/build/guymelul/docker-airflow?style=plastic)](https://hub.docker.com/r/guymelul/docker-airflow/tags?ordering=last_updated)
-
 [![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/guymelul/docker-airflow/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/guymelul/docker-airflow.svg)]()
-[![Docker Stars](https://img.shields.io/docker/stars/guymelul/docker-airflow.svg)]()
 
-This repository contains **Dockerfile** of [apache-airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/guymelul/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
+This repository contains **Dockerfile** of [apache-airflow](https://github.com/apache/airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/guymelul/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
-## Informations
+## Information
 
 * Based on Python (3.7-slim-buster) official Image [python:3.7-slim-buster](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
 * Install [Docker](https://www.docker.com/)
@@ -50,19 +45,6 @@ For **CeleryExecutor** :
 
     docker-compose -f docker-compose-CeleryExecutor.yml up -d
 
-NB : If you want to have DAGs example loaded (default=False), you've to set the following environment variable :
-
-`LOAD_EX=n`
-
-    docker run -d -p 8080:8080 -e LOAD_EX=y guymelul/docker-airflow
-
-If you want to use Ad hoc query, make sure you've configured connections:
-Go to Admin -> Connections and Edit "postgres_default" set this values (equivalent to values in airflow.cfg/docker-compose*.yml) :
-- Host : postgres
-- Schema : airflow
-- Login : airflow
-- Password : airflow
-
 For encrypted connection passwords (in Local or Celery Executor), you must have the same fernet_key. By default docker-airflow generates the fernet_key at startup, you have to set an environment variable in the docker-compose (ie: docker-compose-LocalExecutor.yml) file to set the same key accross containers. To generate a fernet_key :
 
     docker run guymelul/docker-airflow python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"
@@ -92,6 +74,32 @@ In order to incorporate plugins into your docker container
 - Create a file "requirements.txt" with the desired python modules
 - Mount this file as a volume `-v $(pwd)/requirements.txt:/requirements.txt` (or add it as a volume in docker-compose file)
 - The entrypoint.sh script execute the pip install command (with --user option)
+
+## Add airflow variables
+
+- Create a file "airflow_variables.json" with the desired variables (flat key value)
+- Mount this file as a volume `-v $(pwd)/airflow_variables.json:/airflow_variables.json` (or add it as a volume in docker-compose file)
+- The entrypoint.sh script execute airflow variables import /airflow_variables.json
+```json
+{
+  "key1": "value",
+  "key2": {
+    "field1": "val1",
+    "field2": "val2"
+  }
+}
+```
+
+## Add airflow connections
+
+- Create a file "airflow_connections.txt" with parameters to airflow connections add command
+- Mount this file as a volume `-v $(pwd)/airflow_connections.txt:/airflow_connections.txt` (or add it as a volume in docker-compose file)
+- The entrypoint.sh script execute airflow connections add <parameters>
+```text
+--conn-host localhost --conn-port 10000 --conn-type hiveserver2 local-hiveserver2
+--conn-host webapp --conn-port 8080 --conn-type http my-web-app
+...
+```
 
 ## UI Links
 

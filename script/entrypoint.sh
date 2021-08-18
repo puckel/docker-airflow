@@ -18,11 +18,13 @@ export AIRFLOW__CORE__LOAD_EXAMPLES=${AIRFLOW__CORE__LOAD_EXAMPLES:-False}
 
 # Enable airflow CLI from container terminal
 echo "export FERNET_KEY=${AIRFLOW__CORE__FERNET_KEY}" >> .bashrc
+FERNET_KEY=${AIRFLOW__CORE__FERNET_KEY}
 
 export \
   AIRFLOW_HOME \
   AIRFLOW__CORE__EXECUTOR \
   AIRFLOW__CORE__FERNET_KEY \
+  FERNET_KEY \
 
 # Install custom python package if requirements.txt is present
 if [ -e "/requirements.txt" ]; then
@@ -110,18 +112,35 @@ fi
 
 case "$1" in
   webserver)
-    airflow initdb
+    airflow db init
+
+    echo "Importing variables from /airflow_variables.json"
+    airflow variables import "/airflow_variables.json"
+
+    if [ -f "/airflow_connections.txt" ]; then
+      OLD_IFS="$IFS"
+      IFS=$'\n'
+      echo "Reading airflow connections file..."
+      # shellcheck disable=SC2013
+      for c in $(grep -v -e '^[[:space:]]*$' /airflow_connections.txt); do
+        echo "airflow connections add $c"
+        eval "airflow connections add $c"
+      done
+
+      IFS="$OLD_IFS"
+    else
+      echo "Airflow connections file not found"
+    fi
+
     if [ "$AIRFLOW__CORE__EXECUTOR" = "LocalExecutor" ] || [ "$AIRFLOW__CORE__EXECUTOR" = "SequentialExecutor" ]; then
       # With the "Local" and "Sequential" executors it should all run in one container.
       airflow scheduler &
     fi
 
-    airflow variables import "/airflow_variables.json"
-
     exec airflow webserver
     ;;
   worker|scheduler)
-    # Give the webserver time to run initdb.
+    # Give the webserver time to run db init.
     sleep 10
     exec airflow "$@"
     ;;
