@@ -1,4 +1,4 @@
-# VERSION 1.10.14
+# VERSION 1.10.15
 # AUTHOR: Matthieu "Puckel_" Roisil
 # UPGRADE BY David Wong & MelleB
 # DESCRIPTION: Basic Airflow container
@@ -18,6 +18,7 @@ ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
+ENV PYTHONPYCACHEPREFIX="$AIRFLOW_HOME/.cache/cpython/"
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
@@ -28,6 +29,7 @@ ENV LC_MESSAGES en_US.UTF-8
 
 # Disable noisy "Handling signal" log messages:
 # ENV GUNICORN_CMD_ARGS --log-level WARNING
+
 
 RUN set -ex \
     && buildDeps=' \
@@ -55,15 +57,15 @@ RUN set -ex \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
-    && pip install -U pip setuptools wheel \
+    && pip install -U pip==20.2.4 setuptools wheel \
+    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
+       --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-3.8.txt" \
+    && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && pip install pytz \
     && pip install pyOpenSSL \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
-    && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
-       --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-3.8.txt" \
     && pip install 'redis==3.2' \
-    && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
     && apt-get purge --auto-remove -yqq $buildDeps \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
@@ -74,6 +76,8 @@ RUN set -ex \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
+
+RUN if [ "$AIRFLOW_VERSION" = "1.10.15" ]; then pip install apache-airflow-upgrade-check; fi
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
