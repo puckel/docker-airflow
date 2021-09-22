@@ -17,6 +17,7 @@ ARG AIRFLOW_VERSION=1.10.14
 ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
+ARG BUILD_DEPS=""
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
 ENV PYTHONPYCACHEPREFIX="$AIRFLOW_HOME/.cache/cpython/"
 
@@ -40,7 +41,7 @@ RUN set -ex \
         libffi-dev \
         libpq-dev \
         git \
-    ' \
+    '" $BUILD_DEPS" \
     && apt-get update -yqq \
     && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
@@ -57,7 +58,7 @@ RUN set -ex \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow \
-    && pip install -U pip==20.2.4 setuptools wheel \
+    && pip install -U pip==20.2.4 'setuptools<58' wheel \
     && pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
        --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-3.8.txt" \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi \
