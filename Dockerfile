@@ -10,9 +10,9 @@ ARG PYTHON_DEPS=""
 
 RUN pip install apache-airflow[crypto,celery,postgres,hive,jdbc,mysql,ssh,kubernetes,snowflake${AIRFLOW_DEPS:+,}${AIRFLOW_DEPS}]==${AIRFLOW_VERSION} \
     # plyvel Required by airflow, unknown why not installed as a dependency
-    && pip install plyvel==1.3.0
+    && pip install plyvel==1.3.0 \
     # pyarrow 5.0 required by snowflake but possibly incompatible by airflow
-    && pip install pyarrow==5.0.0
+    && pip install pyarrow==5.0.0 \
     && if [ -n "${PYTHON_DEPS}" ]; then pip install ${PYTHON_DEPS}; fi
 
 
