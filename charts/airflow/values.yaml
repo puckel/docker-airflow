@@ -10,7 +10,7 @@ fullnameOverride: ""
 airflow:
   image:
     repository: dataopssre/docker-airflow2
-    tag: 2.1.2
+    tag: 2.2.1
     imagePullPolicy: IfNotPresent
   config:
     AIRFLOW__CORE__EXECUTOR: LocalExecutor

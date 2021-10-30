@@ -1,9 +1,9 @@
-FROM apache/airflow:2.1.2-python3.8
+FROM apache/airflow:2.2.1-python3.9
 
 LABEL maintainer="dataops-sre"
 
-ARG AIRFLOW_VERSION=2.1.2
-ARG PYTHON_VERSION=3.8
+ARG AIRFLOW_VERSION=2.2.1
+ARG PYTHON_VERSION=3.9
 
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""

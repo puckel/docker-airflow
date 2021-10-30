@@ -52,7 +52,7 @@ AUTH_TYPE = AUTH_DB
 # Uncomment to setup Public role name, no authentication needed
 # AUTH_ROLE_PUBLIC = 'Public'
 
-# Set the Pulic role to Admin to allow full access.
+# Set the Public role to Admin to allow full access.
 AUTH_ROLE_PUBLIC = 'Admin'
 
 # Will allow user self registration
