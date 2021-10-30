@@ -11,6 +11,7 @@ Session.vim
 *.tmlanguage.cache
 *.tmPreferences.cache
 *.stTheme.cache
+.idea/
 
 # workspace files are user-specific
 *.sublime-workspace

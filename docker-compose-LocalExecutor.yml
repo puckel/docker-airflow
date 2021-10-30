@@ -6,6 +6,8 @@ services:
             - POSTGRES_USER=airflow
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
+        ports:
+            - "5432:5432"
         logging:
             options:
                 max-size: 10m
