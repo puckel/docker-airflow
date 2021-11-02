@@ -35,8 +35,8 @@ WTF_CSRF_ENABLED = True
 # AUTHENTICATION CONFIG
 # ----------------------------------------------------
 # For details on how to set up each of the following authentication, see
-# http://flask-appbuilder.readthedocs.io/en/latest/security.html# authentication-methods
-# for details.
+# http://flask-appbuilder.readthedocs.io/en/latest/security.html#
+# authentication-methods for details.
 
 # The authentication type
 # AUTH_OID : Is for OpenID
@@ -52,7 +52,7 @@ AUTH_TYPE = AUTH_DB
 # Uncomment to setup Public role name, no authentication needed
 # AUTH_ROLE_PUBLIC = 'Public'
 
-# Set the Pulic role to Admin to allow full access.
+# Set the Public role to Admin to allow full access.
 AUTH_ROLE_PUBLIC = 'Admin'
 
 # Will allow user self registration
@@ -98,7 +98,8 @@ AUTH_ROLE_PUBLIC = 'Admin'
 # that you can use for Apache Airflow.
 # http://flask-appbuilder.readthedocs.io/en/latest/customizing.html#changing-themes
 # Please make sure to remove "navbar_color" configuration from airflow.cfg
-# in order to fully utilize the theme. (or use that property in conjunction with theme)
+# in order to fully utilize the theme. (or use that property in conjunction
+# with theme)
 # APP_THEME = "bootstrap-theme.css"  # default bootstrap
 # APP_THEME = "amelia.css"
 # APP_THEME = "cerulean.css"
