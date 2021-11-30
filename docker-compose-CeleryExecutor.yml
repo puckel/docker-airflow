@@ -1,4 +1,4 @@
-version: '2.1'
+version: '2.2'
 services:
     redis:
         image: 'redis:5.0.5'
@@ -16,7 +16,7 @@ services:
         #     - ./pgdata:/var/lib/postgresql/data/pgdata
 
     webserver:
-        image: puckel/docker-airflow:1.10.9
+        image: neylsoncrepalde/airflow-docker:latest
         restart: always
         depends_on:
             - postgres
@@ -30,7 +30,9 @@ services:
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - /D/Docker/volumes/airflow/dags:/usr/local/airflow/dags
+            - /D/Docker/volumes/airflow/data:/usr/local/airflow/data
+            - ./requirements.txt:/requirements.txt
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
@@ -43,7 +45,7 @@ services:
             retries: 3
 
     flower:
-        image: puckel/docker-airflow:1.10.9
+        image: neylsoncrepalde/airflow-docker:latest
         restart: always
         depends_on:
             - redis
@@ -52,15 +54,17 @@ services:
             # - REDIS_PASSWORD=redispass
         ports:
             - "5555:5555"
-        command: flower
+        command: celery flower
 
     scheduler:
-        image: puckel/docker-airflow:1.10.9
+        image: neylsoncrepalde/airflow-docker:latest
         restart: always
         depends_on:
             - webserver
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - /D/Docker/volumes/airflow/dags:/usr/local/airflow/dags
+            - /D/Docker/volumes/airflow/data:/usr/local/airflow/data
+            - ./requirements.txt:/requirements.txt
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
@@ -74,12 +78,14 @@ services:
         command: scheduler
 
     worker:
-        image: puckel/docker-airflow:1.10.9
+        image: neylsoncrepalde/airflow-docker:latest
         restart: always
         depends_on:
             - scheduler
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - /D/Docker/volumes/airflow/dags:/usr/local/airflow/dags
+            - /D/Docker/volumes/airflow/data:/usr/local/airflow/data
+            - ./requirements.txt:/requirements.txt
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
@@ -89,4 +95,12 @@ services:
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
-        command: worker
+        command: celery worker
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.01'
+                    memory: 1024M
+                reservations:
+                    cpus: '0.001'
+                    memory: 256M

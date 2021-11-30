@@ -1,0 +1,6 @@
+boto3
+pandas
+pymongo
+sqlalchemy
+numpy
+datetime
