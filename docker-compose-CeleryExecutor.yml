@@ -96,3 +96,11 @@ services:
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
         command: celery worker
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.01'
+                    memory: 1024M
+                reservations:
+                    cpus: '0.001'
+                    memory: 256M
