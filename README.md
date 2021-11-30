@@ -107,7 +107,7 @@ To log into airflow webserver, the default credentials are
 
 Easy scaling using docker-compose:
 
-    docker-compose -f docker-compose-CeleryExecutor.yml scale worker=5
+    docker-compose -f docker-compose-CeleryExecutor.yml up -d --scale worker=5
 
 This can be used to scale to a multi node setup using docker swarm.
 

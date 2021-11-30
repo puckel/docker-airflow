@@ -30,8 +30,9 @@ services:
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
         volumes:
-            - ./dags:/usr/local/airflow/dags
-            - ./data:/usr/local/airflow/data
+            - /D/Docker/volumes/airflow/dags:/usr/local/airflow/dags
+            - /D/Docker/volumes/airflow/data:/usr/local/airflow/data
+            - ./requirements.txt:/requirements.txt
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
@@ -61,8 +62,9 @@ services:
         depends_on:
             - webserver
         volumes:
-            - ./dags:/usr/local/airflow/dags
-            - ./data:/usr/local/airflow/data
+            - /D/Docker/volumes/airflow/dags:/usr/local/airflow/dags
+            - /D/Docker/volumes/airflow/data:/usr/local/airflow/data
+            - ./requirements.txt:/requirements.txt
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
@@ -81,8 +83,9 @@ services:
         depends_on:
             - scheduler
         volumes:
-            - ./dags:/usr/local/airflow/dags
-            - ./data:/usr/local/airflow/data
+            - /D/Docker/volumes/airflow/dags:/usr/local/airflow/dags
+            - /D/Docker/volumes/airflow/data:/usr/local/airflow/data
+            - ./requirements.txt:/requirements.txt
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
