@@ -4,7 +4,7 @@
 # BUILD: docker build --rm -t puckel/docker-airflow .
 # SOURCE: https://github.com/puckel/docker-airflow
 
-FROM python:3.7-slim-buster
+FROM python:3.8-slim-buster
 LABEL maintainer="Puckel_"
 
 # Never prompt the user for choices on installation/configuration of packages
