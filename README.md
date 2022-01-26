@@ -37,6 +37,8 @@ Don't forget to update the airflow images in the docker-compose files to ednarb2
 
 ## Usage
 
+Make sure to modify the passwords in the secrets directory.
+
 By default, docker-airflow runs Airflow with **SequentialExecutor** :
 
     docker run -d -p 8080:8080 ednarb29/docker-airflow:2.2.3 webserver
@@ -58,7 +60,7 @@ NB : If you want to have DAGs example loaded (default=False), you've to set the 
     docker run -d -p 8080:8080 -e LOAD_EX=y ednarb29/docker-airflow:2.2.3
 
 If you want to use Ad hoc query, make sure you've configured connections:
-Go to Admin -> Connections and Edit "postgres_default" set this values (equivalent to values in airflow.cfg/docker-compose*.yml) :
+Go to Admin -> Connections and Edit "postgres_default" set this values (equivalent to values in airflow.cfg and secrets/*.env) :
 - Host : postgres
 - Schema : airflow
 - Login : airflow
