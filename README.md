@@ -1,44 +1,47 @@
 # docker-airflow
-[![CI status](https://github.com/puckel/docker-airflow/workflows/CI/badge.svg?branch=master)](https://github.com/puckel/docker-airflow/actions?query=workflow%3ACI+branch%3Amaster+event%3Apush)
-[![Docker Build status](https://img.shields.io/docker/build/puckel/docker-airflow?style=plastic)](https://hub.docker.com/r/puckel/docker-airflow/tags?ordering=last_updated)
+[![CI status](https://github.com/ednarb29/docker-airflow/workflows/CI/badge.svg?branch=master)](https://github.com/ednarb29/docker-airflow/actions?query=workflow%3ACI+branch%3Amaster+event%3Apush)
+[![Docker Build status](https://img.shields.io/docker/build/ednarb29/docker-airflow?style=plastic)](https://hub.docker.com/r/ednarb29/docker-airflow/tags?ordering=last_updated)
 
-[![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/puckel/docker-airflow/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/puckel/docker-airflow.svg)]()
-[![Docker Stars](https://img.shields.io/docker/stars/puckel/docker-airflow.svg)]()
+[![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/ednarb29/docker-airflow/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/ednarb29/docker-airflow.svg)]()
+[![Docker Stars](https://img.shields.io/docker/stars/ednarb29/docker-airflow.svg)]()
 
-This repository contains **Dockerfile** of [apache-airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
+This repository contains **Dockerfile** of [apache-airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/ednarb29/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
 ## Informations
 
-* Based on Python (3.7-slim-buster) official Image [python:3.7-slim-buster](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
+* Based on Python (3.8-slim-buster) official Image [python:3.8-slim-buster](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
 * Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/apache-airflow)
 
 ## Installation
 
-Pull the image from the Docker repository.
+Up to this moment, there is no public image `ednarb29/docker-airflow:2.2.3`, so we have to build it. After cloning this repo, you may do
 
-    docker pull puckel/docker-airflow
+    docker build -t ednarb29/docker-airflow:2.2.3 .
+
 
 ## Build
 
 Optionally install [Extra Airflow Packages](https://airflow.incubator.apache.org/installation.html#extra-package) and/or python dependencies at build time :
 
-    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" -t puckel/docker-airflow .
-    docker build --rm --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t puckel/docker-airflow .
+    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" -t ednarb29/docker-airflow:2.2.3 .
+    docker build --rm --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t ednarb29/docker-airflow:2.2.3 .
 
 or combined
 
-    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t puckel/docker-airflow .
+    docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t ednarb29/docker-airflow:2.2.3 .
 
-Don't forget to update the airflow images in the docker-compose files to puckel/docker-airflow:latest.
+Don't forget to update the airflow images in the docker-compose files to ednarb29/docker-airflow:latest.
 
 ## Usage
 
+Make sure to modify the passwords in the secrets directory.
+
 By default, docker-airflow runs Airflow with **SequentialExecutor** :
 
-    docker run -d -p 8080:8080 puckel/docker-airflow webserver
+    docker run -d -p 8080:8080 ednarb29/docker-airflow:2.2.3 webserver
 
 If you want to run another executor, use the other docker-compose.yml files provided in this repository.
 
@@ -54,10 +57,10 @@ NB : If you want to have DAGs example loaded (default=False), you've to set the 
 
 `LOAD_EX=n`
 
-    docker run -d -p 8080:8080 -e LOAD_EX=y puckel/docker-airflow
+    docker run -d -p 8080:8080 -e LOAD_EX=y ednarb29/docker-airflow:2.2.3
 
 If you want to use Ad hoc query, make sure you've configured connections:
-Go to Admin -> Connections and Edit "postgres_default" set this values (equivalent to values in airflow.cfg/docker-compose*.yml) :
+Go to Admin -> Connections and Edit "postgres_default" set this values (equivalent to values in airflow.cfg and secrets/*.env) :
 - Host : postgres
 - Schema : airflow
 - Login : airflow
@@ -65,7 +68,7 @@ Go to Admin -> Connections and Edit "postgres_default" set this values (equivale
 
 For encrypted connection passwords (in Local or Celery Executor), you must have the same fernet_key. By default docker-airflow generates the fernet_key at startup, you have to set an environment variable in the docker-compose (ie: docker-compose-LocalExecutor.yml) file to set the same key accross containers. To generate a fernet_key :
 
-    docker run puckel/docker-airflow python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"
+    docker run ednarb29/docker-airflow:2.2.3 python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"
 
 ## Configuring Airflow
 
@@ -98,6 +101,9 @@ In order to incorporate plugins into your docker container
 - Airflow: [localhost:8080](http://localhost:8080/)
 - Flower: [localhost:5555](http://localhost:5555/)
 
+To log into airflow webserver, the default credentials are
+- username: airflow
+- password: airflow
 
 ## Scale the number of workers
 
@@ -111,7 +117,7 @@ This can be used to scale to a multi node setup using docker swarm.
 
 If you want to run other airflow sub-commands, such as `list_dags` or `clear` you can do so like this:
 
-    docker run --rm -ti puckel/docker-airflow airflow list_dags
+    docker run --rm -ti ednarb29/docker-airflow:2.2.3 airflow list_dags
 
 or with your docker-compose set up like this:
 
@@ -119,8 +125,8 @@ or with your docker-compose set up like this:
 
 You can also use this to run a bash shell or any other command in the same environment that airflow would be run in:
 
-    docker run --rm -ti puckel/docker-airflow bash
-    docker run --rm -ti puckel/docker-airflow ipython
+    docker run --rm -ti ednarb29/docker-airflow:2.2.3 bash
+    docker run --rm -ti ednarb29/docker-airflow:2.2.3 ipython
 
 # Simplified SQL database configuration using PostgreSQL
 

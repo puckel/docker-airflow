@@ -1,38 +1,54 @@
-version: '2.1'
+version: '2.2'
 services:
     redis:
         image: 'redis:5.0.5'
-        # command: redis-server --requirepass redispass
+        command: [
+            "bash", "-c",
+            '
+            docker-entrypoint.sh
+            --requirepass $${REDIS_PASSWORD}
+            '
+        ]
+        restart: always
+        env_file:
+            - secrets/redis.env
 
     postgres:
         image: postgres:9.6
+        restart: always
         environment:
-            - POSTGRES_USER=airflow
-            - POSTGRES_PASSWORD=airflow
-            - POSTGRES_DB=airflow
-        # Uncomment these lines to persist data on the local filesystem.
-        #     - PGDATA=/var/lib/postgresql/data/pgdata
-        # volumes:
-        #     - ./pgdata:/var/lib/postgresql/data/pgdata
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - PGDATA=${DB_VOLUME_CONTAINER}
+        env_file:
+            - secrets/postgres.env
+        volumes:
+            - "db:${DB_VOLUME_CONTAINER}"
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+            interval: 30s
+            timeout: 30s
+            retries: 3
 
     webserver:
-        image: puckel/docker-airflow:1.10.9
+        image: ednarb29/docker-airflow:2.2.3
         restart: always
         depends_on:
             - postgres
             - redis
         environment:
             - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
-            # - REDIS_PASSWORD=redispass
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_DB=${POSTGRES_DB}
+        env_file:
+            - secrets/fernet_key.env
+            - secrets/redis.env
+            - secrets/postgres.env
         volumes:
-            - ./dags:/usr/local/airflow/dags
-            # Uncomment to include custom plugins
-            # - ./plugins:/usr/local/airflow/plugins
+            - "./dags:${AIRFLOW_DAG_DIR}"
+            # - "./plugins:${AIRFLOW_PLUGINS_DIR}"
+            - "./files:${AIRFLOW_FILES_DIR}"
         ports:
             - "8080:8080"
         command: webserver
@@ -43,50 +59,64 @@ services:
             retries: 3
 
     flower:
-        image: puckel/docker-airflow:1.10.9
+        image: ednarb29/docker-airflow:2.2.3
         restart: always
         depends_on:
             - redis
         environment:
             - EXECUTOR=Celery
-            # - REDIS_PASSWORD=redispass
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_DB=${POSTGRES_DB}
+        env_file:
+            - secrets/redis.env
+            - secrets/postgres.env
         ports:
             - "5555:5555"
-        command: flower
+        command: celery flower
 
     scheduler:
-        image: puckel/docker-airflow:1.10.9
+        image: ednarb29/docker-airflow:2.2.3
         restart: always
         depends_on:
             - webserver
         volumes:
-            - ./dags:/usr/local/airflow/dags
-            # Uncomment to include custom plugins
-            # - ./plugins:/usr/local/airflow/plugins
+            - "./dags:${AIRFLOW_DAG_DIR}"
+            # - "./plugins:${AIRFLOW_PLUGINS_DIR}"
+            - "./files:${AIRFLOW_FILES_DIR}"
         environment:
             - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
-            # - REDIS_PASSWORD=redispass
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_DB=${POSTGRES_DB}
+        env_file:
+            - secrets/fernet_key.env
+            - secrets/redis.env
+            - secrets/postgres.env
         command: scheduler
 
     worker:
-        image: puckel/docker-airflow:1.10.9
+        image: ednarb29/docker-airflow:2.2.3
         restart: always
         depends_on:
             - scheduler
         volumes:
-            - ./dags:/usr/local/airflow/dags
-            # Uncomment to include custom plugins
-            # - ./plugins:/usr/local/airflow/plugins
+            - "./dags:${AIRFLOW_DAG_DIR}"
+            # - "./plugins:${AIRFLOW_PLUGINS_DIR}"
+            - "./files:${AIRFLOW_FILES_DIR}"
         environment:
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
             - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
-            # - REDIS_PASSWORD=redispass
-        command: worker
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_DB=${POSTGRES_DB}
+        env_file:
+            - secrets/fernet_key.env
+            - secrets/redis.env
+            - secrets/postgres.env
+        command: celery worker
+
+volumes:
+  db:
+
+# networks:
+  # default:
+    # external:
+      # name: "${DOCKER_NETWORK_NAME}"

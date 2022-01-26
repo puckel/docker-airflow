@@ -1,31 +1,37 @@
-version: '3.7'
+version: '3.8'
 services:
     postgres:
         image: postgres:9.6
         environment:
-            - POSTGRES_USER=airflow
-            - POSTGRES_PASSWORD=airflow
-            - POSTGRES_DB=airflow
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_DB=${POSTGRES_DB}
+        env_file:
+            - secrets/postgres.env
         logging:
             options:
                 max-size: 10m
                 max-file: "3"
 
     webserver:
-        image: puckel/docker-airflow:1.10.9
+        image: ednarb29/docker-airflow:2.2.3
         restart: always
         depends_on:
             - postgres
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_DB=${POSTGRES_DB}
+        env_file:
+            - secrets/fernet_key.env
+            - secrets/postgres.env
         logging:
             options:
                 max-size: 10m
                 max-file: "3"
         volumes:
-            - ./dags:/usr/local/airflow/dags
-            # - ./plugins:/usr/local/airflow/plugins
+            - "./dags:${AIRFLOW_DAG_DIR}"
+            # - "./plugins:${AIRFLOW_PLUGINS_DIR}"
         ports:
             - "8080:8080"
         command: webserver
