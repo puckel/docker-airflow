@@ -1,11 +1,12 @@
 # VERSION 2.2.3
-# AUTHOR: Matthieu "Puckel_" Roisil
+# AUTHOR: Steven Brandt (@ednarb29)
 # DESCRIPTION: Basic Airflow container
-# BUILD: docker build --rm -t puckel/docker-airflow .
-# SOURCE: https://github.com/puckel/docker-airflow
+# BUILD: docker build --rm -t ednarb29/docker-airflow .
+# SOURCE: https://github.com/ednarb29/docker-airflow
+# BASED ON: https://github.com/puckel/docker-airflow (Matthieu "Puckel_" Roisil)
 
 FROM python:3.8-slim-buster
-LABEL maintainer="Puckel_"
+LABEL maintainer="ednarb29"
 
 # Never prompt the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
