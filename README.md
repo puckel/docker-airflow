@@ -19,7 +19,7 @@ helm install airflow dataops-sre-airflow/airflow --wait --timeout 300s
 
 ## Informations
 
-* Based on official Airflow 2 Image [apache/airflow2:2.2.1-python3.9
+* Based on official Airflow 2 Image [apache/airflow2:2.2.3-python3.9
 ](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
 * Docker entrypoint script is forked from [puckel/docker-airflow](https://github.com/puckel/docker-airflow)
 * Install [Docker](https://www.docker.com/)
