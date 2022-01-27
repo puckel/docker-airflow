@@ -1,7 +1,7 @@
 version: '2.1'
 services:
     redis:
-        image: 'redis:5.0.5'
+        image: 'redis:6.2'
         # command: redis-server --requirepass redispass
 
     postgres:
@@ -10,83 +10,85 @@ services:
             - POSTGRES_USER=airflow
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
+        ports:
+            - "5432:5432"
         # Uncomment these lines to persist data on the local filesystem.
         #     - PGDATA=/var/lib/postgresql/data/pgdata
         # volumes:
         #     - ./pgdata:/var/lib/postgresql/data/pgdata
 
     webserver:
-        image: puckel/docker-airflow:1.10.9
+        build: .
         restart: always
         depends_on:
             - postgres
             - redis
         environment:
-            - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
+            - AIRFLOW__CORE__LOAD_EXAMPLES=false
+            - AIRFLOW__CORE__FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - ./dags:/opt/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
             - "8080:8080"
         command: webserver
         healthcheck:
-            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            test: ["CMD-SHELL", "[ -f /opt/airflow/airflow-webserver.pid ]"]
             interval: 30s
             timeout: 30s
             retries: 3
 
     flower:
-        image: puckel/docker-airflow:1.10.9
+        build: .
         restart: always
         depends_on:
             - redis
         environment:
-            - EXECUTOR=Celery
+            - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
             # - REDIS_PASSWORD=redispass
         ports:
             - "5555:5555"
-        command: flower
+        command: airflow celery flower
 
     scheduler:
-        image: puckel/docker-airflow:1.10.9
+        build: .
         restart: always
         depends_on:
             - webserver
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - ./dags:/opt/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
-            - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
+            - AIRFLOW__CORE__LOAD_EXAMPLES=false
+            - AIRFLOW__CORE__FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
-        command: scheduler
+        command: airflow scheduler
 
     worker:
-        image: puckel/docker-airflow:1.10.9
+        build: .
         restart: always
         depends_on:
             - scheduler
         volumes:
-            - ./dags:/usr/local/airflow/dags
+            - ./dags:/opt/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
+            - AIRFLOW__CORE__FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
             # - POSTGRES_DB=airflow
             # - REDIS_PASSWORD=redispass
-        command: worker
+        command: airflow celery worker
