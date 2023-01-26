@@ -18,6 +18,7 @@ ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
 ARG BUILD_DEPS=""
+ARG BUILD_STEPS=""
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
 ENV PYTHONPYCACHEPREFIX="$AIRFLOW_HOME/.cache/cpython/"
 
@@ -33,7 +34,9 @@ ENV LC_MESSAGES en_US.UTF-8
 
 
 RUN set -ex \
-    && buildDeps=' \
+    && apt-get update -yqq \
+    && apt-get upgrade -yqq \
+	&& buildDeps=' \
         freetds-dev \
         libkrb5-dev \
         libsasl2-dev \
@@ -42,8 +45,6 @@ RUN set -ex \
         libpq-dev \
         git \
     '" $BUILD_DEPS" \
-    && apt-get update -yqq \
-    && apt-get upgrade -yqq \
     && apt-get install -yqq --no-install-recommends \
         $buildDeps \
         freetds-bin \
@@ -54,6 +55,7 @@ RUN set -ex \
         rsync \
         netcat \
         locales \
+    && if [ -n "${BUILD_STEPS}" ]; then /bin/sh -c "${BUILD_STEPS}"; fi \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
