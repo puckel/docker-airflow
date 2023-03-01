@@ -8,22 +8,22 @@
 
 This repository contains **Dockerfile** of [apache-airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/puckel/docker-airflow/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 
-## Informations
+## 정보
 
-* Based on Python (3.7-slim-buster) official Image [python:3.7-slim-buster](https://hub.docker.com/_/python/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [Redis](https://hub.docker.com/_/redis/) as queue
+* Python(3.7-slim-buster) 공식 이미지 [python:3.7-slim-buster](https://hub.docker.com/_/python/) 를 기반으로 하며, 공식 [Postgres](https://hub.docker.com/_/postgres/) 를 백엔드로, [Redis](https://hub.docker.com/_/redis/) 를 큐로 사용합니다.
 * Install [Docker](https://www.docker.com/)
 * Install [Docker Compose](https://docs.docker.com/compose/install/)
-* Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/apache-airflow)
+* [파이썬 패키지 인덱스](https://pypi.python.org/pypi/apache-airflow) 에서 Airflow 릴리스 따라하기
 
-## Installation
+## 설치
 
-Pull the image from the Docker repository.
+Docker 리포지토리에서 이미지를 가져옵니다.
 
     docker pull puckel/docker-airflow
 
-## Build
+## 빌드
 
-Optionally install [Extra Airflow Packages](https://airflow.incubator.apache.org/installation.html#extra-package) and/or python dependencies at build time :
+선택적으로 빌드 시 추가 [Airflow 패키지](https://airflow.incubator.apache.org/installation.html#extra-package) 및/또는 파이썬 종속성을 설치합니다:
 
     docker build --rm --build-arg AIRFLOW_DEPS="datadog,dask" -t puckel/docker-airflow .
     docker build --rm --build-arg PYTHON_DEPS="flask_oauthlib>=0.9" -t puckel/docker-airflow .
